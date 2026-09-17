@@ -1,0 +1,33 @@
+id,title,sprint,priority,risk,status,source_file
+ADAPTER-001,Define the ScannerAdapter Contract,Sprint 3,P0,R2,Ready,ADAPTER-001-scanner-contract.md
+ART-001,Implement the Local Raw Artifact Store,Sprint 3,P0,R2,Ready,ART-001-raw-artifact-store.md
+CLI-001,Implement deprail discover,Sprint 1,P0,R1,Ready,CLI-001-discover-command.md
+CLI-010,Implement deprail scan,Sprint 4,P1,R2,Ready,CLI-010-scan-command.md
+DISC-001,Define Detector and ProjectGraph Contracts,Sprint 1,P0,R1,Ready,DISC-001-detector-contract.md
+DISC-002,Implement the Secure Repository Walker,Sprint 1,P0,R2,Ready,DISC-002-secure-repository-walker.md
+DISC-003,Implement the npm Detector,Sprint 1,P0,R1,Ready,DISC-003-npm-detector.md
+DISC-010,Implement pnpm and Yarn Workspace Detectors,Sprint 2,P1,R1,Ready,DISC-010-pnpm-yarn-detectors.md
+DISC-011,Implement requirements and uv Detectors,Sprint 2,P1,R1,Ready,DISC-011-python-requirements-uv.md
+DISC-012,Implement the Poetry Detector,Sprint 2,P1,R1,Ready,DISC-012-poetry-detector.md
+DISC-013,Implement Maven and Gradle Detectors,Sprint 2,P1,R1,Ready,DISC-013-maven-gradle-detectors.md
+DISC-014,Implement Conflict Handling and Discovery Completeness,Sprint 2,P1,R2,Ready,DISC-014-conflicts-completeness.md
+DOC-001,Write Quick Start Compatibility and Troubleshooting,Sprint 4,P1,R0,Ready,DOC-001-quickstart-compatibility.md
+DOCTOR-001,Implement deprail doctor,Sprint 4,P1,R1,Ready,DOCTOR-001-environment-diagnostics.md
+FIXTURE-001,Establish Repository Fixtures and Fixture Standards,Sprint 0,P0,R1,Ready,FIXTURE-001-fixture-foundation.md
+NORM-001,Normalize Components and PURLs,Sprint 4,P1,R1,Ready,NORM-001-component-purl.md
+NORM-002,Normalize Vulnerability Aliases and Canonical IDs,Sprint 4,P1,R1,Ready,NORM-002-vulnerability-aliases.md
+NORM-003,Normalize Evidence Severity and Fixed Versions,Sprint 4,P1,R1,Ready,NORM-003-evidence-severity-fixes.md
+NORM-004,Implement Stable Keys and Deterministic Ordering,Sprint 4,P1,R1,Ready,NORM-004-stable-keys-ordering.md
+OSV-001,Implement OSV Metadata Version Checks and ScanPlan,Sprint 3,P0,R2,Ready,OSV-001-metadata-and-scan-plan.md
+OSV-002,Execute OSV Scanner and Parse RawResult,Sprint 3,P0,R2,Ready,OSV-002-execute-and-parse.md
+OUT-001,Implement Terminal and JSON Presenters with Safe File Output,Sprint 4,P1,R2,Ready,OUT-001-terminal-json-output.md
+PROC-001,Implement the Safe External Process Runner,Sprint 3,P0,R3,Ready,PROC-001-safe-process-runner.md
+REL-001,Build and Validate the v0.1 Preview Release,Sprint 4,P1,R2,Ready,REL-001-v0.1-preview-release.md
+S0-001,Establish the Repository and Engineering Structure,Sprint 0,P0,R1,Ready,S0-001-repository-baseline.md
+S0-002,Pin the Toolchain and Establish Fast CI,Sprint 0,P0,R2,Ready,S0-002-toolchain-and-ci.md
+S0-003,Establish Issue PR ADR and Project Templates,Sprint 0,P0,R0,Ready,S0-003-project-templates.md
+SCHEMA-001,Define the Core v1alpha Schemas,Sprint 0,P0,R2,Ready,SCHEMA-001-core-v1alpha-schemas.md
+TEST-001,Establish Discovery Golden and Cross-platform Tests,Sprint 1,P0,R1,Ready,TEST-001-discovery-golden.md
+TEST-010,Test Mixed Monorepo Discovery Across Platforms,Sprint 2,P1,R2,Ready,TEST-010-mixed-monorepo-cross-platform.md
+TEST-020,Build the OSV Contract and Failure Matrix,Sprint 3,P0,R2,Ready,TEST-020-osv-contract-failures.md
+TEST-030,Build Normalization Property and Fuzz Tests,Sprint 4,P1,R2,Ready,TEST-030-normalization-property-fuzz.md

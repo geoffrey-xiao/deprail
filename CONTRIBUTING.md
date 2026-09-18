@@ -12,6 +12,19 @@ DepRail is developed from the contracts in `docs/`. Before changing behavior, re
 - Do not change schemas, public interfaces, tool versions, or security boundaries without explicit review.
 - Keep machine data on stdout and diagnostics on stderr.
 
+
+## Branch and pull request policy
+
+`main` is the releasable integration branch. Do not develop directly on it. Create a short-lived branch from the current `main` for each issue or bounded task:
+
+```text
+chore/s0-002-toolchain-ci
+feat/discovery-walker
+fix/path-containment
+```
+
+Push the branch and open a pull request linked to the issue. Keep one primary outcome per pull request. The pull request must include scope, risk, contract impact, verification results, evidence, and rollback notes. Required CI and human review must pass before a squash merge to `main`; delete the branch after merge. Emergency security changes may use an expedited path but still require an issue, review, verification, and follow-up record.
+
 ## Change workflow
 
 1. Link the issue and identify scope, exclusions, risk, contracts, and acceptance evidence.

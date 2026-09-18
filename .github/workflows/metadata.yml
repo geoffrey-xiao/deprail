@@ -14,6 +14,7 @@ permissions:
 jobs:
   validate:
     name: Validate workflow metadata
+    runs-on: ubuntu-latest
     steps:
       - name: Validate issue and pull request metadata
         uses: actions/github-script@v7

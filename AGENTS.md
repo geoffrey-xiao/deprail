@@ -14,6 +14,19 @@ Read in this order before changing behavior:
 
 The execution package is the active delivery contract. Do not mark checklist items complete without linked evidence.
 
+## Sprint and version kickoff
+
+Before starting a new Sprint or version stage such as v0.1, first establish the GitHub tracking set:
+
+1. Confirm the stage, Sprint, scope, dependencies, acceptance evidence, risk, and named reviewer from the execution package.
+2. Verify that the corresponding GitHub milestone, Project fields, labels, and views exist; create or update them from `tracking/GITHUB-PROJECT-SETUP.md`.
+3. Check GitHub for existing issues before creating anything. Do not create duplicates.
+4. Map each local `EPIC-*` to its GitHub tracking item and each implementation-ready file under `docs/.../issues/` to one GitHub Issue. Import `tracking/issue-backlog.csv` and copy the authoritative issue body when an issue is absent.
+5. Record the GitHub Issue or Project URL/number in the local evidence or tracking record, and preserve the local Markdown as the durable contract.
+6. Do not start implementation until the issue is assigned to the correct milestone/Sprint and satisfies Definition of Ready: value, scope, dependencies, contracts, failure behavior, acceptance tests, risk, reviewer, and evidence are explicit.
+
+At stage kickoff, reconcile the GitHub state with the local epics, issue backlog, Sprint checklist, and Master Checklist. GitHub is the workflow and review source of truth; repository documents remain the durable contract.
+
 ## Project identity and scope
 
 - Product name: `DepRail`.
@@ -123,6 +136,30 @@ Every implementation item should deliver code, tests, documentation, and evidenc
 - Keep one primary outcome per pull request. Include scope, risk, contract impact, verification results, evidence, and rollback notes.
 - Merge only after required CI and human review pass. Use a squash merge tied to the issue ID, then delete the branch.
 - Emergency security changes may use an expedited path, but still require a linked issue, review, verification, and a follow-up record.
+
+### Commit and pull request traceability
+
+- Every commit on an issue branch should reference exactly one issue when practical.
+- Use this commit format:
+
+  ```text
+  <type>(<issue-key>): <imperative summary> (#<github-issue-number>)
+  ```
+
+  Examples: `feat(s0-001): establish repository baseline (#26)`, `fix(disc-002): reject symlink escape (#7)`, and `docs(s0-003): add pull request templates (#28)`.
+- Squash commit titles must contain the GitHub issue reference, such as `(#27)`.
+- Every pull request must link its issue with `Closes #N` or `Refs #N`.
+- Every pull request must carry matching `area`, `risk`, `priority`, and `type` labels from the project label set.
+- Before requesting review, agents must check that the pull request has the required labels and issue link.
+- A missing issue reference or required label is a process defect; fix it before review or merge rather than deferring it.
+
+### Issue lifecycle and closure
+
+- Before starting a new issue, check the previous issue and pull request. Remind the project owner to close the previous issue if its acceptance, verification, review, and evidence are complete.
+- Do not silently abandon or leave completed issues open. If the prior issue is incomplete, state the missing acceptance item and keep it open or mark it blocked with an owner and reason.
+- When an issue is finished, verify its acceptance checklist, required commands, CI result, human review, and evidence before recommending closure.
+- The project owner may close issues manually. An agent may help close an issue only when completion evidence is present and the owner requests or authorizes the action; otherwise the agent must remind the owner and provide the exact issue/PR action.
+- Link a merged pull request with a closing keyword where appropriate, but do not treat merge alone as proof of completion. Update the local checklist only with linked evidence.
 
 Respect the execution controls:
 

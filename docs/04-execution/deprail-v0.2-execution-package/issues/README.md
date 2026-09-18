@@ -4,7 +4,7 @@ These are local planning contracts only. They are not GitHub Issues yet. Each it
 
 | ID | Title | Priority | Risk | Area | Epic | Sprint | Status |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| V02-001 | Normalize empty report collections | P0 | R1 | normalization | EPIC-001 | Sprint 0 | Ready for review |
+| [V02-000](V02-000-context-baseline.md) | Establish v0.2.0 context baseline | P0 | R1 | foundation | Package gate | Sprint 0 | GitHub #98; review required |
 | V02-002 | Reject unexpected command arguments | P0 | R1 | cli | EPIC-001 | Sprint 0 | Ready for review |
 | V02-003 | Inject truthful build version identity | P1 | R1 | cli | EPIC-001 | Sprint 1 | Draft |
 | V02-004 | Establish release-mode evidence checklist | P0 | R0 | docs | EPIC-001 | Sprint 0 | Ready for review |

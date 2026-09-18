@@ -7,6 +7,7 @@ This checklist is closed only by linked evidence. It is a local planning contrac
 - [ ] v0.1 release decision and remaining risks are recorded.
 - [ ] Latest stable, preview, and RC tags are checked.
 - [ ] `origin/main` and release manifest baseline are checked.
+- [ ] V02-000 accepted: v0.2.0 context, target version, baseline, and Sprint 0 scope are reviewed.
 - [ ] v0.2 target version decision is recorded.
 - [ ] Owners and reviewers are assigned before implementation.
 

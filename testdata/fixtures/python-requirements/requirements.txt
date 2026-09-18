@@ -1,0 +1,2 @@
+# Minimal deterministic requirements fixture
+requests==2.31.0

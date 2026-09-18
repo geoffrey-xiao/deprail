@@ -1,10 +1,7 @@
 name: Metadata
 
 on:
-  issues:
-    types: [edited, labeled, unlabeled]
-  pull_request:
-    types: [edited, labeled, unlabeled, synchronize, reopened]
+  workflow_dispatch:
 
 permissions:
   contents: read

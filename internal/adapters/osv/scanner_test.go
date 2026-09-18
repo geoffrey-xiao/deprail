@@ -108,8 +108,17 @@ func TestScannerExecutesFromRequestedRoot(t *testing.T) {
 	if err != nil {
 		t.Fatalf("execute: %v", err)
 	}
-	if got := strings.TrimSpace(string(raw.Stderr)); got != canonicalRoot {
-		t.Fatalf("child working directory = %q, want %q", got, canonicalRoot)
+	childRoot := strings.TrimSpace(string(raw.Stderr))
+	childInfo, err := os.Stat(childRoot)
+	if err != nil {
+		t.Fatalf("stat child root %q: %v", childRoot, err)
+	}
+	rootInfo, err := os.Stat(canonicalRoot)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !os.SameFile(childInfo, rootInfo) {
+		t.Fatalf("child working directory = %q, want directory %q", childRoot, canonicalRoot)
 	}
 }
 

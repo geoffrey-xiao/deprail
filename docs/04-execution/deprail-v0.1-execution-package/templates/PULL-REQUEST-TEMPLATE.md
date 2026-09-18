@@ -1,47 +1,42 @@
-<!-- Use Closes/Fixes/Resolves #N, verify matching labels, and synchronize Project status before review. See the v0.2 WORKFLOW-GUIDE.md. -->
-# Summary
+<!-- Keep this description concise and evidence-based. Replace the example issue link. -->
+# What changed and why
 
-- Primary outcome:
-- Target version:
+- Change:
+- Why:
 
-## Issue Link
+## Issue
 
-Issue: `{{issue}}`
-Relationship: `Closes #{{issue}}` / `Refs #{{issue}}`
-
+- Related issue: [#123](https://github.com/geoffrey-xiao/deprail/issues/123)
+- Relationship: `Closes #123` / `Refs #123`
 
 ## Scope
 
 - Included:
 - Excluded:
 
-## Risk
+## Risk and compatibility
 
-- Level: `R0` / `R1` / `R2` / `R3`
-- Security and compatibility impact:
+- Risk level: `R0` / `R1` / `R2` / `R3`
+- Security impact:
+- Compatibility impact:
+- Rollback impact:
 
-## Contract Changes
+## Verification and evidence
 
-- [ ] None
-- [ ] Schema
-- [ ] CLI
-- [ ] Error model
-- [ ] Storage or artifact format
-- [ ] Adapter behavior
-- [ ] Compatibility
-- [ ] Release behavior
-- Details:
+- Commands run:
+- Results:
+- Failure, incomplete, boundary, or security cases:
+- Evidence links or artifacts:
 
-## Verification
+## User-facing change
 
-- [ ] Focused unit or contract test
-- [ ] Integration or cross-platform test where required
-- [ ] `make verify`
-- [ ] Failure or incomplete-result behavior verified
-- [ ] Determinism or ordering verified where relevant
-- [ ] Manual evidence attached
+- `None` or describe the CLI, JSON, schema, release, or documentation change.
 
+## Reviewer focus
 
-## Human Review Focus
+- Acceptance criteria or decisions to review:
+- Remaining risk:
 
 ## Rollback
+
+- Revert or recovery steps:

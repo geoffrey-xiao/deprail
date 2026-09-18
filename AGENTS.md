@@ -137,6 +137,22 @@ Every implementation item should deliver code, tests, documentation, and evidenc
 - Merge only after required CI and human review pass. Use a squash merge tied to the issue ID, then delete the branch.
 - Emergency security changes may use an expedited path, but still require a linked issue, review, verification, and a follow-up record.
 
+### Commit and pull request traceability
+
+- Every commit on an issue branch should reference exactly one issue when practical.
+- Use this commit format:
+
+  ```text
+  <type>(<issue-key>): <imperative summary> (#<github-issue-number>)
+  ```
+
+  Examples: `feat(s0-001): establish repository baseline (#26)`, `fix(disc-002): reject symlink escape (#7)`, and `docs(s0-003): add pull request templates (#28)`.
+- Squash commit titles must contain the GitHub issue reference, such as `(#27)`.
+- Every pull request must link its issue with `Closes #N` or `Refs #N`.
+- Every pull request must carry matching `area`, `risk`, `priority`, and `type` labels from the project label set.
+- Before requesting review, agents must check that the pull request has the required labels and issue link.
+- A missing issue reference or required label is a process defect; fix it before review or merge rather than deferring it.
+
 ### Issue lifecycle and closure
 
 - Before starting a new issue, check the previous issue and pull request. Remind the project owner to close the previous issue if its acceptance, verification, review, and evidence are complete.

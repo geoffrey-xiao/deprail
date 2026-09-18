@@ -38,6 +38,22 @@ fix/path-containment
 
 Push the branch and open a pull request linked to the issue. Keep one primary outcome per pull request. The pull request must include scope, risk, contract impact, verification results, evidence, and rollback notes. Required CI and human review must pass before a squash merge to `main`; delete the branch after merge. Emergency security changes may use an expedited path but still require an issue, review, verification, and follow-up record.
 
+## Commit and pull request traceability
+
+- Every commit on an issue branch should reference exactly one issue when practical.
+- Use:
+
+  ```text
+  <type>(<issue-key>): <imperative summary> (#<github-issue-number>)
+  ```
+
+  Examples: `feat(s0-001): establish repository baseline (#26)`, `fix(disc-002): reject symlink escape (#7)`, and `docs(s0-003): add pull request templates (#28)`.
+- Squash commit titles must contain the GitHub issue reference, such as `(#27)`.
+- Every pull request must link its issue with `Closes #N` or `Refs #N`.
+- Every pull request must carry matching `area`, `risk`, `priority`, and `type` labels.
+- Agents must check the issue link and required labels before requesting review.
+- A missing issue reference or required label is a process defect and must be fixed before review or merge.
+
 ## Issue lifecycle and closure
 
 Before starting a new issue, check the previous issue and pull request. If the previous work meets its acceptance criteria, verification, review, and evidence requirements, remind the project owner to close it. If it is incomplete, keep it open or mark it blocked with an owner and reason.

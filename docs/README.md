@@ -11,6 +11,8 @@ This archive consolidates the current product, architecture, delivery-plan, and 
 5. `03-planning/deprail-development-plan-v1.md` - Sprint plan, quality gates, and human-AI delivery model.
 6. `04-execution/deprail-v0.1-execution-package/README.md` - the working entry point for v0.1.
 
+For the user-facing installation, compatibility, and troubleshooting guide, see [`QUICKSTART.md`](QUICKSTART.md).
+
 ## Package Structure
 
 ```text

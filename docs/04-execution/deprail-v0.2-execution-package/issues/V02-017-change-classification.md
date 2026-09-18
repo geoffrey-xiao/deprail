@@ -1,5 +1,7 @@
 # V02-017 New Resolved Unchanged Classification
 
+## Planning Metadata
+
 - Type: feature
 - Area: normalization
 - Priority: P0
@@ -8,6 +10,12 @@
 - Sprint: S5
 - Dependencies: V02-016
 - Parent epic: EPIC-006
+
+## Definition of Ready
+
+- [ ] Contract inputs, outputs, and failure behavior are confirmed.
+- [ ] Dependencies and acceptance evidence are explicit.
+- [ ] Compatibility and security boundaries are reviewed.
 
 ## Goal
 
@@ -43,3 +51,8 @@ Review consumer-visible meaning and stable identity boundaries.
 ## Evidence Required
 
 Classification matrix, fixtures, output examples, and property/determinism results.
+## Final Acceptance
+
+- [ ] Acceptance evidence is linked.
+- [ ] CI and human review are complete.
+- [ ] Remaining risk is recorded.

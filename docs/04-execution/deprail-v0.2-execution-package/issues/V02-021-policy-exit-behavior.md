@@ -1,5 +1,7 @@
 # V02-021 Policy Exit Behavior
 
+## Planning Metadata
+
 - Type: feature
 - Area: cli
 - Priority: P0
@@ -8,6 +10,12 @@
 - Sprint: S6
 - Dependencies: V02-019, V02-020
 - Parent epic: EPIC-007
+
+## Definition of Ready
+
+- [ ] Contract inputs, outputs, and failure behavior are confirmed.
+- [ ] Dependencies and acceptance evidence are explicit.
+- [ ] Compatibility and security boundaries are reviewed.
 
 ## Goal
 
@@ -43,3 +51,8 @@ Review CI compatibility and failure precedence.
 ## Evidence Required
 
 Exit matrix, command transcripts, schema examples, and compatibility statement.
+## Final Acceptance
+
+- [ ] Acceptance evidence is linked.
+- [ ] CI and human review are complete.
+- [ ] Remaining risk is recorded.

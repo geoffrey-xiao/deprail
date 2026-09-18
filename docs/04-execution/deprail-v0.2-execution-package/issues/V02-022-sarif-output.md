@@ -1,5 +1,7 @@
 # V02-022 SARIF Output
 
+## Planning Metadata
+
 - Type: feature
 - Area: cli
 - Priority: P0
@@ -8,6 +10,12 @@
 - Sprint: S6
 - Dependencies: V02-018, V02-021
 - Parent epic: EPIC-007
+
+## Definition of Ready
+
+- [ ] Contract inputs, outputs, and failure behavior are confirmed.
+- [ ] Dependencies and acceptance evidence are explicit.
+- [ ] Compatibility and security boundaries are reviewed.
 
 ## Goal
 
@@ -43,3 +51,8 @@ Review standards compatibility and evidence preservation.
 ## Evidence Required
 
 SARIF fixtures, validator output, deterministic comparison, and consumer smoke result.
+## Final Acceptance
+
+- [ ] Acceptance evidence is linked.
+- [ ] CI and human review are complete.
+- [ ] Remaining risk is recorded.

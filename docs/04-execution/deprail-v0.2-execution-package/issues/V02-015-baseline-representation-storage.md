@@ -1,5 +1,7 @@
 # V02-015 Baseline Representation and Storage
 
+## Planning Metadata
+
 - Type: feature
 - Area: normalization
 - Priority: P0
@@ -8,6 +10,12 @@
 - Sprint: S5
 - Dependencies: V02-001, V02-010
 - Parent epic: EPIC-006
+
+## Definition of Ready
+
+- [ ] Contract inputs, outputs, and failure behavior are confirmed.
+- [ ] Dependencies and acceptance evidence are explicit.
+- [ ] Compatibility and security boundaries are reviewed.
 
 ## Goal
 
@@ -43,3 +51,8 @@ Review compatibility, persistence, and trust-boundary behavior.
 ## Evidence Required
 
 Schema, examples, round-trip output, failure cases, and compatibility note.
+## Final Acceptance
+
+- [ ] Acceptance evidence is linked.
+- [ ] CI and human review are complete.
+- [ ] Remaining risk is recorded.

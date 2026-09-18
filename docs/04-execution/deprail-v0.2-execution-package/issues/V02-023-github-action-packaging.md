@@ -1,5 +1,7 @@
 # V02-023 GitHub Action Packaging
 
+## Planning Metadata
+
 - Type: feature
 - Area: docs
 - Priority: P0
@@ -8,6 +10,12 @@
 - Sprint: S7
 - Dependencies: V02-018, V02-021, V02-022
 - Parent epic: EPIC-008
+
+## Definition of Ready
+
+- [ ] Contract inputs, outputs, and failure behavior are confirmed.
+- [ ] Dependencies and acceptance evidence are explicit.
+- [ ] Compatibility and security boundaries are reviewed.
 
 ## Goal
 
@@ -43,3 +51,8 @@ Review supply-chain, permissions, and release behavior.
 ## Evidence Required
 
 Action metadata, local smoke output, artifact inventory, and rollback procedure.
+## Final Acceptance
+
+- [ ] Acceptance evidence is linked.
+- [ ] CI and human review are complete.
+- [ ] Remaining risk is recorded.

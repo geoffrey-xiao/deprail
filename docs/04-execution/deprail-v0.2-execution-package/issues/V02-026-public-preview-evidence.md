@@ -1,5 +1,7 @@
 # V02-026 Public Preview Release Evidence
 
+## Planning Metadata
+
 - Type: docs
 - Area: docs
 - Priority: P0
@@ -8,6 +10,12 @@
 - Sprint: S7
 - Dependencies: V02-023, V02-024, V02-025
 - Parent epic: EPIC-008
+
+## Definition of Ready
+
+- [ ] Contract inputs, outputs, and failure behavior are confirmed.
+- [ ] Dependencies and acceptance evidence are explicit.
+- [ ] Compatibility and security boundaries are reviewed.
 
 ## Goal
 
@@ -44,3 +52,8 @@ Release and security review are required.
 ## Evidence Required
 
 Artifact inventory, checksums, CI links, pull-request evidence, smoke output, known-risk record, and decision.
+## Final Acceptance
+
+- [ ] Acceptance evidence is linked.
+- [ ] CI and human review are complete.
+- [ ] Remaining risk is recorded.

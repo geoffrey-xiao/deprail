@@ -1,5 +1,7 @@
 # V02-024 Action Permissions and Caching
 
+## Planning Metadata
+
 - Type: docs
 - Area: docs
 - Priority: P0
@@ -8,6 +10,12 @@
 - Sprint: S7
 - Dependencies: V02-023
 - Parent epic: EPIC-008
+
+## Definition of Ready
+
+- [ ] Contract inputs, outputs, and failure behavior are confirmed.
+- [ ] Dependencies and acceptance evidence are explicit.
+- [ ] Compatibility and security boundaries are reviewed.
 
 ## Goal
 
@@ -43,3 +51,8 @@ Security review is required.
 ## Evidence Required
 
 Permission matrix, cache design, fork smoke output, and redaction evidence.
+## Final Acceptance
+
+- [ ] Acceptance evidence is linked.
+- [ ] CI and human review are complete.
+- [ ] Remaining risk is recorded.

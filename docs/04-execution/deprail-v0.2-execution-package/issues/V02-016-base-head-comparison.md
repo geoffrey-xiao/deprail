@@ -1,5 +1,7 @@
 # V02-016 Base and Head Scan Comparison
 
+## Planning Metadata
+
 - Type: feature
 - Area: normalization
 - Priority: P0
@@ -8,6 +10,12 @@
 - Sprint: S5
 - Dependencies: V02-015
 - Parent epic: EPIC-006
+
+## Definition of Ready
+
+- [ ] Contract inputs, outputs, and failure behavior are confirmed.
+- [ ] Dependencies and acceptance evidence are explicit.
+- [ ] Compatibility and security boundaries are reviewed.
 
 ## Goal
 
@@ -43,3 +51,8 @@ Review stable-key and compatibility semantics.
 ## Evidence Required
 
 Fixtures, comparison JSON, failure transcripts, and determinism results.
+## Final Acceptance
+
+- [ ] Acceptance evidence is linked.
+- [ ] CI and human review are complete.
+- [ ] Remaining risk is recorded.

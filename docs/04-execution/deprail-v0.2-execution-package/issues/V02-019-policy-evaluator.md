@@ -1,5 +1,7 @@
 # V02-019 Typed Policy Evaluation
 
+## Planning Metadata
+
 - Type: feature
 - Area: foundation
 - Priority: P0
@@ -8,6 +10,12 @@
 - Sprint: S6
 - Dependencies: V02-017
 - Parent epic: EPIC-007
+
+## Definition of Ready
+
+- [ ] Contract inputs, outputs, and failure behavior are confirmed.
+- [ ] Dependencies and acceptance evidence are explicit.
+- [ ] Compatibility and security boundaries are reviewed.
 
 ## Goal
 
@@ -43,3 +51,8 @@ Security and compatibility review of default policy behavior.
 ## Evidence Required
 
 Policy fixtures, decision JSON, exit mapping, and failure transcripts.
+## Final Acceptance
+
+- [ ] Acceptance evidence is linked.
+- [ ] CI and human review are complete.
+- [ ] Remaining risk is recorded.

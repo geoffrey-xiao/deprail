@@ -1,5 +1,7 @@
 # V02-020 Expiring Exceptions
 
+## Planning Metadata
+
 - Type: feature
 - Area: foundation
 - Priority: P1
@@ -8,6 +10,12 @@
 - Sprint: S6
 - Dependencies: V02-019
 - Parent epic: EPIC-007
+
+## Definition of Ready
+
+- [ ] Contract inputs, outputs, and failure behavior are confirmed.
+- [ ] Dependencies and acceptance evidence are explicit.
+- [ ] Compatibility and security boundaries are reviewed.
 
 ## Goal
 
@@ -43,3 +51,8 @@ Review security, auditability, and time-bound semantics.
 ## Evidence Required
 
 Schema, examples, boundary tests, and decision transcripts.
+## Final Acceptance
+
+- [ ] Acceptance evidence is linked.
+- [ ] CI and human review are complete.
+- [ ] Remaining risk is recorded.

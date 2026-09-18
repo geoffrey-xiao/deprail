@@ -1,5 +1,7 @@
 # V02-025 Pull-Request Validation
 
+## Planning Metadata
+
 - Type: feature
 - Area: test
 - Priority: P0
@@ -8,6 +10,12 @@
 - Sprint: S7
 - Dependencies: V02-023, V02-024
 - Parent epic: EPIC-008
+
+## Definition of Ready
+
+- [ ] Contract inputs, outputs, and failure behavior are confirmed.
+- [ ] Dependencies and acceptance evidence are explicit.
+- [ ] Compatibility and security boundaries are reviewed.
 
 ## Goal
 
@@ -43,3 +51,8 @@ Manual pull-request validation and security review.
 ## Evidence Required
 
 Pull-request URLs or controlled transcripts, artifacts, exit codes, and remaining-risk record.
+## Final Acceptance
+
+- [ ] Acceptance evidence is linked.
+- [ ] CI and human review are complete.
+- [ ] Remaining risk is recorded.

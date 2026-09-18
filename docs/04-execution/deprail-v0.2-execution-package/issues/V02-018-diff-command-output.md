@@ -1,5 +1,7 @@
 # V02-018 Deterministic Diff Output and deprail diff
 
+## Planning Metadata
+
 - Type: feature
 - Area: cli
 - Priority: P0
@@ -8,6 +10,12 @@
 - Sprint: S5
 - Dependencies: V02-017
 - Parent epic: EPIC-006
+
+## Definition of Ready
+
+- [ ] Contract inputs, outputs, and failure behavior are confirmed.
+- [ ] Dependencies and acceptance evidence are explicit.
+- [ ] Compatibility and security boundaries are reviewed.
 
 ## Goal
 
@@ -43,3 +51,8 @@ Review CLI compatibility and diff interpretation.
 ## Evidence Required
 
 Command transcripts, JSON examples, exit-code matrix, and compatibility note.
+## Final Acceptance
+
+- [ ] Acceptance evidence is linked.
+- [ ] CI and human review are complete.
+- [ ] Remaining risk is recorded.

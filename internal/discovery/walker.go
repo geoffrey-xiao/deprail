@@ -22,6 +22,7 @@ var defaultIgnoredDirectories = map[string]struct{}{
 
 type WalkOptions struct {
 	IgnoreDirectories []string
+	NoIgnore          bool
 }
 
 type WalkResult struct {
@@ -34,7 +35,7 @@ func Walk(ctx context.Context, root string, options WalkOptions) (WalkResult, er
 	if err != nil {
 		return WalkResult{}, err
 	}
-	ignored := ignoredDirectories(options.IgnoreDirectories)
+	ignored := ignoredDirectories(options)
 	result := WalkResult{}
 	if err := walkDirectory(ctx, canonicalRoot, canonicalRoot, ignored, &result); err != nil {
 		return WalkResult{}, err
@@ -64,19 +65,6 @@ func canonicalRoot(root string) (string, error) {
 		return "", errors.New("repository root is not a directory")
 	}
 	return canonical, nil
-}
-
-func ignoredDirectories(extra []string) map[string]struct{} {
-	ignored := make(map[string]struct{}, len(defaultIgnoredDirectories)+len(extra))
-	for name := range defaultIgnoredDirectories {
-		ignored[name] = struct{}{}
-	}
-	for _, name := range extra {
-		if name != "" {
-			ignored[name] = struct{}{}
-		}
-	}
-	return ignored
 }
 
 func walkDirectory(ctx context.Context, root, directory string, ignored map[string]struct{}, result *WalkResult) error {
@@ -120,6 +108,27 @@ func walkDirectory(ctx context.Context, root, directory string, ignored map[stri
 		}
 	}
 	return nil
+}
+
+func ignoredDirectories(options WalkOptions) map[string]struct{} {
+	if options.NoIgnore {
+		return directorySet(options.IgnoreDirectories)
+	}
+	ignored := directorySet(options.IgnoreDirectories)
+	for name := range defaultIgnoredDirectories {
+		ignored[name] = struct{}{}
+	}
+	return ignored
+}
+
+func directorySet(names []string) map[string]struct{} {
+	ignored := make(map[string]struct{}, len(names))
+	for _, name := range names {
+		if name != "" {
+			ignored[name] = struct{}{}
+		}
+	}
+	return ignored
 }
 
 func handleSymlink(root, path string, result *WalkResult) {

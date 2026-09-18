@@ -46,6 +46,50 @@ func TestScannerCancellationIsFailure(t *testing.T) {
 	}
 }
 
+func TestScannerExitMatrix(t *testing.T) {
+	tests := []struct {
+		name         string
+		mode         string
+		wantErr      adapter.ErrorCode
+		wantParseErr adapter.ErrorCode
+		wantRecord   bool
+	}{
+		{name: "zero findings exit zero", mode: "empty", wantRecord: false},
+		{name: "valid findings exit one", mode: "vulnerable", wantRecord: true},
+		{name: "invalid output exit one", mode: "invalid-vulnerable", wantParseErr: adapter.ErrInvalidOutput},
+		{name: "unexpected exit", mode: "exit", wantErr: adapter.ErrExecution},
+	}
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			scanner := Scanner{Path: os.Args[0], Args: []string{"-test.run=TestScannerHelper", "mode=" + test.mode}, Timeout: time.Second, OutputCap: 4096}
+			raw, err := scanner.Execute(context.Background(), adapter.Plan{Targets: []adapter.Target{{WorkspaceID: "root", RelativePath: ".", Ecosystem: "npm"}}})
+			if test.wantErr != "" {
+				if !adapter.IsCode(err, test.wantErr) {
+					t.Fatalf("execute error = %v, want %s", err, test.wantErr)
+				}
+				return
+			}
+			if err != nil {
+				t.Fatalf("execute: %v", err)
+			}
+			records, parseErr := scanner.Parse(context.Background(), raw)
+			if test.wantParseErr != "" {
+				if !adapter.IsCode(parseErr, test.wantParseErr) {
+					t.Fatalf("parse error = %v, want %s", parseErr, test.wantParseErr)
+				}
+				return
+			}
+			if test.wantRecord {
+				if parseErr != nil || len(records) == 0 {
+					t.Fatalf("records = %#v, parse error = %v", records, parseErr)
+				}
+			} else if parseErr != nil || len(records) != 0 {
+				t.Fatalf("empty records = %#v, parse error = %v", records, parseErr)
+			}
+		})
+	}
+}
+
 func TestScannerHelper(t *testing.T) {
 	mode := ""
 	for _, arg := range os.Args[1:] {
@@ -65,6 +109,9 @@ func TestScannerHelper(t *testing.T) {
 		for range 128 {
 			os.Stdout.WriteString("x")
 		}
+	case "empty":
+		_, _ = os.Stdout.WriteString(`{"results":[]}`)
+		os.Exit(0)
 	case "args":
 		want := []string{"scan", "source", "--format", "json", "."}
 		for i := range len(os.Args) - len(want) + 1 {
@@ -83,6 +130,9 @@ func TestScannerHelper(t *testing.T) {
 		os.Exit(8)
 	case "vulnerable":
 		_, _ = os.Stdout.WriteString(`{"results":[{"packages":[{"package":{"name":"lodash","version":"4.17.20"},"vulnerabilities":[{"id":"GHSA-test","aliases":["CVE-test"],"database_specific":{"severity":"HIGH"},"severity":[{"score":"CVSS:3.1/AV:N"}],"affected":[{"ranges":[{"events":[{"introduced":"0"},{"fixed":"4.17.21"}]}]}]}]}]}]}`)
+		os.Exit(1)
+	case "invalid-vulnerable":
+		_, _ = os.Stdout.WriteString("not json")
 		os.Exit(1)
 	}
 }

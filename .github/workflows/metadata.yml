@@ -1,0 +1,119 @@
+name: Metadata
+
+on:
+  issues:
+    types: [opened, edited, labeled, unlabeled]
+  pull_request:
+    types: [opened, edited, synchronize, reopened]
+
+permissions:
+  contents: read
+  issues: read
+  pull-requests: read
+
+jobs:
+  validate:
+    name: Validate workflow metadata
+    steps:
+      - name: Validate issue and pull request metadata
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const context = require('@actions/github').context;
+            const core = require('@actions/core');
+            const payload = context.payload;
+
+            const requiredLabels = {
+              area: /^area:(foundation|discovery|adapter|normalization|cli|test|docs)$/,
+              risk: /^risk:R[0-3]$/,
+              priority: /^priority:P[0-2]$/,
+              type: /^type:(bug|feature|test|docs|decision)$/,
+            };
+
+            function labelsOf(issue) {
+              return (issue.labels || []).map((label) =>
+                typeof label === 'string' ? label : label.name
+              );
+            }
+
+            function validateLabels(labels, subject) {
+              const errors = [];
+              for (const [field, pattern] of Object.entries(requiredLabels)) {
+                const matches = labels.filter((label) => pattern.test(label));
+                if (matches.length !== 1) {
+                  errors.push(`${subject} requires exactly one ${field} label; found: ${matches.join(', ') || 'none'}`);
+                }
+              }
+              return errors;
+            }
+
+            function missingSections(body, sections) {
+              return sections.filter((section) => !body.includes(section));
+            }
+
+            const errors = [];
+
+            if (context.eventName === 'issues') {
+              const issue = payload.issue;
+              errors.push(...validateLabels(labelsOf(issue), `Issue #${issue.number}`));
+
+              const body = issue.body || '';
+              for (const section of ['## Planning Metadata', '## Definition of Ready', '## Final Acceptance']) {
+                if (!body.includes(section)) errors.push(`Issue #${issue.number} is missing section: ${section}`);
+              }
+
+              if (!body.includes('## Acceptance Criteria') &&
+                  !body.includes('## Cases') &&
+                  !body.includes('## Decision Required')) {
+                errors.push(`Issue #${issue.number} must define acceptance criteria, test cases, or a decision question`);
+              }
+
+              if (!body.includes('## Evidence') && !body.includes('## Evidence Required')) {
+                errors.push(`Issue #${issue.number} is missing an evidence section`);
+              }
+            } else {
+              const pullRequest = payload.pull_request;
+              const body = pullRequest.body || '';
+              const labels = labelsOf(pullRequest);
+              errors.push(...validateLabels(labels, `PR #${pullRequest.number}`));
+
+              for (const section of [
+                '## Summary',
+                '## Scope',
+                '## Risk',
+                '## Contract Changes',
+                '## Verification',
+                '## Project Synchronization',
+                '## Human Review Focus',
+                '## Rollback',
+              ]) {
+                if (!body.includes(section)) errors.push(`PR #${pullRequest.number} is missing section: ${section}`);
+              }
+
+              const references = [...body.matchAll(/(?:Closes|Fixes|Resolves|Refs)\s+#(\d+)/gi)];
+              if (references.length !== 1) {
+                errors.push(`PR #${pullRequest.number} must contain exactly one issue reference using Closes, Fixes, Resolves, or Refs`);
+              } else {
+                const issueNumber = Number(references[0][1]);
+                const issue = await github.rest.issues.get({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  issue_number: issueNumber,
+                });
+                errors.push(...validateLabels(labelsOf(issue.data), `linked issue #${issueNumber}`));
+
+                for (const category of Object.keys(requiredLabels)) {
+                  const issueLabel = labelsOf(issue.data).find((label) => requiredLabels[category].test(label));
+                  const prLabel = labels.find((label) => requiredLabels[category].test(label));
+                  if (issueLabel !== prLabel) {
+                    errors.push(`PR #${pullRequest.number} ${category} label must match linked issue #${issueNumber}: issue=${issueLabel || 'none'}, PR=${prLabel || 'none'}`);
+                  }
+                }
+              }
+            }
+
+            if (errors.length) {
+              core.setFailed(errors.join('\n'));
+            } else {
+              core.info('Workflow metadata is complete enough for review.');
+            }

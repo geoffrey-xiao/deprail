@@ -7,6 +7,26 @@ labels: "type:decision"
 
 ## Issue ID
 
+## Planning Metadata
+
+- Area: `foundation` / `discovery` / `adapter` / `normalization` / `cli` / `test` / `docs`
+- Priority: `P0` / `P1` / `P2`
+- Risk: `R0` / `R1` / `R2` / `R3`
+- Target version:
+- Milestone:
+- Sprint:
+- Owner:
+- Reviewer:
+- Dependencies: `None` or issue links
+
+## Definition of Ready
+
+- [ ] The decision question is bounded.
+- [ ] Options and trade-offs are documented.
+- [ ] Compatibility, security, and operational consequences are identified.
+- [ ] Required reviewers are named.
+- [ ] Owner, dependencies, and target version are recorded.
+
 ## Context
 
 ## Decision Required

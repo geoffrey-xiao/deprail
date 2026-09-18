@@ -22,3 +22,10 @@ labels: "type:decision"
 ## Evidence
 
 <!-- Accepted decisions must be recorded as an ADR under docs/adr/. -->
+
+## Final Acceptance
+
+- [ ] Owner reviewed the decision and consequences.
+- [ ] Required human reviewers approved.
+- [ ] ADR and evidence links are attached.
+- [ ] Owner explicitly authorized issue closure.

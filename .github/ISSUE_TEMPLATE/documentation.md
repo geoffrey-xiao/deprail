@@ -28,3 +28,10 @@ labels: "type:docs"
 ## Human Review
 
 ## Evidence
+
+## Final Acceptance
+
+- [ ] Owner reviewed the documentation against implemented behavior.
+- [ ] Verification and CI results were reviewed where applicable.
+- [ ] Evidence and remaining risk are recorded.
+- [ ] Owner explicitly authorized issue closure.

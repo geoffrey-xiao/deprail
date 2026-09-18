@@ -157,9 +157,10 @@ Every implementation item should deliver code, tests, documentation, and evidenc
 
 - Before starting a new issue, check the previous issue and pull request. Remind the project owner to close the previous issue if its acceptance, verification, review, and evidence are complete.
 - Do not silently abandon or leave completed issues open. If the prior issue is incomplete, state the missing acceptance item and keep it open or mark it blocked with an owner and reason.
-- When an issue is finished, verify its acceptance checklist, required commands, CI result, human review, and evidence before recommending closure.
-- The project owner may close issues manually. An agent may help close an issue only when completion evidence is present and the owner requests or authorizes the action; otherwise the agent must remind the owner and provide the exact issue/PR action.
-- Link a merged pull request with a closing keyword where appropriate, but do not treat merge alone as proof of completion. Update the local checklist only with linked evidence.
+- When an issue is finished, prepare a completion report that identifies each acceptance item, required command, CI result, human review result, evidence link, and remaining risk. Do not claim owner acceptance.
+- The project owner must inspect and check every acceptance item and explicitly confirm that the issue is complete before closure. An agent may remind the owner, explain the evidence, and draft the closure comment.
+- The project owner may close issues manually. An agent may close an issue only after that explicit confirmation or authorization; otherwise the agent must leave it open and remind the owner. A merged pull request alone does not prove completion.
+- Link a merged pull request with a closing keyword where appropriate, but do not treat merge alone as proof of completion. Update the local checklist only with linked evidence and owner confirmation.
 
 Respect the execution controls:
 

@@ -21,3 +21,11 @@
 ## Human Review
 
 ## Evidence
+
+## Final Acceptance
+
+- [ ] Owner reviewed every acceptance criterion.
+- [ ] Required verification and CI results were reviewed.
+- [ ] Human review and remaining risk are recorded.
+- [ ] Evidence links are attached.
+- [ ] Owner explicitly authorized issue closure.

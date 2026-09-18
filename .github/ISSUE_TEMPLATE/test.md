@@ -29,3 +29,10 @@ labels: "type:test"
 ## Dependencies
 
 ## Evidence
+
+## Final Acceptance
+
+- [ ] Owner reviewed every test case and result.
+- [ ] Verification and CI results were reviewed.
+- [ ] Evidence and remaining risk are recorded.
+- [ ] Owner explicitly authorized issue closure.

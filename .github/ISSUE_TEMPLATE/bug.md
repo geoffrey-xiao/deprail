@@ -34,3 +34,10 @@ labels: "type:bug"
 
 - Logs or sample output:
 - Environment:
+
+## Final Acceptance
+
+- [ ] Owner reviewed the expected behavior and regression evidence.
+- [ ] Verification and CI results were reviewed.
+- [ ] Evidence and remaining risk are recorded.
+- [ ] Owner explicitly authorized issue closure.

@@ -58,7 +58,7 @@ Push the branch and open a pull request linked to the issue. Keep one primary ou
 
 Before starting a new issue, check the previous issue and pull request. If the previous work meets its acceptance criteria, verification, review, and evidence requirements, remind the project owner to close it. If it is incomplete, keep it open or mark it blocked with an owner and reason.
 
-When an issue is finished, confirm its acceptance checklist, required commands, CI result, human review, and evidence before closing it. The owner may close issues manually; an agent may help close one only when the evidence is complete and the owner requests or authorizes that action. A merged pull request alone does not prove completion, and local checklists must only be updated with linked evidence.
+When an issue is finished, prepare a completion report for the owner covering every acceptance item, required command, CI result, human review result, evidence link, and remaining risk. The owner must inspect and check every acceptance item and explicitly confirm completion before closure. An agent may explain evidence and draft the closure comment, but may close the issue only after the owner authorizes it. A merged pull request alone does not prove completion, and local checklists require linked evidence and owner confirmation.
 
 ## Change workflow
 

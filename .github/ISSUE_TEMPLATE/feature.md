@@ -35,3 +35,10 @@ labels: "type:feature"
 ## Human Review
 
 ## Evidence
+
+## Final Acceptance
+
+- [ ] Owner reviewed every acceptance criterion.
+- [ ] Verification and CI results were reviewed.
+- [ ] Evidence and remaining risk are recorded.
+- [ ] Owner explicitly authorized issue closure.

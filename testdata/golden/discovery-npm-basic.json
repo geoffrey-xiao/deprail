@@ -1,0 +1,26 @@
+{
+  "schema_version": "v1alpha",
+  "document_type": "project",
+  "repository_root": ".",
+  "display_name": "npm-basic",
+  "workspaces": [
+    {
+      "schema_version": "v1alpha",
+      "document_type": "workspace",
+      "workspace_id": ".",
+      "relative_path": ".",
+      "ecosystem": "npm",
+      "package_manager": "npm",
+      "manifests": [
+        "package.json"
+      ],
+      "lockfiles": [
+        "package-lock.json"
+      ],
+      "scope": "deprail-fixture-npm",
+      "completeness": "complete"
+    }
+  ],
+  "completeness": "complete",
+  "diagnostics": []
+}

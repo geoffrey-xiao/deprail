@@ -54,7 +54,7 @@ The artifact workflow pauses at the protected `release-approval` environment aft
 
 ## Compatibility and known limitations
 
-- OSV-Scanner must be installed separately and currently requires the supported v1 compatibility range.
+- OSV-Scanner must be installed separately and currently requires the supported v2 compatibility range.
 - Discovery and scan completeness are explicit. Exit code `3` means scanner failure or incomplete scope.
 - Existing output files are not overwritten by atomic presenter output.
 - Windows process execution currently terminates the direct process; process-tree cleanup requires a future Job Object implementation and human review.

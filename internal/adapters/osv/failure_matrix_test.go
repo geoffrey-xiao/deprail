@@ -62,8 +62,24 @@ func TestScannerHelper(t *testing.T) {
 	case "sleep":
 		time.Sleep(time.Second)
 	case "large":
-		for i := 0; i < 128; i++ {
+		for range 128 {
 			os.Stdout.WriteString("x")
 		}
+	case "args":
+		want := []string{"scan", "source", "--format", "json", "."}
+		for i := range len(os.Args) - len(want) + 1 {
+			match := true
+			for j := range want {
+				if os.Args[i+j] != want[j] {
+					match = false
+					break
+				}
+			}
+			if match {
+				_, _ = os.Stdout.WriteString(`{"results":[]}`)
+				return
+			}
+		}
+		os.Exit(8)
 	}
 }

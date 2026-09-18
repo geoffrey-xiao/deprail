@@ -46,7 +46,7 @@ func (s Scanner) Execute(ctx context.Context, plan adapter.Plan) (adapter.RawRes
 	}
 	target := plan.Targets[0]
 	args := append([]string{}, s.Args...)
-	args = append(args, "scan", "--format", "json", target.RelativePath)
+	args = append(args, "scan", "source", "--format", "json", target.RelativePath)
 	result, err := process.Run(ctx, process.Request{Path: s.Path, Args: args, Dir: s.Dir, Timeout: s.Timeout, OutputCap: s.OutputCap})
 	if err != nil {
 		return adapter.RawResult{Stdout: result.Stdout, Stderr: result.Stderr, ExitCode: result.ExitCode}, processToAdapterError(err)

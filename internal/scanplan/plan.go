@@ -31,7 +31,7 @@ func Build(graph discovery.ProjectGraph) ([]Unit, error) {
 		units = append(units, Unit{Target: adapter.Target{
 			WorkspaceID: workspace.WorkspaceID, RelativePath: workspace.RelativePath,
 			Ecosystem: string(workspace.Ecosystem), PackageFiles: files,
-		}, Args: []string{"scan", "--format", "json", workspace.RelativePath}})
+		}, Args: []string{"scan", "source", "--format", "json", workspace.RelativePath}})
 	}
 	if len(units) == 0 {
 		return nil, fmt.Errorf("project has no complete scan targets")

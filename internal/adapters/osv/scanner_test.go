@@ -2,6 +2,8 @@ package osv
 
 import (
 	"context"
+	"os"
+	"strings"
 	"testing"
 	"time"
 
@@ -22,6 +24,17 @@ func TestParseSortsRecordsAndPreservesEvidence(t *testing.T) {
 func TestParseRejectsMalformedJSON(t *testing.T) {
 	if _, err := Parse(adapter.RawResult{Stdout: []byte("not json")}); !adapter.IsCode(err, adapter.ErrInvalidOutput) {
 		t.Fatalf("error = %v", err)
+	}
+}
+
+func TestScannerUsesV2SourceCommand(t *testing.T) {
+	scanner := Scanner{Path: os.Args[0], Args: []string{"-test.run=TestScannerHelper", "mode=args"}, Timeout: time.Second, OutputCap: 1024}
+	raw, err := scanner.Execute(context.Background(), adapter.Plan{Targets: []adapter.Target{{WorkspaceID: "root", RelativePath: ".", Ecosystem: "npm"}}})
+	if err != nil {
+		t.Fatalf("execute: %v", err)
+	}
+	if !strings.HasPrefix(string(raw.Stdout), `{"results":[]}`) {
+		t.Fatalf("stdout = %q", raw.Stdout)
 	}
 }
 

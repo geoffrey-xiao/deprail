@@ -3,6 +3,7 @@ package osv
 import (
 	"context"
 	"os"
+	"path/filepath"
 	"strings"
 	"testing"
 	"time"
@@ -47,6 +48,35 @@ func TestScannerAcceptsVulnerabilityExitCode(t *testing.T) {
 func TestParseRejectsMalformedJSON(t *testing.T) {
 	if _, err := Parse(adapter.RawResult{Stdout: []byte("not json")}); !adapter.IsCode(err, adapter.ErrInvalidOutput) {
 		t.Fatalf("error = %v", err)
+	}
+}
+
+func TestParseCheckedInV2Fixtures(t *testing.T) {
+	empty, err := os.ReadFile(filepath.Join("..", "..", "..", "testdata", "osv", "v2-empty.json"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	emptyRecords, err := Parse(adapter.RawResult{Stdout: empty})
+	if err != nil || len(emptyRecords) != 0 {
+		t.Fatalf("empty records = %#v, err = %v", emptyRecords, err)
+	}
+
+	findings, err := os.ReadFile(filepath.Join("..", "..", "..", "testdata", "osv", "v2-findings.json"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	records, err := Parse(adapter.RawResult{Stdout: findings})
+	if err != nil {
+		t.Fatalf("findings parse: %v", err)
+	}
+	if len(records) < 4 {
+		t.Fatalf("records = %d, want multiple v2 vulnerabilities", len(records))
+	}
+	if records[0].Component != "lodash" || records[0].Version != "4.17.20" {
+		t.Fatalf("first record = %#v", records[0])
+	}
+	if records[0].Fixed == "" || records[0].Severity == "" || len(records[0].Aliases) == 0 {
+		t.Fatalf("first record lost v2 evidence = %#v", records[0])
 	}
 }
 

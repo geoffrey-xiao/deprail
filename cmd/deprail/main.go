@@ -1,8 +1,8 @@
 package main
 
 import (
+	"bytes"
 	"context"
-	"encoding/json"
 	"flag"
 	"fmt"
 	"github.com/geoffrey-xiao/deprail/internal/app"
@@ -128,6 +128,8 @@ func runScan(args []string, stdout, stderr io.Writer) int {
 	flags := flag.NewFlagSet("scan", flag.ContinueOnError)
 	flags.SetOutput(stderr)
 	format := flags.String("format", "terminal", "output format: terminal or json")
+	output := flags.String("output", "", "write output atomically to a file")
+	verbose := flags.Bool("verbose", false, "include diagnostics in terminal output")
 	if err := flags.Parse(normalized); err != nil {
 		return 2
 	}
@@ -147,13 +149,25 @@ func runScan(args []string, stdout, stderr io.Writer) int {
 		writeCLIError(stderr, "PATH_OUTSIDE_ROOT", err.Error(), root)
 		return 2
 	}
-	report, err := app.Scan(context.Background(), root, app.ScanOptions{})
+	report, scanErr := app.Scan(context.Background(), root, app.ScanOptions{})
+	var rendered bytes.Buffer
+	var renderErr error
 	if *format == "json" {
-		_ = json.NewEncoder(stdout).Encode(report)
+		renderErr = presenter.WriteScanJSON(&rendered, report)
 	} else {
-		_, _ = io.WriteString(stdout, app.ScanTerminal(report))
+		renderErr = presenter.WriteScanTerminal(&rendered, report, *verbose)
 	}
-	if err != nil || report.Status != discovery.Complete {
+	err = renderErr
+	if err == nil && *output != "" {
+		err = presenter.WriteAtomic(*output, rendered.Bytes())
+	} else if err == nil {
+		_, err = stdout.Write(rendered.Bytes())
+	}
+	if err != nil {
+		writeCLIError(stderr, "OUTPUT_WRITE_FAILED", err.Error(), "output")
+		return 3
+	}
+	if scanErr != nil || report.Status != discovery.Complete {
 		return 3
 	}
 	return 0

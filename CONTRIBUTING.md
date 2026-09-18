@@ -31,10 +31,19 @@ GitHub Issues are the workflow and review source of truth. The repository’s ep
 `main` is the releasable integration branch. Do not develop directly on it. Create a short-lived branch from the current `main` for each issue or bounded task:
 
 ```text
-chore/s0-002-toolchain-ci
-feat/discovery-walker
-fix/path-containment
+<type>/<issue-key>-<short-slug>
 ```
+
+Use lowercase, hyphenated, specific names with one of these types: `feat`, `fix`, `chore`, `docs`, `test`, or `refactor`. Examples:
+
+```text
+chore/s0-002-toolchain-ci
+feat/schema-001-v1alpha
+fix/disc-002-symlink-escape
+docs/s0-003-template-workflow
+```
+
+Include the local issue key whenever an issue exists. Push the branch and open a pull request linked to the issue; do not push implementation commits directly to `main`.
 
 Push the branch and open a pull request linked to the issue. Keep one primary outcome per pull request. The pull request must include scope, risk, contract impact, verification results, evidence, and rollback notes. Required CI and human review must pass before a squash merge to `main`; delete the branch after merge. Emergency security changes may use an expedited path but still require an issue, review, verification, and follow-up record.
 

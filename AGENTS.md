@@ -131,8 +131,8 @@ Every implementation item should deliver code, tests, documentation, and evidenc
 
 - Keep `main` releasable and do not develop directly on it.
 - Create one short-lived branch per issue or bounded task from the current `main`.
-- Use descriptive names such as `chore/s0-002-toolchain-ci`, `feat/discovery-walker`, or `fix/path-containment`.
-- Push the branch and open a pull request linked to the issue; do not push implementation commits directly to `main`.
+- Use `<type>/<issue-key>-<short-slug>`: lowercase, hyphenated, and specific. Allowed types are `feat`, `fix`, `chore`, `docs`, `test`, and `refactor`. Examples: `chore/s0-002-toolchain-ci`, `feat/schema-001-v1alpha`, `fix/disc-002-symlink-escape`, and `docs/s0-003-template-workflow`.
+- Include the local issue key whenever an issue exists. Push the branch and open a pull request linked to the issue; do not push implementation commits directly to `main`.
 - Keep one primary outcome per pull request. Include scope, risk, contract impact, verification results, evidence, and rollback notes.
 - Merge only after required CI and human review pass. Use a squash merge tied to the issue ID, then delete the branch.
 - Emergency security changes may use an expedited path, but still require a linked issue, review, verification, and a follow-up record.

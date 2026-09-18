@@ -3,6 +3,12 @@ name: Release Please
 on:
   push:
     branches: [main]
+  workflow_dispatch:
+    inputs:
+      reason:
+        description: "Reason for manually checking release state"
+        required: false
+        default: "manual release check"
 
 permissions:
   contents: write
@@ -13,6 +19,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Create or update release PR
+        id: release
         uses: googleapis/release-please-action@v4.2.0
         with:
           token: ${{ secrets.GITHUB_TOKEN }}

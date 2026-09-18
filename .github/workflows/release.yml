@@ -48,7 +48,31 @@ jobs:
           ./dist/deprail-linux-amd64 discover testdata/fixtures/mixed-repository --format json > /tmp/discover.json
           test -s /tmp/discover.json
 
-      - name: Upload artifacts to GitHub Release
+      - name: Store release artifacts for approval
+        uses: actions/upload-artifact@v4
+        with:
+          name: release-artifacts
+          path: dist/*
+
+  manual-verify:
+    name: Manual release verification
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: release-approval
+      url: https://github.com/${{ github.repository }}/releases/tag/${{ github.event.release.tag_name }}
+    steps:
+      - name: Download release artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: release-artifacts
+          path: dist
+
+      - name: Verify checksums
+        working-directory: dist
+        run: sha256sum -c SHA256SUMS
+
+      - name: Upload approved artifacts to GitHub Release
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           TAG: ${{ github.event.release.tag_name }}

@@ -43,12 +43,13 @@ func runDiscover(args []string, stdout, stderr io.Writer) int {
 		return 2
 	}
 	flags := flag.NewFlagSet("discover", flag.ContinueOnError)
-	flags.SetOutput(stderr)
+	flags.SetOutput(io.Discard)
 	format := flags.String("format", "terminal", "output format: terminal or json")
 	config := flags.String("config", "", "configuration file")
 	noIgnore := flags.Bool("no-ignore", false, "do not ignore default directories")
 	verbose := flags.Bool("verbose", false, "include diagnostics in terminal output")
 	if err := flags.Parse(normalized); err != nil {
+		writeCLIError(stderr, "CONFIG_INVALID", err.Error(), "arguments")
 		return 2
 	}
 	if *format != "terminal" && *format != "json" {
@@ -129,11 +130,12 @@ func runScan(args []string, stdout, stderr io.Writer) int {
 		return 2
 	}
 	flags := flag.NewFlagSet("scan", flag.ContinueOnError)
-	flags.SetOutput(stderr)
+	flags.SetOutput(io.Discard)
 	format := flags.String("format", "terminal", "output format: terminal or json")
 	output := flags.String("output", "", "write output atomically to a file")
 	verbose := flags.Bool("verbose", false, "include diagnostics in terminal output")
 	if err := flags.Parse(normalized); err != nil {
+		writeCLIError(stderr, "CONFIG_INVALID", err.Error(), "arguments")
 		return 2
 	}
 	if *format != "terminal" && *format != "json" {
@@ -178,9 +180,14 @@ func runScan(args []string, stdout, stderr io.Writer) int {
 
 func runDoctor(args []string, stdout, stderr io.Writer) int {
 	flags := flag.NewFlagSet("doctor", flag.ContinueOnError)
-	flags.SetOutput(stderr)
+	flags.SetOutput(io.Discard)
 	format := flags.String("format", "terminal", "output format: terminal or json")
 	if err := flags.Parse(args); err != nil {
+		writeCLIError(stderr, "CONFIG_INVALID", err.Error(), "arguments")
+		return 2
+	}
+	if len(flags.Args()) > 0 {
+		writeCLIError(stderr, "CONFIG_INVALID", "doctor does not accept positional arguments", "arguments")
 		return 2
 	}
 	if *format != "terminal" && *format != "json" {

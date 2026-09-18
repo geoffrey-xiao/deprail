@@ -21,6 +21,29 @@ func TestParseSortsRecordsAndPreservesEvidence(t *testing.T) {
 	}
 }
 
+func TestParseV2VulnerabilityFields(t *testing.T) {
+	raw := adapter.RawResult{Stdout: []byte(`{"results":[{"packages":[{"package":{"name":"lodash","version":"4.17.20"},"vulnerabilities":[{"id":"GHSA-test","aliases":["CVE-test"],"database_specific":{"severity":"HIGH"},"severity":[{"score":"CVSS:3.1/AV:N"}],"affected":[{"ranges":[{"events":[{"introduced":"0"},{"fixed":"4.17.21"}]}]}]}]}]}]}`)}
+	records, err := Parse(raw)
+	if err != nil {
+		t.Fatalf("parse: %v", err)
+	}
+	if len(records) != 1 || records[0].Severity != "HIGH" || records[0].Fixed != "4.17.21" {
+		t.Fatalf("records = %#v", records)
+	}
+}
+
+func TestScannerAcceptsVulnerabilityExitCode(t *testing.T) {
+	scanner := Scanner{Path: os.Args[0], Args: []string{"-test.run=TestScannerHelper", "mode=vulnerable"}, Timeout: time.Second, OutputCap: 4096}
+	raw, err := scanner.Execute(context.Background(), adapter.Plan{Targets: []adapter.Target{{WorkspaceID: "root", RelativePath: ".", Ecosystem: "npm"}}})
+	if err != nil {
+		t.Fatalf("execute: %v", err)
+	}
+	records, err := Parse(raw)
+	if err != nil || len(records) != 1 {
+		t.Fatalf("records = %#v, err = %v", records, err)
+	}
+}
+
 func TestParseRejectsMalformedJSON(t *testing.T) {
 	if _, err := Parse(adapter.RawResult{Stdout: []byte("not json")}); !adapter.IsCode(err, adapter.ErrInvalidOutput) {
 		t.Fatalf("error = %v", err)

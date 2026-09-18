@@ -14,6 +14,7 @@ import (
 type Scanner struct {
 	Path      string
 	Dir       string
+	Args      []string
 	Timeout   time.Duration
 	OutputCap int64
 }
@@ -44,7 +45,9 @@ func (s Scanner) Execute(ctx context.Context, plan adapter.Plan) (adapter.RawRes
 		return adapter.RawResult{}, &adapter.Error{Code: adapter.ErrInvalidPlan, Message: "OSV execution requires one target per unit"}
 	}
 	target := plan.Targets[0]
-	result, err := process.Run(ctx, process.Request{Path: s.Path, Args: []string{"scan", "--format", "json", target.RelativePath}, Dir: s.Dir, Timeout: s.Timeout, OutputCap: s.OutputCap})
+	args := append([]string{}, s.Args...)
+	args = append(args, "scan", "--format", "json", target.RelativePath)
+	result, err := process.Run(ctx, process.Request{Path: s.Path, Args: args, Dir: s.Dir, Timeout: s.Timeout, OutputCap: s.OutputCap})
 	if err != nil {
 		return adapter.RawResult{Stdout: result.Stdout, Stderr: result.Stderr, ExitCode: result.ExitCode}, processToAdapterError(err)
 	}

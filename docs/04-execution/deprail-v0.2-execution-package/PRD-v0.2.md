@@ -26,29 +26,31 @@ v0.2 is not authorized to expand into a server, web UI, remote publishing servic
 
 ## 3. v0.2 scope
 
-### Required hardening
+### Required hardening and CI guardrail
 
-- Normalize empty findings, errors, and artifact collections to JSON arrays.
+- Normalize empty findings, errors, diagnostics, workspaces, and artifact collections to JSON arrays.
 - Reject unexpected command arguments with the documented configuration error and exit code.
 - Add real OSV-Scanner v2 raw-output fixtures and an explicit exit-code matrix.
 - Ensure scanner execution, path resolution, and artifact placement use the requested scan root.
 - Add scan-from-outside-root end-to-end coverage.
 - Inject Git tag and commit identity into CLI version output.
 - Preserve deterministic ordering and stable error codes.
+- Provide versioned baselines and deterministic base/head diff.
+- Classify new, resolved, unchanged, and dependency-change results.
+- Evaluate typed policy gates, completeness, severity, and expiring exceptions.
+- Emit validated SARIF output.
+- Package and validate a least-privilege GitHub Action on real pull requests.
 - Document and exercise preview, RC, and stable release modes.
 - Improve release evidence capture for platforms, artifacts, checksums, manual scans, SBOM, and signing gaps.
 - Keep issue/PR metadata and evidence workflow consistent with the reviewed-merge closure policy.
 
-### Candidate capabilities requiring separate approval
+### Capabilities requiring later approval
 
-- Baseline comparison.
-- Policy gates.
 - Additional scanner ecosystems.
-- SARIF output.
-- Remote publishing or history.
+- Remote publishing or hosted history.
 - SBOM generation or signing implementation.
 
-Each candidate requires an issue contract, compatibility analysis, security review, and explicit inclusion decision before implementation.
+Each later capability requires an issue contract, compatibility analysis, security review, and explicit inclusion decision before implementation.
 
 ## 4. Out of scope
 
@@ -120,6 +122,18 @@ A release artifact reports the same version identity as its Git tag and includes
 ### AC-020-006 Release evidence
 
 A candidate release has passing cross-platform CI, reviewed checksums, platform smoke evidence, manual repository evidence, and explicit SBOM/signing status.
+
+### AC-020-007 Baseline diff
+
+A compatible base and head produce deterministic new, resolved, unchanged, and dependency-change classifications.
+
+### AC-020-008 Policy and exceptions
+
+Policy gates classify new risk, incomplete scans, and expired exceptions without producing a false-safe pass.
+
+### AC-020-009 SARIF and pull-request guardrail
+
+SARIF validates, and the GitHub Action evaluates a real pull request with documented permissions, evidence artifacts, and stable failure behavior.
 
 ## 10. Release gate
 

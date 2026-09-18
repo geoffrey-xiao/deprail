@@ -6,9 +6,11 @@
 deprail doctor
 deprail discover [path]
 deprail scan [path]
+deprail diff --base <input> --head <input>
+deprail policy check --baseline <input> [path]
 ```
 
-The command names and primary options remain v0.1-compatible.
+The v0.2 commands preserve v0.1 behavior and add deterministic baseline comparison and policy evaluation. Primary options remain versioned contracts.
 
 ## Argument behavior
 
@@ -23,10 +25,11 @@ The command names and primary options remain v0.1-compatible.
 
 | Code | Meaning |
 | --- | --- |
-| `0` | Successful execution; scan status is complete when applicable. |
-| `2` | Invalid command, argument, option, or configuration. |
+| `0` | Successful execution; scan or policy status permits success. |
+| `2` | Invalid command, argument, option, policy, or configuration. |
 | `3` | Scanner failure, incomplete scope, or unusable scan result. |
-| `1`, `4`, `5` | Reserved/documented meanings remain unchanged from v0.1. |
+| `4` | Policy violation or required guardrail block. |
+| `1`, `5` | Reserved/documented meanings remain unchanged from v0.1. |
 
 ## Version identity
 

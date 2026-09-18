@@ -25,14 +25,15 @@ The technical baseline is the Go core, OSV-Scanner first, versioned schemas, Rea
 
 ```mermaid
 flowchart LR
-    Backlog --> Ready
-    Ready --> Plan[AI plan]
-    Plan --> Build[AI development]
+    Todo --> Plan[Issue plan and Definition of Ready]
+    Plan --> Build[In Progress]
     Build --> Verify[Automated verification]
     Verify --> Review[Human review]
     Review --> Done
-    Review --> Rework
+    Review --> Rework[Changes requested]
     Rework --> Build
+    Build --> Blocked
+    Blocked --> Build
 ```
 
 WIP limits: at most two tasks in implementation and two PRs in human review. Prefer fewer than 400 net new business-code lines per PR, excluding fixtures and generated files. One PR solves one primary problem. Only one high-risk task runs at a time. When review is full, AI work shifts to tests, documentation, or reproduction.

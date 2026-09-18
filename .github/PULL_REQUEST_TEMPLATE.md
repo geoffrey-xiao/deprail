@@ -1,10 +1,13 @@
-<!-- Before requesting review: use Closes/Fixes/Resolves #N, verify all four labels, and synchronize the linked Project item. See docs/04-execution/deprail-v0.2-execution-package/tracking/WORKFLOW-GUIDE.md. -->
+<!-- Before requesting review: fill the exact issue link below and verify the matching labels. See docs/04-execution/deprail-v0.2-execution-package/tracking/WORKFLOW-GUIDE.md. -->
 ## Summary
 
-- Issue: `Closes #`
-- Issue key:
 - Primary outcome:
 - Target version:
+
+## Issue Link
+
+Issue: `{{issue}}`
+Relationship: `Closes #{{issue}}` / `Refs #{{issue}}`
 
 ## Scope
 
@@ -34,15 +37,6 @@
 - [ ] Integration or cross-platform test where required
 - [ ] `make verify`
 - [ ] Failure or incomplete-result behavior verified
-- [ ] Determinism or ordering verified where relevant
-- [ ] Manual evidence attached
-
-## Project Synchronization
-
-- [ ] Linked issue is present.
-- [ ] `area:*`, `risk:*`, `priority:*`, and `type:*` labels match the issue.
-- [ ] Project status is `Review`.
-- [ ] Target version, milestone, owner, and reviewer are correct.
 
 ## Human Review Focus
 

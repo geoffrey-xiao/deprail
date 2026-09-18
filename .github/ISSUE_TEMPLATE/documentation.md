@@ -51,7 +51,7 @@ labels: "type:docs"
 
 ## Final Acceptance
 
-- [ ] Owner reviewed the documentation against implemented behavior.
+- [ ] Owner reviewed the documentation against implemented behavior during PR review.
 - [ ] Verification and CI results were reviewed where applicable.
 - [ ] Evidence and remaining risk are recorded.
-- [ ] Owner explicitly authorized issue closure.
+- [ ] PR review and merge evidence are linked.

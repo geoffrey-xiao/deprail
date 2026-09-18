@@ -167,7 +167,7 @@ GitHub does not currently move DepRail Project items automatically when a pull r
 - When implementation starts, add the issue to the `DepRail` project if absent and set Project Status to `In Progress`.
 - Immediately after opening the pull request, set the linked issue's Project Status to `Review`.
 - Before requesting review, verify the issue link, labels, project membership, and Project Status with `gh`.
-- Do not set `Done` on merge. The owner moves the item to `Done` only after acceptance, verification evidence, and review are complete.
+- During PR review, the owner reviews the acceptance criteria and required evidence. After the reviewed PR merges and required CI/evidence pass, the agent or maintainer may set Project Status to `Done`; no separate post-merge owner-acceptance step is required.
 - If project-write permission is unavailable, report the exact missing permission and leave the issue status unchanged; never claim synchronization occurred.
 
 Resolve the project, item, Status field, and option IDs from the live project rather than hard-coding environment-specific IDs:
@@ -203,10 +203,10 @@ Before starting development for a new product-version line such as `0.2.0`, agen
 
 - Before starting a new issue, check the previous issue and pull request. Remind the project owner to close the previous issue if its acceptance, verification, review, and evidence are complete.
 - Do not silently abandon or leave completed issues open. If the prior issue is incomplete, state the missing acceptance item and keep it open or mark it blocked with an owner and reason.
-- When an issue is finished, prepare a completion report that identifies each acceptance item, required command, CI result, human review result, evidence link, and remaining risk. Do not claim owner acceptance.
-- The project owner must inspect and check every acceptance item and explicitly confirm that the issue is complete before closure. An agent may remind the owner, explain the evidence, and draft the closure comment.
-- The project owner may close issues manually. An agent may close an issue only after that explicit confirmation or authorization; otherwise the agent must leave it open and remind the owner. A merged pull request alone does not prove completion.
-- Link a merged pull request with a closing keyword where appropriate, but do not treat merge alone as proof of completion. Update the local checklist only with linked evidence and owner confirmation.
+- When an issue is finished, prepare a completion report that identifies each acceptance item, required command, CI result, human review result, evidence link, and remaining risk. Record owner review from the PR when applicable.
+- The project owner must inspect and check every acceptance item during PR review. An agent may move the Project item to `Done` after the reviewed PR merges and required verification/evidence are complete; do not claim completion before those conditions.
+- The project owner may close issues manually after the reviewed PR merges and the required evidence is attached. A merged PR without review, CI, or required evidence does not prove completion.
+- Link a merged pull request with a closing keyword where appropriate, and update the local checklist only with linked evidence and the completed review record.
 
 Respect the execution controls:
 

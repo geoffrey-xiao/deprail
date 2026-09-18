@@ -49,8 +49,8 @@
 
 ## Final Acceptance
 
-- [ ] Owner reviewed every acceptance criterion.
+- [ ] Owner reviewed every acceptance criterion during PR review.
 - [ ] Required verification and CI results were reviewed.
 - [ ] Human review and remaining risk are recorded.
 - [ ] Evidence links are attached.
-- [ ] Owner explicitly authorized issue closure.
+- [ ] PR review and merge evidence are linked.

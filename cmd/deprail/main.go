@@ -3,6 +3,7 @@ package main
 import (
 	"bytes"
 	"context"
+	"encoding/json"
 	"flag"
 	"fmt"
 	"github.com/geoffrey-xiao/deprail/internal/app"
@@ -27,6 +28,8 @@ func run(args []string, stdout, stderr io.Writer) int {
 		return runDiscover(args[1:], stdout, stderr)
 	case "scan":
 		return runScan(args[1:], stdout, stderr)
+	case "doctor":
+		return runDoctor(args[1:], stdout, stderr)
 	default:
 		writeCLIError(stderr, "CONFIG_INVALID", fmt.Sprintf("unknown command %q", args[0]), "command")
 		return 2
@@ -168,6 +171,37 @@ func runScan(args []string, stdout, stderr io.Writer) int {
 		return 3
 	}
 	if scanErr != nil || report.Status != discovery.Complete {
+		return 3
+	}
+	return 0
+}
+
+func runDoctor(args []string, stdout, stderr io.Writer) int {
+	flags := flag.NewFlagSet("doctor", flag.ContinueOnError)
+	flags.SetOutput(stderr)
+	format := flags.String("format", "terminal", "output format: terminal or json")
+	if err := flags.Parse(args); err != nil {
+		return 2
+	}
+	if *format != "terminal" && *format != "json" {
+		writeCLIError(stderr, "CONFIG_INVALID", "format must be terminal or json", "format")
+		return 2
+	}
+	report := app.Doctor(context.Background())
+	if *format == "json" {
+		_ = json.NewEncoder(stdout).Encode(report)
+	} else {
+		_, _ = fmt.Fprintf(stdout, "DepRail: %s\nOS: %s/%s\nOSV-Scanner: %s", report.Version, report.OS, report.Arch, report.Scanner.Error)
+		if report.Scanner.Compatible {
+			_, _ = fmt.Fprintf(stdout, " (%s)\n", report.Scanner.Version)
+		} else {
+			_, _ = fmt.Fprintln(stdout)
+		}
+		if report.Scanner.Error != "" {
+			_, _ = fmt.Fprintf(stderr, "Help: %s\n", report.Scanner.Help)
+		}
+	}
+	if !report.Scanner.Available || !report.Scanner.Compatible {
 		return 3
 	}
 	return 0

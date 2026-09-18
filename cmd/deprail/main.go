@@ -199,9 +199,9 @@ func runDoctor(args []string, stdout, stderr io.Writer) int {
 		_ = json.NewEncoder(stdout).Encode(report)
 	} else {
 		if report.Scanner.Compatible {
-			_, _ = fmt.Fprintf(stdout, "DepRail: %s\nOS: %s/%s\nOSV-Scanner: %s\n", report.Version, report.OS, report.Arch, report.Scanner.Version)
+			_, _ = fmt.Fprintf(stdout, "DepRail: %s\nTag: %s\nCommit: %s\nOS: %s/%s\nOSV-Scanner: %s\n", report.Version, report.Tag, report.Commit, report.OS, report.Arch, report.Scanner.Version)
 		} else {
-			_, _ = fmt.Fprintf(stdout, "DepRail: %s\nOS: %s/%s\nOSV-Scanner: %s\n", report.Version, report.OS, report.Arch, report.Scanner.Error)
+			_, _ = fmt.Fprintf(stdout, "DepRail: %s\nTag: %s\nCommit: %s\nOS: %s/%s\nOSV-Scanner: %s\n", report.Version, report.Tag, report.Commit, report.OS, report.Arch, report.Scanner.Error)
 		}
 		if report.Scanner.Error != "" {
 			_, _ = fmt.Fprintf(stderr, "Help: %s\n", report.Scanner.Help)

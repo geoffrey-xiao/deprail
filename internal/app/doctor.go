@@ -7,11 +7,14 @@ import (
 	"time"
 
 	"github.com/geoffrey-xiao/deprail/internal/adapters/osv"
+	"github.com/geoffrey-xiao/deprail/internal/buildinfo"
 	"github.com/geoffrey-xiao/deprail/internal/process"
 )
 
 type DoctorReport struct {
 	Version string        `json:"version"`
+	Tag     string        `json:"tag"`
+	Commit  string        `json:"commit"`
 	OS      string        `json:"os"`
 	Arch    string        `json:"arch"`
 	Scanner DoctorScanner `json:"scanner"`
@@ -26,7 +29,15 @@ type DoctorScanner struct {
 }
 
 func Doctor(ctx context.Context) DoctorReport {
-	report := DoctorReport{Version: "v0.1", OS: runtime.GOOS, Arch: runtime.GOARCH, Scanner: DoctorScanner{Help: "Install OSV-Scanner and rerun deprail doctor"}}
+	identity := buildinfo.Current()
+	report := DoctorReport{
+		Version: identity.Version,
+		Tag:     identity.Tag,
+		Commit:  identity.Commit,
+		OS:      runtime.GOOS,
+		Arch:    runtime.GOARCH,
+		Scanner: DoctorScanner{Help: "Install OSV-Scanner and rerun deprail doctor"},
+	}
 	path, err := exec.LookPath("osv-scanner")
 	if err != nil {
 		report.Scanner.Error = "OSV-Scanner is not available"

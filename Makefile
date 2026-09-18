@@ -3,6 +3,10 @@ SHELL := /bin/sh
 GO_VERSION := $(shell tr -d '[:space:]' < .go-version)
 GO := go
 BINARY := deprail
+VERSION ?= development
+TAG ?= unknown
+COMMIT ?= unknown
+LDFLAGS := -X github.com/geoffrey-xiao/deprail/internal/buildinfo.Version=$(VERSION) -X github.com/geoffrey-xiao/deprail/internal/buildinfo.Tag=$(TAG) -X github.com/geoffrey-xiao/deprail/internal/buildinfo.Commit=$(COMMIT)
 
 .PHONY: bootstrap generate test lint build verify test-integration clean
 
@@ -22,7 +26,7 @@ lint:
 	$(GO) vet ./...
 
 build:
-	$(GO) build ./...
+	$(GO) build -ldflags "$(LDFLAGS)" ./...
 
 verify: bootstrap generate lint test build
 

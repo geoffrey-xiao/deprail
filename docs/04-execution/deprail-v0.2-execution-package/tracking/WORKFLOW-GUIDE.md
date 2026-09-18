@@ -88,7 +88,25 @@ gh project item-list 1 \
   --format json
 ```
 
-## 4. Prepare and create the PR
+## 4. Start implementation and create the branch
+
+Before editing, set the issue's Project Status to `In Progress`; the GitHub issue itself remains open:
+
+```bash
+gh project item-edit \
+  --project-id <project-id> \
+  --id <item-id> \
+  --field-id <status-field-id> \
+  --single-select-option-id <in-progress-option-id>
+gh project item-list <project-number> \
+  --owner geoffrey-xiao \
+  --format json
+```
+
+Verify the item reports `In Progress` before creating the branch. After the PR opens, the required next transition is `Review`; the issue is not closed until the reviewed PR merges and evidence is complete.
+
+
+## 5. Prepare and create the PR
 
 Use the PR template. The PR body must contain exactly one unique linked issue number. For an implementation PR, use a closing keyword:
 
@@ -132,13 +150,13 @@ gh pr edit <pr-number> \
   --add-label "type:bug"
 ```
 
-## 5. Synchronize Project review status
+## 6. Synchronize Project review status
 
 After the PR opens, locate the linked issue’s Project item and set Status to `Review` using the live Project and field IDs. Verify the result with `gh project item-list`.
 
 Do not claim synchronization if the token lacks Project write permission.
 
-## 6. Run checks before requesting review
+## 7. Run checks before requesting review
 
 ```bash
 gh pr checks <pr-number> --repo geoffrey-xiao/deprail
@@ -152,7 +170,7 @@ The metadata check requires:
 - one unique linked issue;
 - required Project synchronization checklist in the PR body.
 
-## 7. Merge and close
+## 8. Merge and close
 
 During PR review, the owner reviews acceptance criteria, evidence, compatibility, security impact, and remaining risk. After the reviewed PR merges and required CI/evidence pass:
 

@@ -23,7 +23,11 @@ The single long-lived `DepRail` project uses release-specific views over the sha
 
 ## Automation
 
-New issues enter `Todo`. Definition of Ready is recorded in the issue body rather than represented by a separate status. Creating a branch and starting implementation moves the item to `In Progress`. An opened PR moves the item to `Review`. An external dependency or unresolved decision moves it to `Blocked`; `Blocked Reason`, an owner, and a next-check date are required. Review rework returns to `In Progress`. Merge does not move to `Done` until verification, evidence, and owner acceptance are complete.
+New issues enter `Todo`. Definition of Ready is recorded in the issue body rather than represented by a separate status. Creating a branch and starting implementation moves the item to `In Progress`. An opened PR moves the item to `Review`; because the current repository has no automatic PR-to-Project mutation, the agent or maintainer MUST set this explicitly with `gh project item-edit` and verify it with `gh project item-list`. An external dependency or unresolved decision moves it to `Blocked`; `Blocked Reason`, an owner, and a next-check date are required. Review rework returns to `In Progress`. Merge does not move to `Done` until verification, evidence, and owner acceptance are complete.
+
+### Required status synchronization
+
+After opening a PR, resolve the live `DepRail` project and field IDs, locate the linked issue's project item, and set the Status field to the `Review` option. Do not copy project IDs from another repository or assume PR creation changed the item. If the token lacks project-write permission, report the blocker and leave the status unchanged rather than claiming success.
 
 ## Issue Implementation Sequence
 

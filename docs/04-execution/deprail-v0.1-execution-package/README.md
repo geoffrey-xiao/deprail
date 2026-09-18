@@ -23,6 +23,7 @@ This folder turns the v0.1 product and architecture decisions into ready-to-run 
 ## Recommended Management Tools
 
 Use GitHub Issues for atomic work, Milestones for Sprint 0 and S1-S4, GitHub Projects for flow and risk fields, and pull requests for review evidence. Keep the Markdown checklists in the repository as the durable execution contract.
+For release-end reconciliation between local issue contracts and GitHub workflow records, use `tracking/GITHUB-RELEASE-RECONCILIATION.md`.
 
 ## Execution Rules
 

@@ -2,15 +2,15 @@ package main
 
 import (
 	"context"
+	"encoding/json"
 	"flag"
 	"fmt"
-	"io"
-	"os"
-	"path/filepath"
-
 	"github.com/geoffrey-xiao/deprail/internal/app"
 	"github.com/geoffrey-xiao/deprail/internal/discovery"
 	"github.com/geoffrey-xiao/deprail/internal/presenter"
+	"io"
+	"os"
+	"path/filepath"
 )
 
 func main() {
@@ -25,6 +25,8 @@ func run(args []string, stdout, stderr io.Writer) int {
 	switch args[0] {
 	case "discover":
 		return runDiscover(args[1:], stdout, stderr)
+	case "scan":
+		return runScan(args[1:], stdout, stderr)
 	default:
 		writeCLIError(stderr, "CONFIG_INVALID", fmt.Sprintf("unknown command %q", args[0]), "command")
 		return 2
@@ -115,4 +117,44 @@ func normalizeDiscoverArgs(args []string) ([]string, error) {
 
 func writeCLIError(w io.Writer, code, message, scope string) {
 	_, _ = fmt.Fprintf(w, "error[%s] %s (%s)\n", code, message, scope)
+}
+
+func runScan(args []string, stdout, stderr io.Writer) int {
+	normalized, err := normalizeDiscoverArgs(args)
+	if err != nil {
+		writeCLIError(stderr, "CONFIG_INVALID", err.Error(), "arguments")
+		return 2
+	}
+	flags := flag.NewFlagSet("scan", flag.ContinueOnError)
+	flags.SetOutput(stderr)
+	format := flags.String("format", "terminal", "output format: terminal or json")
+	if err := flags.Parse(normalized); err != nil {
+		return 2
+	}
+	if *format != "terminal" && *format != "json" {
+		writeCLIError(stderr, "CONFIG_INVALID", "format must be terminal or json", "format")
+		return 2
+	}
+	root := "."
+	if len(flags.Args()) > 1 {
+		writeCLIError(stderr, "CONFIG_INVALID", "scan accepts at most one path", "arguments")
+		return 2
+	}
+	if len(flags.Args()) == 1 {
+		root = flags.Args()[0]
+	}
+	if err := app.ValidateDiscoverRoot(root); err != nil {
+		writeCLIError(stderr, "PATH_OUTSIDE_ROOT", err.Error(), root)
+		return 2
+	}
+	report, err := app.Scan(context.Background(), root, app.ScanOptions{})
+	if *format == "json" {
+		_ = json.NewEncoder(stdout).Encode(report)
+	} else {
+		_, _ = io.WriteString(stdout, app.ScanTerminal(report))
+	}
+	if err != nil || report.Status != discovery.Complete {
+		return 3
+	}
+	return 0
 }

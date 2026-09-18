@@ -1,12 +1,14 @@
-# DepRail Complete Development Execution Plan v2
+# DepRail v0.2 Development Plan
 
 | Attribute | Value |
 | --- | --- |
-| Version | 2.0 |
-| Status | Current planning baseline |
-| Supersedes | `deprail-development-plan-v1.md` for forward execution decisions |
+| Release | v0.2 |
+| Plan revision | 1.0 |
+| Status | Current release-specific development plan |
+| Whole-project roadmap | `deprail-roadmap-v1.md` |
 | Product baseline | `docs/01-product/deprail-product-design-v1-ai.md` |
 | Architecture baseline | `docs/02-architecture/deprail-architecture-and-tech-stack-v1.md` |
+| Prior planning snapshot | `deprail-development-plan-v1.md` |
 | Delivery model | One project owner working with AI agents |
 | Cadence | Two-week Sprints; one-week Sprint 0 |
 

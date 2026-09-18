@@ -12,6 +12,16 @@
 - Owner: Project owner
 - Reviewer: Maintainer
 
+## Definition of Ready
+
+- [x] Value and user impact are stated.
+- [x] Scope and explicit exclusions are stated.
+- [x] Inputs, outputs, and failure behavior are defined.
+- [x] Required tests or smoke scenarios are named.
+- [x] Acceptance criteria are observable.
+- [x] Owner and reviewer are assigned.
+- [x] Dependencies and target version are recorded.
+
 ## Goal
 
 Review and establish the v0.2.0 execution context before implementation issues are created.
@@ -37,12 +47,16 @@ Inputs are the local v0.2 execution package, v0.1 contracts and retrospective, r
 
 If the v0.1 baseline, target version, or package scope is not accepted, this issue remains open or moves to `Blocked`; no implementation issue is treated as ready.
 
-## Required Verification
+## Required Tests
 
 - Review all linked v0.2 package documents for internal consistency.
 - Verify the current tag, `origin/main`, and release manifest baseline.
 - Verify the v0.2 Master Checklist and release procedure contain the required gates.
 - Record review notes and remaining risks in the GitHub issue.
+
+## Human Review
+
+Project owner reviews the package and confirms whether implementation issues may be created.
 
 ## Acceptance Criteria
 

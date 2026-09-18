@@ -1,4 +1,5 @@
 # EPIC-001 Foundation and Contracts
+**GitHub epic:** [#106](https://github.com/geoffrey-xiao/deprail/issues/106)
 
 ## Outcome
 

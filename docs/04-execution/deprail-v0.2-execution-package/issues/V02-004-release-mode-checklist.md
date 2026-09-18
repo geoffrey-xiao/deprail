@@ -10,7 +10,9 @@
 - Owner: TBD
 - Reviewer: TBD
 - Dependencies: V02-000 context baseline
-- Status: Local planning; GitHub issue not created
+- GitHub Issue: [#108](https://github.com/geoffrey-xiao/deprail/issues/108)
+- Parent epic: [EPIC-001 / #106](https://github.com/geoffrey-xiao/deprail/issues/106)
+- Status: GitHub issue #108; child of EPIC-001
 
 ## Definition of Ready
 

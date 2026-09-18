@@ -9,6 +9,9 @@ This map records the current GitHub trial hierarchy for v0.2.0. Local Markdown i
 | EPIC-003 Scope and reporting | [#114](https://github.com/geoffrey-xiao/deprail/issues/114) | V02-008 #128, V02-009 #120, V02-010 #124 |
 | EPIC-004 Release quality | [#115](https://github.com/geoffrey-xiao/deprail/issues/115) | V02-011 #125, V02-012 #127, V02-013 #123 |
 | EPIC-005 Candidate capabilities | [#116](https://github.com/geoffrey-xiao/deprail/issues/116) | V02-014 #126 |
+| EPIC-006 Baselines and diff | [#134](https://github.com/geoffrey-xiao/deprail/issues/134) | V02-015 #137, V02-016 #138, V02-017 #139, V02-018 #140 |
+| EPIC-007 Policy, exceptions, and SARIF | [#135](https://github.com/geoffrey-xiao/deprail/issues/135) | V02-019 #141, V02-020 #142, V02-021 #143, V02-022 #144 |
+| EPIC-008 GitHub Action and public preview | [#136](https://github.com/geoffrey-xiao/deprail/issues/136) | V02-023 #145, V02-024 #146, V02-025 #147, V02-026 #148 |
 
 ## Project
 

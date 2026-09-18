@@ -4,6 +4,8 @@ import (
 	"embed"
 	"encoding/json"
 	"testing"
+
+	"github.com/santhosh-tekuri/jsonschema/v6"
 )
 
 //go:embed deprail.schema.json examples/*.json
@@ -23,6 +25,53 @@ func TestSchemaAndExamplesAreValidJSON(t *testing.T) {
 		if !json.Valid(data) {
 			t.Errorf("%s is not valid JSON", name)
 		}
+	}
+}
+
+func TestExamplesValidateAgainstSchema(t *testing.T) {
+	schemaBytes, err := schemaFiles.ReadFile("deprail.schema.json")
+	if err != nil {
+		t.Fatal(err)
+	}
+	var schemaDocument any
+	if err := json.Unmarshal(schemaBytes, &schemaDocument); err != nil {
+		t.Fatal(err)
+	}
+
+	const schemaURL = "https://deprail.dev/schemas/v1alpha/deprail.schema.json"
+	compiler := jsonschema.NewCompiler()
+	if err := compiler.AddResource(schemaURL, schemaDocument); err != nil {
+		t.Fatal(err)
+	}
+	compiled, err := compiler.Compile(schemaURL)
+	if err != nil {
+		t.Fatalf("compile schema: %v", err)
+	}
+
+	for _, name := range []string{"examples/project.json", "examples/scan.json"} {
+		data, err := schemaFiles.ReadFile(name)
+		if err != nil {
+			t.Fatal(err)
+		}
+		var document any
+		if err := json.Unmarshal(data, &document); err != nil {
+			t.Fatal(err)
+		}
+		if err := compiled.Validate(document); err != nil {
+			t.Errorf("%s should validate: %v", name, err)
+		}
+	}
+
+	invalidBytes, err := schemaFiles.ReadFile("examples/invalid-scan.json")
+	if err != nil {
+		t.Fatal(err)
+	}
+	var invalidDocument any
+	if err := json.Unmarshal(invalidBytes, &invalidDocument); err != nil {
+		t.Fatal(err)
+	}
+	if err := compiled.Validate(invalidDocument); err == nil {
+		t.Error("invalid-scan.json unexpectedly validates")
 	}
 }
 

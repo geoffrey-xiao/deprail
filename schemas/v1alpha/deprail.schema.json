@@ -23,7 +23,7 @@
   ],
   "$defs": {
     "id": { "type": "string", "minLength": 1 },
-    "path": { "type": "string", "pattern": "^(?!/)(?!.*(?:^|/)\\.\\.(?:/|$)).*$" },
+    "path": { "type": "string", "pattern": "^[^/].*$" },
     "timestamp": { "type": "string", "format": "date-time" },
     "completeness": { "enum": ["complete", "partial", "failed"] },
     "ecosystem": { "enum": ["npm", "pnpm", "yarn", "python", "maven", "gradle", "unknown"] },

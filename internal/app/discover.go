@@ -22,9 +22,19 @@ func Discover(ctx context.Context, root string, options DiscoverOptions) (discov
 	if err != nil {
 		return discovery.ProjectGraph{}, err
 	}
-	detected, err := (discovery.NPMDetector{}).Detect(ctx, discovery.RepositoryView{Root: absoluteRoot, Paths: result.Paths})
-	if err != nil {
-		return discovery.ProjectGraph{}, err
+	detectors := []discovery.Detector{
+		discovery.NPMDetector{}, discovery.PNPMDetector{}, discovery.YarnDetector{},
+		discovery.RequirementsDetector{}, discovery.UVDetector{}, discovery.PoetryDetector{},
+		discovery.MavenDetector{}, discovery.GradleDetector{},
+	}
+	detected := discovery.DetectionResult{}
+	for _, detector := range detectors {
+		detection, detectErr := detector.Detect(ctx, discovery.RepositoryView{Root: absoluteRoot, Paths: result.Paths})
+		if detectErr != nil {
+			return discovery.ProjectGraph{}, detectErr
+		}
+		detected.Workspaces = append(detected.Workspaces, detection.Workspaces...)
+		detected.Diagnostics = append(detected.Diagnostics, detection.Diagnostics...)
 	}
 	detected = discovery.FinalizeDetection(detected)
 	graph := discovery.ProjectGraph{

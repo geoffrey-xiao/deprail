@@ -16,7 +16,10 @@ internal/domain/
   ├── internal/process/
   ├── internal/artifact/
   ├── internal/normalize/
-  └── internal/presenter/
+  ├── internal/policy/
+  ├── internal/presenter/
+  ├── internal/store/
+  └── internal/remediation/ (later)
 ```
 
 ## Stable boundaries
@@ -42,6 +45,14 @@ Command parsers must reject unexpected positional arguments and unsupported opti
 ### Version injection
 
 Build metadata enters through a narrow version provider or linker-injected variables. Domain reports may receive release identity as declared run metadata, but stable finding keys must not depend on tag, commit, timestamp, severity label, or evidence order.
+
+### Baselines and diff
+
+Trusted scan results are compared through versioned baseline contracts. Base/head comparison and new/resolved/unchanged classification remain deterministic and independent of input ordering.
+
+### Policy and SARIF
+
+Typed policy evaluation owns completeness, severity, new-risk, and exception-expiry decisions. Policy does not become a general language in v0.2. SARIF rendering remains in presenters and preserves normalized identity and provenance.
 
 ### External adapter fixtures
 

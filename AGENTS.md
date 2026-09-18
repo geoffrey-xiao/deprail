@@ -4,28 +4,53 @@
 
 DepRail is a dependency security guardrail for multi-language repositories. The current checkout is documentation-first; implementation is expected to begin with Sprint 0. Treat the versioned contracts in `docs/` as normative until an approved code or ADR decision supersedes them.
 
-Read in this order before changing behavior:
+Before changing behavior or creating release work, read the planning hierarchy in this order:
 
-1. `docs/02-architecture/deprail-architecture-and-tech-stack-v1.md`
-2. `docs/04-execution/deprail-v0.1-execution-package/PRD-v0.1.md`
-3. `docs/04-execution/deprail-v0.1-execution-package/requirements/`
-4. The linked issue in `docs/04-execution/deprail-v0.1-execution-package/issues/`
-5. The applicable sprint and checklist in `docs/04-execution/deprail-v0.1-execution-package/tracking/`
+1. `docs/01-product/deprail-product-design-v1-ai.md`
+2. `docs/02-architecture/deprail-architecture-and-tech-stack-v1.md`
+3. `docs/03-planning/deprail-roadmap-v1.md`
+4. The applicable release plan, such as `docs/03-planning/deprail-development-plan-v0.2.md`
+5. The applicable execution package under `docs/04-execution/`
+6. The linked epic, issue contract, requirements, sprint, and checklist
 
-The execution package is the active delivery contract. Do not mark checklist items complete without linked evidence.
+Product and architecture define intent and boundaries. The roadmap defines whole-project sequencing. The release plan selects the current release scope. The execution package defines implementation contracts. Lower-level documents MUST NOT silently contradict higher-level documents.
+
+The execution package is the active delivery contract only after it has been reconciled with the product, architecture, roadmap, and release plan. Do not mark checklist items complete without linked evidence.
+
+## Mandatory planning and scope gate
+
+No new release, epic, issue, implementation branch, or PR may begin until the scope is reconciled across:
+
+- Product design.
+- Architecture and technology baseline.
+- Whole-project roadmap.
+- Release-specific development plan.
+- Execution package requirements and checklists.
+
+The release plan MUST state the user outcome, included capabilities, exclusions, dependencies, compatibility impact, failure behavior, acceptance gate, risks, and displaced work. Every epic and issue MUST map to a release-plan item and at least one product, architecture, or requirements contract. Candidate capabilities MUST NOT enter implementation without an explicit inclusion decision.
+
+If plans or context change:
+
+1. Stop issue creation and implementation for the affected scope.
+2. Create a new versioned release plan or an explicit ADR/decision record.
+3. Reconcile affected product, architecture, requirements, execution, tracking, and GitHub records.
+4. Record what changed, why, displaced work, compatibility impact, and remaining risk.
+5. Resume only after the updated Definition of Ready is satisfied.
+
+Historical plans MUST remain preserved. Do not silently rewrite a prior plan to hide a scope change.
 
 ## Sprint and version kickoff
 
 Before starting a new Sprint or version stage such as v0.1, first establish the GitHub tracking set:
 
-1. Confirm the stage, Sprint, scope, dependencies, acceptance evidence, risk, and named reviewer from the execution package.
+1. Confirm the stage, Sprint, scope, dependencies, acceptance evidence, risk, and named reviewer from the reconciled release plan and execution package.
 2. Verify that the corresponding GitHub milestone, Project fields, labels, and views exist; create or update them from `tracking/GITHUB-PROJECT-SETUP.md`.
 3. Check GitHub for existing issues before creating anything. Do not create duplicates.
 4. Map each local `EPIC-*` to its GitHub tracking item and each implementation-ready file under `docs/.../issues/` to one GitHub Issue. Import `tracking/issue-backlog.csv` and copy the authoritative issue body when an issue is absent.
 5. Record the GitHub Issue or Project URL/number in the local evidence or tracking record, and preserve the local Markdown as the durable contract.
 6. Do not start implementation until the issue is assigned to the correct milestone/Sprint and satisfies Definition of Ready: value, scope, dependencies, contracts, failure behavior, acceptance tests, risk, reviewer, and evidence are explicit.
 
-At stage kickoff, reconcile the GitHub state with the local epics, issue backlog, Sprint checklist, and Master Checklist. GitHub is the workflow and review source of truth; repository documents remain the durable contract.
+At stage kickoff, reconcile the GitHub state with the local roadmap, release plan, epics, issue backlog, Sprint checklist, and Master Checklist. GitHub is the workflow and review source of truth; repository documents remain the durable contract.
 
 ## Project identity and scope
 

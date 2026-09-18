@@ -3,6 +3,7 @@
 | Attribute | Value |
 | --- | --- |
 | Version | 1.0 |
+| Status | Historical planning snapshot; superseded for forward execution by `deprail-development-plan-v2.md` |
 | Date | 2026-09-17 |
 | Delivery model | One project owner working with AI agents |
 | Baseline duration | 57 delivery weeks plus 10-15% contingency |

@@ -25,21 +25,18 @@ Repository-wide workflow rules remain in [`AGENTS.md`](../../../AGENTS.md). Shar
 
 ## v0.2 planning position
 
-v0.2 begins as a hardening and product-readiness line. It must first close the highest-value v0.1 gaps:
+v0.2 has two execution layers:
 
-- stable empty JSON collections;
-- strict command argument validation;
-- real OSV-Scanner v2 fixtures and exit-code coverage;
-- tag/commit version identity;
-- scan-from-outside-root regression coverage;
-- release-mode evidence and workflow discipline.
+1. **Prerequisite hardening:** EPIC-001 through EPIC-004 close v0.1 contract, scanner, scope, and release-evidence gaps.
+2. **CI guardrail capabilities:** EPIC-006 through EPIC-008 deliver baselines, diff, policy, exceptions, SARIF, GitHub Action validation, and public-preview evidence.
 
-New product capabilities are candidates, not commitments, until they have an approved issue contract and acceptance evidence.
+The prerequisite layer is necessary but is not the complete v0.2 product outcome. EPIC-005 remains a decision boundary for capabilities not already selected by the product and architecture baselines.
 
 ## Package status
 
-This package is local planning context only. It does not create GitHub Issues, Project views, milestones, labels, or remote release records. Those may be established later during stage kickoff after this package is reviewed.
+This package is the local planning context for v0.2. GitHub milestone, Project, epic, issue, and parent-child records are created only from reconciled contracts during stage kickoff.
 
 ## Required v0.2 gate
 
-Before implementation begins, the project owner must review the PRD, transition record, target version decision, and Master Checklist. Before v0.2 release, all checklist items require linked evidence and owner acceptance during PR review.
+Before implementation begins for a new capability, the project owner must review the PRD, transition record, release plan, target version decision, and Master Checklist. Before v0.2 release, prerequisite hardening, S5-S7 guardrail work, all checklist items, linked evidence, cross-platform verification, and owner acceptance during PR review are required.
+

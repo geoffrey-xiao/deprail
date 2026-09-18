@@ -31,6 +31,27 @@ This checklist is closed only by linked evidence. It is a local planning contrac
 - [ ] V02-011 accepted: release identity matches tag, CLI, artifacts, and commit.
 - [ ] V02-012 accepted: preview/RC/stable smoke procedure is executable.
 
+## Sprint 5 — Baselines and diff
+
+- [ ] V02-015 accepted: baseline representation and storage are versioned and trusted.
+- [ ] V02-016 accepted: base/head comparison is deterministic.
+- [ ] V02-017 accepted: new/resolved/unchanged classification is explicit.
+- [ ] V02-018 accepted: `deprail diff` output and exit behavior are stable.
+
+## Sprint 6 — Policy and SARIF
+
+- [ ] V02-019 accepted: typed policy evaluation is deterministic.
+- [ ] V02-020 accepted: expiring exceptions are bounded and auditable.
+- [ ] V02-021 accepted: policy exit behavior is stable.
+- [ ] V02-022 accepted: SARIF output validates and preserves provenance.
+
+## Sprint 7 — GitHub Action and public preview
+
+- [ ] V02-023 accepted: GitHub Action packaging is reproducible.
+- [ ] V02-024 accepted: permissions and caching are least-privilege and documented.
+- [ ] V02-025 accepted: real pull-request validation works.
+- [ ] V02-026 accepted: public-preview release evidence is complete.
+
 ## Product acceptance
 
 - [ ] Existing v0.1 commands remain compatible.

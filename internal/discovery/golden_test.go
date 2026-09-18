@@ -48,9 +48,19 @@ func TestNPMSmallFixtureProducesStableProjectGraphGolden(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if string(actual) != string(golden) {
-		t.Fatalf("discovery golden changed:\nactual:\n%s\nwant:\n%s", actual, golden)
+	goldenText := normalizeGoldenLineEndings(string(golden))
+	if string(actual) != goldenText {
+		t.Fatalf("discovery golden changed:\nactual:\n%s\nwant:\n%s", actual, goldenText)
 	}
+}
+func TestNormalizeGoldenLineEndings(t *testing.T) {
+	if got := normalizeGoldenLineEndings("first\r\nsecond\r\n"); got != "first\nsecond\n" {
+		t.Fatalf("normalized line endings = %q", got)
+	}
+}
+
+func normalizeGoldenLineEndings(content string) string {
+	return strings.ReplaceAll(content, "\r\n", "\n")
 }
 
 func fixturePath(t *testing.T, fixture string) string {

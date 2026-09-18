@@ -19,7 +19,7 @@ Status (`Todo`, `In Progress`, `Review`, `Blocked`, `Done`), Sprint, Milestone, 
 
 ## Views
 
-Board by status; Sprint table; high-risk review; blocked items; missing evidence; release gate.
+The single long-lived `DepRail` project uses release-specific views over the shared issue history. The current view is `Release · v0.1 Preview`, a table filtered to milestone `v0.1 Preview`. When a future release has committed work, create a matching view such as `Release · v0.2`; do not create a separate project. Keep the existing view layout and status flow unless tracking needs justify a later change.
 
 ## Automation
 

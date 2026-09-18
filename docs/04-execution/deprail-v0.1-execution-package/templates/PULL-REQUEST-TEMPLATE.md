@@ -1,10 +1,14 @@
 <!-- Use Closes/Fixes/Resolves #N, verify matching labels, and synchronize Project status before review. See the v0.2 WORKFLOW-GUIDE.md. -->
 # Summary
 
-- Issue: `Closes #`
-- Issue key:
 - Primary outcome:
 - Target version:
+
+## Issue Link
+
+Issue: `{{issue}}`
+Relationship: `Closes #{{issue}}` / `Refs #{{issue}}`
+
 
 ## Scope
 
@@ -37,12 +41,6 @@
 - [ ] Determinism or ordering verified where relevant
 - [ ] Manual evidence attached
 
-## Project Synchronization
-
-- [ ] Linked issue is present.
-- [ ] `area:*`, `risk:*`, `priority:*`, and `type:*` labels match the issue.
-- [ ] Project status is `Review`.
-- [ ] Target version, milestone, owner, and reviewer are correct.
 
 ## Human Review Focus
 

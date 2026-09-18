@@ -180,6 +180,7 @@ gh project item-edit --project-id <project-id> --id <item-id> --field-id <status
 ```
 
 The final `item-edit` command is required after PR creation because the current repository has no automatic PR-to-Project status mutation.
+The complete creation and verification sequence is documented in [`docs/04-execution/deprail-v0.2-execution-package/tracking/WORKFLOW-GUIDE.md`](docs/04-execution/deprail-v0.2-execution-package/tracking/WORKFLOW-GUIDE.md). Agents MUST verify labels after both issue and PR creation; command flags are not evidence that labels were applied.
 
 ### Release version baseline
 

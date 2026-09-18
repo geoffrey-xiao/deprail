@@ -1,3 +1,4 @@
+<!-- Before requesting review: use Closes/Fixes/Resolves #N, verify all four labels, and synchronize the linked Project item. See docs/04-execution/deprail-v0.2-execution-package/tracking/WORKFLOW-GUIDE.md. -->
 ## Summary
 
 - Issue: `Closes #`

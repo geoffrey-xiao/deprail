@@ -1,3 +1,4 @@
+<!-- Use Closes/Fixes/Resolves #N, verify matching labels, and synchronize Project status before review. See the v0.2 WORKFLOW-GUIDE.md. -->
 # Summary
 
 - Issue: `Closes #`

@@ -27,15 +27,15 @@ type ScanReport struct {
 func Scan(ctx context.Context, root string, options ScanOptions) (ScanReport, error) {
 	graph, err := Discover(ctx, root, DiscoverOptions{})
 	if err != nil {
-		return ScanReport{Status: discovery.Failed, Errors: []string{err.Error()}}, err
+		return ScanReport{Status: discovery.Failed, Findings: []adapter.Finding{}, Errors: []string{err.Error()}, ArtifactDigests: []string{}}, err
 	}
 	scanRoot, err := filepath.Abs(root)
 	if err != nil {
-		return ScanReport{Status: discovery.Failed, Errors: []string{"resolve scanner root"}}, err
+		return ScanReport{Status: discovery.Failed, Findings: []adapter.Finding{}, Errors: []string{"resolve scanner root"}, ArtifactDigests: []string{}}, err
 	}
 	scanRoot, err = filepath.EvalSymlinks(scanRoot)
 	if err != nil {
-		return ScanReport{Status: discovery.Failed, Errors: []string{"resolve scanner root"}}, err
+		return ScanReport{Status: discovery.Failed, Findings: []adapter.Finding{}, Errors: []string{"resolve scanner root"}, ArtifactDigests: []string{}}, err
 	}
 	if options.Scanner == nil {
 		options.Scanner = osv.Scanner{Path: "osv-scanner", Dir: scanRoot, Timeout: 2 * time.Minute, OutputCap: 16 << 20}
@@ -45,9 +45,9 @@ func Scan(ctx context.Context, root string, options ScanOptions) (ScanReport, er
 	}
 	units, err := scanplan.Build(graph)
 	if err != nil {
-		return ScanReport{Status: discovery.Failed, Errors: []string{err.Error()}}, err
+		return ScanReport{Status: discovery.Failed, Findings: []adapter.Finding{}, Errors: []string{err.Error()}, ArtifactDigests: []string{}}, err
 	}
-	report := ScanReport{Status: graph.Completeness}
+	report := ScanReport{Status: graph.Completeness, Findings: []adapter.Finding{}, Errors: []string{}, ArtifactDigests: []string{}}
 	for _, unit := range units {
 		plan, planErr := options.Scanner.Plan(ctx, []adapter.Target{unit.Target})
 		if planErr != nil {

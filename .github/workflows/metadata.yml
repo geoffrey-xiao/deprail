@@ -2,9 +2,9 @@ name: Metadata
 
 on:
   issues:
-    types: [opened, edited, labeled, unlabeled]
+    types: [edited, labeled, unlabeled]
   pull_request:
-    types: [opened, edited, synchronize, reopened]
+    types: [edited, labeled, unlabeled, synchronize, reopened]
 
 permissions:
   contents: read
@@ -17,7 +17,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Validate issue and pull request metadata
-        uses: actions/github-script@v7
+        uses: actions/github-script@v8
         with:
           script: |
             const payload = context.payload;

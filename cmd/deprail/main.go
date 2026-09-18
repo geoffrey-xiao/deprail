@@ -120,10 +120,15 @@ func writeCLIError(w io.Writer, code, message, scope string) {
 }
 
 func runScan(args []string, stdout, stderr io.Writer) int {
+	normalized, err := normalizeDiscoverArgs(args)
+	if err != nil {
+		writeCLIError(stderr, "CONFIG_INVALID", err.Error(), "arguments")
+		return 2
+	}
 	flags := flag.NewFlagSet("scan", flag.ContinueOnError)
 	flags.SetOutput(stderr)
 	format := flags.String("format", "terminal", "output format: terminal or json")
-	if err := flags.Parse(args); err != nil {
+	if err := flags.Parse(normalized); err != nil {
 		return 2
 	}
 	if *format != "terminal" && *format != "json" {

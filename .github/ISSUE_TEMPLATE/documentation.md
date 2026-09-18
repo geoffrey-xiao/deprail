@@ -7,6 +7,8 @@ labels: "type:docs"
 
 ## Issue ID
 
+<!-- Before implementation: verify the four labels, milestone, Project fields, owner/reviewer, dependencies, and Definition of Ready. See docs/04-execution/deprail-v0.2-execution-package/tracking/WORKFLOW-GUIDE.md. -->
+
 ## Planning Metadata
 
 - Area: `docs`

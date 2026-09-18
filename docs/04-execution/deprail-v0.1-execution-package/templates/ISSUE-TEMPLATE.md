@@ -1,5 +1,6 @@
 # {{ID}} {{Title}}
 
+<!-- Verify labels, milestone, Project fields, owner/reviewer, dependencies, and Definition of Ready before implementation. See the v0.2 WORKFLOW-GUIDE.md. -->
 ## Planning metadata
 
 - Type: `bug` / `feature` / `test` / `docs` / `decision`

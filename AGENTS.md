@@ -14,6 +14,19 @@ Read in this order before changing behavior:
 
 The execution package is the active delivery contract. Do not mark checklist items complete without linked evidence.
 
+## Sprint and version kickoff
+
+Before starting a new Sprint or version stage such as v0.1, first establish the GitHub tracking set:
+
+1. Confirm the stage, Sprint, scope, dependencies, acceptance evidence, risk, and named reviewer from the execution package.
+2. Verify that the corresponding GitHub milestone, Project fields, labels, and views exist; create or update them from `tracking/GITHUB-PROJECT-SETUP.md`.
+3. Check GitHub for existing issues before creating anything. Do not create duplicates.
+4. Map each local `EPIC-*` to its GitHub tracking item and each implementation-ready file under `docs/.../issues/` to one GitHub Issue. Import `tracking/issue-backlog.csv` and copy the authoritative issue body when an issue is absent.
+5. Record the GitHub Issue or Project URL/number in the local evidence or tracking record, and preserve the local Markdown as the durable contract.
+6. Do not start implementation until the issue is assigned to the correct milestone/Sprint and satisfies Definition of Ready: value, scope, dependencies, contracts, failure behavior, acceptance tests, risk, reviewer, and evidence are explicit.
+
+At stage kickoff, reconcile the GitHub state with the local epics, issue backlog, Sprint checklist, and Master Checklist. GitHub is the workflow and review source of truth; repository documents remain the durable contract.
+
 ## Project identity and scope
 
 - Product name: `DepRail`.

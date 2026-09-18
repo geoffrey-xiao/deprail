@@ -12,6 +12,19 @@ DepRail is developed from the contracts in `docs/`. Before changing behavior, re
 - Do not change schemas, public interfaces, tool versions, or security boundaries without explicit review.
 - Keep machine data on stdout and diagnostics on stderr.
 
+## Sprint and version kickoff
+
+Before starting a new Sprint or version stage such as v0.1:
+
+1. Confirm scope, dependencies, acceptance evidence, risk, and reviewer from the execution package.
+2. Verify the matching GitHub milestone, Project fields, labels, and views against `tracking/GITHUB-PROJECT-SETUP.md`.
+3. Check for existing GitHub Issues before creating new ones; never create duplicates.
+4. Map each local epic to GitHub tracking and each file in `docs/.../issues/` to one GitHub Issue. Import `tracking/issue-backlog.csv` and use the local issue body when an issue is missing.
+5. Link GitHub Issue/Project numbers or URLs back to the local tracking/evidence record.
+6. Do not implement until the issue is assigned to the correct Sprint/milestone and meets Definition of Ready.
+
+GitHub Issues are the workflow and review source of truth. The repository’s epics, issue files, requirements, and checklists remain the durable execution contract.
+
 
 ## Branch and pull request policy
 

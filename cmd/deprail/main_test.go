@@ -55,6 +55,24 @@ func TestDiscoverIncompleteProjectReturnsCodeThreeAndJSON(t *testing.T) {
 		t.Fatalf("stderr = %q, want empty for graph result", stderr.String())
 	}
 }
+func TestDoctorJSONIncludesBuildIdentity(t *testing.T) {
+	var stdout, stderr bytes.Buffer
+	code := run([]string{"doctor", "--format", "json"}, &stdout, &stderr)
+	if code != 0 && code != 3 {
+		t.Fatalf("exit code = %d, want successful or scanner failure", code)
+	}
+	var report struct {
+		Version string `json:"version"`
+		Tag     string `json:"tag"`
+		Commit  string `json:"commit"`
+	}
+	if err := json.Unmarshal(stdout.Bytes(), &report); err != nil {
+		t.Fatalf("stdout is not JSON: %v", err)
+	}
+	if report.Version == "" || report.Tag == "" || report.Commit == "" {
+		t.Fatalf("build identity = %#v", report)
+	}
+}
 
 func TestDiscoverRejectsMultiplePaths(t *testing.T) {
 	var stdout, stderr bytes.Buffer

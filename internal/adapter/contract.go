@@ -14,6 +14,7 @@ type ErrorCode string
 const (
 	ErrInvalidPlan       ErrorCode = "CONFIG_INVALID"
 	ErrUnsupportedTarget ErrorCode = "SCANNER_VERSION_UNSUPPORTED"
+	ErrScannerNotFound   ErrorCode = "SCANNER_NOT_FOUND"
 	ErrExecution         ErrorCode = "SCANNER_EXIT_NONZERO"
 	ErrTimeout           ErrorCode = "SCANNER_TIMEOUT"
 	ErrOutputLimit       ErrorCode = "SCANNER_OUTPUT_LIMIT"

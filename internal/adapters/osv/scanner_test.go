@@ -91,6 +91,37 @@ func TestScannerUsesV2SourceCommand(t *testing.T) {
 	}
 }
 
+func TestScannerExecutesFromRequestedRoot(t *testing.T) {
+	root := t.TempDir()
+	canonicalRoot, err := filepath.EvalSymlinks(root)
+	if err != nil {
+		t.Fatal(err)
+	}
+	scanner := Scanner{
+		Path:      os.Args[0],
+		Dir:       root,
+		Args:      []string{"-test.run=TestScannerHelper", "mode=cwd"},
+		Timeout:   time.Second,
+		OutputCap: 1024,
+	}
+	raw, err := scanner.Execute(context.Background(), adapter.Plan{Targets: []adapter.Target{{WorkspaceID: "root", RelativePath: ".", Ecosystem: "npm"}}})
+	if err != nil {
+		t.Fatalf("execute: %v", err)
+	}
+	childRoot := strings.TrimSpace(string(raw.Stderr))
+	childInfo, err := os.Stat(childRoot)
+	if err != nil {
+		t.Fatalf("stat child root %q: %v", childRoot, err)
+	}
+	rootInfo, err := os.Stat(canonicalRoot)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !os.SameFile(childInfo, rootInfo) {
+		t.Fatalf("child working directory = %q, want directory %q", childRoot, canonicalRoot)
+	}
+}
+
 func TestScannerRejectsMultipleExecutionTargets(t *testing.T) {
 	scanner := Scanner{Path: "missing", Timeout: time.Second, OutputCap: 1024}
 	_, err := scanner.Execute(context.Background(), adapter.Plan{Targets: []adapter.Target{{WorkspaceID: "a", RelativePath: "a", Ecosystem: "npm"}, {WorkspaceID: "b", RelativePath: "b", Ecosystem: "npm"}}})

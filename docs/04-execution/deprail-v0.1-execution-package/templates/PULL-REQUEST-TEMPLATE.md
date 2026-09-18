@@ -41,11 +41,6 @@ Relationship: `Closes #{{issue}}` / `Refs #{{issue}}`
 - [ ] Determinism or ordering verified where relevant
 - [ ] Manual evidence attached
 
-## Project Synchronization
-
-- [ ] Project status is `Review`.
-- [ ] `area:*`, `risk:*`, `priority:*`, and `type:*` labels match the issue.
-- [ ] Target version, milestone, owner, and reviewer are correct.
 
 ## Human Review Focus
 

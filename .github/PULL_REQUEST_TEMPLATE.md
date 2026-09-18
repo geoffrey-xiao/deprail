@@ -1,12 +1,12 @@
-<!-- Keep this description concise and evidence-based. Replace the example issue link. -->
-# What changed and why
+<!-- Replace the example issue number and record actual commands/results. Keep the sections relevant to this change. -->
+## Summary
 
 - Change:
 - Why:
 
-## Issue
+## Issue Link
 
-- Related issue: [#123](https://github.com/geoffrey-xiao/deprail/issues/123)
+- Issue: [#123](https://github.com/geoffrey-xiao/deprail/issues/123)
 - Relationship: `Closes #123` / `Refs #123`
 
 ## Scope
@@ -14,25 +14,23 @@
 - Included:
 - Excluded:
 
-## Risk and compatibility
+## Risk
 
-- Risk level: `R0` / `R1` / `R2` / `R3`
-- Security impact:
-- Compatibility impact:
-- Rollback impact:
+- Level: `R0` / `R1` / `R2` / `R3`
+- Security and compatibility impact:
 
-## Verification and evidence
+## Contract Changes
 
-- Commands run:
+- None, or describe changes to schema, CLI, errors, storage, adapters, compatibility, or release behavior.
+
+## Verification
+
+- Commands:
 - Results:
 - Failure, incomplete, boundary, or security cases:
 - Evidence links or artifacts:
 
-## User-facing change
-
-- `None` or describe the CLI, JSON, schema, release, or documentation change.
-
-## Reviewer focus
+## Human Review Focus
 
 - Acceptance criteria or decisions to review:
 - Remaining risk:

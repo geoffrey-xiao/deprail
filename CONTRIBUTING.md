@@ -58,7 +58,7 @@ Push the branch and open a pull request linked to the issue. Keep one primary ou
 
 Before starting a new issue, check the previous issue and pull request. If the previous work meets its acceptance criteria, verification, review, and evidence requirements, remind the project owner to close it. If it is incomplete, keep it open or mark it blocked with an owner and reason.
 
-When an issue is finished, prepare a completion report for the owner covering every acceptance item, required command, CI result, human review result, evidence link, and remaining risk. The owner must inspect and check every acceptance item and explicitly confirm completion before closure. An agent may explain evidence and draft the closure comment, but may close the issue only after the owner authorizes it. A merged pull request alone does not prove completion, and local checklists require linked evidence and owner confirmation.
+When an issue is finished, prepare a completion report in the GitHub Issue covering every acceptance item, required command, CI result, human review result, evidence link, and remaining risk. The owner must inspect and check every acceptance item in GitHub and explicitly confirm completion before closure. An agent may explain evidence and draft the closure comment, but may close the issue only after the owner authorizes it. A merged pull request alone does not prove completion. Local issue Markdown remains the planning and contract source, not a second status database; update the Master Checklist only at Sprint or release review with linked GitHub records.
 
 ## Change workflow
 

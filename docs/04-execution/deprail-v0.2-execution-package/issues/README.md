@@ -5,10 +5,10 @@ These are local planning contracts only. They are not GitHub Issues yet. Each it
 | ID | Title | Priority | Risk | Area | Epic | Sprint | Status |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | [V02-000](V02-000-context-baseline.md) | Establish v0.2.0 context baseline | P0 | R1 | foundation | Package gate | Sprint 0 | GitHub #98; review required |
-| [V02-001](V02-001-empty-report-collections.md) | Normalize empty report collections | P0 | R1 | normalization | EPIC-001 | Sprint 0 | Ready for review |
-| [V02-002](V02-002-strict-command-arguments.md) | Reject unexpected command arguments | P0 | R1 | cli | EPIC-001 | Sprint 0 | Ready for review |
-| [V02-003](V02-003-build-version-identity.md) | Inject truthful build version identity | P1 | R1 | cli | EPIC-001 | Sprint 1 | Draft |
-| [V02-004](V02-004-release-mode-checklist.md) | Establish release-mode evidence checklist | P0 | R0 | docs | EPIC-001 | Sprint 0 | Ready for review |
+| [V02-001](V02-001-empty-report-collections.md) | Normalize empty report collections | P0 | R1 | normalization | EPIC-001 | Sprint 0 | GitHub [#112](https://github.com/geoffrey-xiao/deprail/issues/112), child of #106 |
+| [V02-002](V02-002-strict-command-arguments.md) | Reject unexpected command arguments | P0 | R1 | cli | EPIC-001 | Sprint 0 | GitHub [#110](https://github.com/geoffrey-xiao/deprail/issues/110), child of #106 |
+| [V02-003](V02-003-build-version-identity.md) | Inject truthful build version identity | P1 | R1 | cli | EPIC-001 | Sprint 1 | GitHub [#107](https://github.com/geoffrey-xiao/deprail/issues/107), child of #106 |
+| [V02-004](V02-004-release-mode-checklist.md) | Establish release-mode evidence checklist | P0 | R0 | docs | EPIC-001 | Sprint 0 | GitHub [#108](https://github.com/geoffrey-xiao/deprail/issues/108), child of #106 |
 | [V02-005](V02-005-osv-v2-fixtures.md) | Add real OSV-Scanner v2 fixtures | P0 | R1 | adapter | EPIC-002 | Sprint 0 | Ready for review |
 | [V02-006](V02-006-scanner-exit-matrix.md) | Add scanner exit-code matrix | P0 | R1 | adapter | EPIC-002 | Sprint 0 | Ready for review |
 | [V02-007](V02-007-requested-root-execution.md) | Verify scanner requested-root execution | P0 | R2 | adapter | EPIC-002 | Sprint 0 | Ready for review |

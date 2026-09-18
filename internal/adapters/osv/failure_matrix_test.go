@@ -62,8 +62,27 @@ func TestScannerHelper(t *testing.T) {
 	case "sleep":
 		time.Sleep(time.Second)
 	case "large":
-		for i := 0; i < 128; i++ {
+		for range 128 {
 			os.Stdout.WriteString("x")
 		}
+	case "args":
+		want := []string{"scan", "source", "--format", "json", "."}
+		for i := range len(os.Args) - len(want) + 1 {
+			match := true
+			for j := range want {
+				if os.Args[i+j] != want[j] {
+					match = false
+					break
+				}
+			}
+			if match {
+				_, _ = os.Stdout.WriteString(`{"results":[]}`)
+				return
+			}
+		}
+		os.Exit(8)
+	case "vulnerable":
+		_, _ = os.Stdout.WriteString(`{"results":[{"packages":[{"package":{"name":"lodash","version":"4.17.20"},"vulnerabilities":[{"id":"GHSA-test","aliases":["CVE-test"],"database_specific":{"severity":"HIGH"},"severity":[{"score":"CVSS:3.1/AV:N"}],"affected":[{"ranges":[{"events":[{"introduced":"0"},{"fixed":"4.17.21"}]}]}]}]}]}]}`)
+		os.Exit(1)
 	}
 }

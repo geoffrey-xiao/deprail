@@ -22,13 +22,13 @@ func ParseVersion(output string) (adapter.Metadata, error) {
 	return adapter.Metadata{Name: "OSV-Scanner", Version: version, SupportedTargets: []string{"npm", "pnpm", "yarn", "pip", "uv", "poetry", "maven", "gradle"}}, nil
 }
 
-// Compatible accepts the v1 OSV-Scanner contract used by this adapter.
+// Compatible accepts the v2 OSV-Scanner CLI and JSON contract used by this adapter.
 func Compatible(_ context.Context, metadata adapter.Metadata) error {
 	if metadata.Name != "OSV-Scanner" {
 		return &adapter.Error{Code: adapter.ErrUnsupportedTarget, Message: "scanner name is unsupported"}
 	}
 	parts := strings.Split(metadata.Version, ".")
-	if len(parts) != 3 || parts[0] != "1" {
+	if len(parts) != 3 || parts[0] != "2" {
 		return &adapter.Error{Code: adapter.ErrUnsupportedTarget, Message: "OSV-Scanner version is unsupported"}
 	}
 	for _, part := range parts {

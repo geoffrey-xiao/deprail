@@ -46,10 +46,15 @@ func (s Scanner) Execute(ctx context.Context, plan adapter.Plan) (adapter.RawRes
 	}
 	target := plan.Targets[0]
 	args := append([]string{}, s.Args...)
-	args = append(args, "scan", "--format", "json", target.RelativePath)
+	args = append(args, "scan", "source", "--format", "json", target.RelativePath)
 	result, err := process.Run(ctx, process.Request{Path: s.Path, Args: args, Dir: s.Dir, Timeout: s.Timeout, OutputCap: s.OutputCap})
 	if err != nil {
-		return adapter.RawResult{Stdout: result.Stdout, Stderr: result.Stderr, ExitCode: result.ExitCode}, processToAdapterError(err)
+		raw := adapter.RawResult{Stdout: result.Stdout, Stderr: result.Stderr, ExitCode: result.ExitCode}
+		if result.ExitCode == 1 {
+			// OSV-Scanner v2 uses exit code 1 to report vulnerabilities found.
+			return raw, nil
+		}
+		return raw, processToAdapterError(err)
 	}
 	return adapter.RawResult{Stdout: result.Stdout, Stderr: result.Stderr, ExitCode: result.ExitCode}, nil
 }
@@ -69,12 +74,61 @@ type rawPackageInfo struct {
 	Version string `json:"version"`
 }
 type rawVulnerability struct {
-	ID               string   `json:"id"`
-	Aliases          []string `json:"aliases"`
-	Severity         string   `json:"severity"`
+	ID               string          `json:"id"`
+	Aliases          []string        `json:"aliases"`
+	Severity         json.RawMessage `json:"severity"`
 	DatabaseSpecific struct {
 		FixedVersion string `json:"fixed_version"`
+		Severity     string `json:"severity"`
 	} `json:"database_specific"`
+	Affected []rawAffected `json:"affected"`
+}
+type rawAffected struct {
+	Ranges []rawRange `json:"ranges"`
+}
+type rawRange struct {
+	Events []rawEvent `json:"events"`
+}
+type rawEvent struct {
+	Fixed string `json:"fixed"`
+}
+
+func vulnerabilitySeverity(vulnerability rawVulnerability) string {
+	if vulnerability.DatabaseSpecific.Severity != "" {
+		return vulnerability.DatabaseSpecific.Severity
+	}
+	var text string
+	if json.Unmarshal(vulnerability.Severity, &text) == nil {
+		return text
+	}
+	var observations []struct {
+		Score string `json:"score"`
+	}
+	if json.Unmarshal(vulnerability.Severity, &observations) == nil && len(observations) > 0 {
+		return observations[0].Score
+	}
+	return ""
+}
+
+func vulnerabilityFixedVersion(vulnerability rawVulnerability) string {
+	if vulnerability.DatabaseSpecific.FixedVersion != "" {
+		return vulnerability.DatabaseSpecific.FixedVersion
+	}
+	versions := make([]string, 0)
+	for _, affected := range vulnerability.Affected {
+		for _, vulnerabilityRange := range affected.Ranges {
+			for _, event := range vulnerabilityRange.Events {
+				if event.Fixed != "" {
+					versions = append(versions, event.Fixed)
+				}
+			}
+		}
+	}
+	if len(versions) == 0 {
+		return ""
+	}
+	sort.Strings(versions)
+	return versions[0]
 }
 
 func (s Scanner) Normalize(_ context.Context, records []adapter.Record) ([]adapter.Finding, error) {
@@ -96,7 +150,7 @@ func Parse(raw adapter.RawResult) ([]adapter.Record, error) {
 			for _, vuln := range pkg.Vulnerabilities {
 				aliases := append([]string(nil), vuln.Aliases...)
 				sort.Strings(aliases)
-				records = append(records, adapter.Record{Component: pkg.Package.Name, Version: pkg.Package.Version, Aliases: aliases, Severity: vuln.Severity, Fixed: vuln.DatabaseSpecific.FixedVersion, TargetID: vuln.ID})
+				records = append(records, adapter.Record{Component: pkg.Package.Name, Version: pkg.Package.Version, Aliases: aliases, Severity: vulnerabilitySeverity(vuln), Fixed: vulnerabilityFixedVersion(vuln), TargetID: vuln.ID})
 			}
 		}
 	}

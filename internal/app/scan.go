@@ -29,11 +29,19 @@ func Scan(ctx context.Context, root string, options ScanOptions) (ScanReport, er
 	if err != nil {
 		return ScanReport{Status: discovery.Failed, Errors: []string{err.Error()}}, err
 	}
+	scanRoot, err := filepath.Abs(root)
+	if err != nil {
+		return ScanReport{Status: discovery.Failed, Errors: []string{"resolve scanner root"}}, err
+	}
+	scanRoot, err = filepath.EvalSymlinks(scanRoot)
+	if err != nil {
+		return ScanReport{Status: discovery.Failed, Errors: []string{"resolve scanner root"}}, err
+	}
 	if options.Scanner == nil {
-		options.Scanner = osv.Scanner{Path: "osv-scanner", Dir: graph.RepositoryRoot, Timeout: 2 * time.Minute, OutputCap: 16 << 20}
+		options.Scanner = osv.Scanner{Path: "osv-scanner", Dir: scanRoot, Timeout: 2 * time.Minute, OutputCap: 16 << 20}
 	}
 	if options.Artifacts.Root == "" {
-		options.Artifacts = artifact.Store{Root: filepath.Join(graph.RepositoryRoot, ".deprail", "artifacts"), MaxBytes: 16 << 20}
+		options.Artifacts = artifact.Store{Root: filepath.Join(scanRoot, ".deprail", "artifacts"), MaxBytes: 16 << 20}
 	}
 	units, err := scanplan.Build(graph)
 	if err != nil {

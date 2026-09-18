@@ -1,5 +1,6 @@
 id,title,type,area,priority,risk,target_version,epic,sprint,owner,reviewer,dependencies,acceptance_evidence,status
 V02-000,Establish v0.2.0 context baseline,decision,foundation,P0,R1,0.2.0,Package gate,Sprint 0,Project owner,Maintainer,v0.1 release decision and origin/main baseline,Reviewed package and target-version decision,Ready for review
+V02-001,Normalize empty report collections,bug,normalization,P0,R1,0.2.0,EPIC-001,Sprint 0,TBD,TBD,None,JSON contract and schema examples,Ready for review
 V02-002,Reject unexpected command arguments,bug,cli,P0,R1,0.2.0,EPIC-001,Sprint 0,TBD,TBD,None,Invalid invocation returns code 2,Ready for review
 V02-003,Inject truthful build version identity,feature,cli,P1,R1,0.2.0,EPIC-001,Sprint 1,TBD,TBD,None,Release and development version smoke output,Draft
 V02-004,Establish release-mode evidence checklist,docs,docs,P0,R0,0.2.0,EPIC-001,Sprint 0,TBD,TBD,None,Reviewed release-mode checklist,Ready for review

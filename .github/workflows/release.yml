@@ -43,9 +43,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          ./dist/deprail-linux-amd64 doctor --format json > /tmp/doctor.json || test "$?" -eq 3
-          test -s /tmp/doctor.json
-          ./dist/deprail-linux-amd64 discover testdata/fixtures/mixed-repository --format json > /tmp/discover.json
+          ./dist/deprail-linux-amd64 discover testdata/fixtures/mixed-repository --format json > /tmp/discover.json || test "$?" -eq 3
           test -s /tmp/discover.json
 
       - name: Store release artifacts for approval

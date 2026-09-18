@@ -13,6 +13,8 @@ This archive consolidates the current product, architecture, delivery-plan, and 
 
 For the user-facing installation, compatibility, and troubleshooting guide, see [`QUICKSTART.md`](QUICKSTART.md).
 
+The preview release procedure and known release gaps are recorded in [`RELEASE-v0.1-PREVIEW.md`](RELEASE-v0.1-PREVIEW.md).
+
 ## Package Structure
 
 ```text

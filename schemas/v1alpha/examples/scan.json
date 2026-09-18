@@ -1,0 +1,12 @@
+{
+  "schema_version": "v1alpha",
+  "document_type": "scan",
+  "scan_id": "scan-001",
+  "started_at": "2026-09-18T00:00:00Z",
+  "finished_at": "2026-09-18T00:00:02Z",
+  "tool": {"name": "OSV-Scanner", "version": "1.9.0", "database": "osv.dev"},
+  "status": "complete",
+  "findings": [],
+  "errors": [],
+  "artifact_digests": []
+}

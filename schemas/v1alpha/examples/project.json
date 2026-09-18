@@ -1,0 +1,23 @@
+{
+  "schema_version": "v1alpha",
+  "document_type": "project",
+  "repository_root": ".",
+  "display_name": "mixed-fixture",
+  "workspaces": [
+    {
+      "schema_version": "v1alpha",
+      "document_type": "workspace",
+      "workspace_id": "workspace-npm",
+      "relative_path": "frontend",
+      "ecosystem": "npm",
+      "package_manager": "npm",
+      "manifests": ["frontend/package.json"],
+      "lockfiles": ["frontend/package-lock.json"],
+      "completeness": "complete",
+      "warnings": [],
+      "diagnostics": []
+    }
+  ],
+  "completeness": "complete",
+  "diagnostics": []
+}

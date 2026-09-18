@@ -2,11 +2,26 @@ package app
 
 import (
 	"context"
+	"encoding/json"
+	"path/filepath"
+	"strings"
 	"testing"
 
 	"github.com/geoffrey-xiao/deprail/internal/adapter"
 	"github.com/geoffrey-xiao/deprail/internal/artifact"
 )
+
+type emptyScanner struct {
+	fakeScanner
+}
+
+func (emptyScanner) Parse(context.Context, adapter.RawResult) ([]adapter.Record, error) {
+	return nil, nil
+}
+
+func (emptyScanner) Normalize(context.Context, []adapter.Record) ([]adapter.Finding, error) {
+	return nil, nil
+}
 
 type fakeScanner struct{}
 
@@ -34,5 +49,46 @@ func TestScanRetainsArtifactAndFindings(t *testing.T) {
 	}
 	if len(report.Findings) != 1 || len(report.ArtifactDigests) != 1 {
 		t.Fatalf("report = %#v", report)
+	}
+}
+
+func TestScanEmptyCollectionsSerializeAsArrays(t *testing.T) {
+	report, err := Scan(context.Background(), fixturePath(t, "npm-basic"), ScanOptions{
+		Scanner:   emptyScanner{},
+		Artifacts: artifact.Store{Root: t.TempDir(), MaxBytes: 1024},
+	})
+	if err != nil {
+		t.Fatalf("scan: %v", err)
+	}
+	data, err := json.Marshal(report)
+	if err != nil {
+		t.Fatalf("marshal: %v", err)
+	}
+	for _, field := range []string{`"findings":[]`, `"errors":[]`} {
+		if !strings.Contains(string(data), field) {
+			t.Fatalf("serialized report %s missing %s", data, field)
+		}
+	}
+	if !strings.Contains(string(data), `"artifact_digests":[`) {
+		t.Fatalf("serialized report %s missing artifact array", data)
+	}
+}
+
+func TestScanFailureSerializesEmptyCollections(t *testing.T) {
+	report, err := Scan(context.Background(), filepath.Join(t.TempDir(), "missing"), ScanOptions{})
+	if err == nil {
+		t.Fatal("expected scan failure")
+	}
+	data, marshalErr := json.Marshal(report)
+	if marshalErr != nil {
+		t.Fatalf("marshal: %v", marshalErr)
+	}
+	for _, field := range []string{`"findings":[]`, `"artifact_digests":[]`} {
+		if !strings.Contains(string(data), field) {
+			t.Fatalf("serialized report %s missing %s", data, field)
+		}
+	}
+	if !strings.Contains(string(data), `"errors":[`) {
+		t.Fatalf("serialized report %s missing errors array", data)
 	}
 }

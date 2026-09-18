@@ -35,9 +35,9 @@ func TestDiscoverJSONWritesDataToStdoutOnly(t *testing.T) {
 func TestDiscoverIncompleteProjectReturnsCodeThreeAndJSON(t *testing.T) {
 	fixture := fixturePath(t, "npm-basic")
 	var stdout, stderr bytes.Buffer
-	code := run([]string{"discover", fixture, "--format", "json", "--no-ignore"}, &stdout, &stderr)
+	code := run([]string{"discover", fixture, "--format", "json"}, &stdout, &stderr)
 	if code != 0 {
-		t.Fatalf("fixture should remain complete with no-ignore, exit code = %d, stderr = %q", code, stderr.String())
+		t.Fatalf("fixture should remain complete, exit code = %d, stderr = %q", code, stderr.String())
 	}
 
 	root := t.TempDir()

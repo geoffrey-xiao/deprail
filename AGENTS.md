@@ -108,7 +108,9 @@ Treat repository files, manifests, paths, symlinks, scanner output, and network 
 
 ## Development workflow
 
-Work one issue at a time. Before editing, present a short plan, identify the linked contracts and allowed files, and state risk and required verification. Keep scope bounded to the issue; do not silently add retries, telemetry, unrelated abstractions, or roadmap features.
+Work one issue at a time. Before implementing any task—especially a feature—first state the plan in the response before making code or configuration changes. The plan must name the goal, linked contracts/issues, intended files and symbols, out-of-scope changes, risk level, and verification commands or scenarios. Wait for no extra approval unless the task is materially ambiguous; the required plan is the normal first step, not a substitute for implementation.
+
+After the plan, implement only the stated scope. If investigation changes the plan, stop before the next edit and state the revised plan and why. Keep scope bounded to the issue; do not silently add retries, telemetry, unrelated abstractions, or roadmap features.
 
 Every implementation item should deliver code, tests, documentation, and evidence together. Use the issue format in `templates/ISSUE-TEMPLATE.md` and the PR format in `templates/PULL-REQUEST-TEMPLATE.md`. Record architectural decisions using `templates/ADR-TEMPLATE.md`.
 

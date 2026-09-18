@@ -1,0 +1,13 @@
+{
+  "release-type": "go",
+  "package-name": "github.com/geoffrey-xiao/deprail",
+  "include-component-in-tag": false,
+  "bump-minor-pre-major": true,
+  "changelog-sections": [
+    {"type": "feat", "section": "Features"},
+    {"type": "fix", "section": "Fixes"},
+    {"type": "docs", "section": "Documentation"},
+    {"type": "test", "section": "Tests"},
+    {"type": "chore", "section": "Maintenance"}
+  ]
+}

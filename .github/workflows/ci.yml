@@ -30,7 +30,7 @@ jobs:
 
       - name: Verify formatting
         shell: bash
-        run: test -z "$(gofmt -l .)"
+        run: test -z "$(go list -f '{{.Dir}}' ./... | xargs gofmt -l)"
 
       - name: Run vet
         run: go vet ./...

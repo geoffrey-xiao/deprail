@@ -18,7 +18,7 @@ test:
 	$(GO) test ./...
 
 lint:
-	@test -z "$(shell gofmt -l .)" || { echo "error: gofmt required for:"; gofmt -l .; exit 1; }
+	@test -z "$(shell $(GO) list -f '{{.Dir}}' ./... | xargs gofmt -l)" || { echo "error: gofmt required for:"; $(GO) list -f '{{.Dir}}' ./... | xargs gofmt -l; exit 1; }
 	$(GO) vet ./...
 
 build:

@@ -64,6 +64,29 @@ func TestDiscoverRejectsMultiplePaths(t *testing.T) {
 	}
 }
 
+func TestRejectsUnexpectedCommandArguments(t *testing.T) {
+	tests := []struct {
+		name string
+		args []string
+	}{
+		{name: "doctor positional", args: []string{"doctor", "unexpected"}},
+		{name: "discover option", args: []string{"discover", "--unsupported"}},
+		{name: "scan option", args: []string{"scan", "--unsupported"}},
+		{name: "doctor option", args: []string{"doctor", "--unsupported"}},
+	}
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			var stdout, stderr bytes.Buffer
+			if code := run(test.args, &stdout, &stderr); code != 2 {
+				t.Fatalf("exit code = %d, want 2; stdout=%q stderr=%q", code, stdout.String(), stderr.String())
+			}
+			if stdout.Len() != 0 || !strings.Contains(stderr.String(), "CONFIG_INVALID") {
+				t.Fatalf("stdout=%q stderr=%q", stdout.String(), stderr.String())
+			}
+		})
+	}
+}
+
 func fixturePath(t *testing.T, fixture string) string {
 	t.Helper()
 	_, source, _, ok := runtime.Caller(0)

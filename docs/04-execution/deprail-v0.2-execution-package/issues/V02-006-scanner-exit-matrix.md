@@ -9,8 +9,9 @@
 - Sprint: Sprint 0
 - Owner: TBD
 - Reviewer: TBD
+- GitHub Issue: [#122](https://github.com/geoffrey-xiao/deprail/issues/122)
+- Parent epic: [EPIC-002 / #113](https://github.com/geoffrey-xiao/deprail/issues/113)
 - Dependencies: V02-005
-- Status: Local planning; GitHub issue not created
 
 ## Definition of Ready
 

@@ -7,6 +7,26 @@ labels: "type:test"
 
 ## Issue ID
 
+## Planning Metadata
+
+- Area: `test`
+- Priority: `P0` / `P1` / `P2`
+- Risk: `R0` / `R1` / `R2` / `R3`
+- Target version:
+- Milestone:
+- Sprint:
+- Owner:
+- Reviewer:
+- Dependencies: `None` or issue links
+
+## Definition of Ready
+
+- [ ] Consumer-visible behavior under test is named.
+- [ ] Scope and non-goals are clear.
+- [ ] Boundary, failure, determinism, security, and platform cases are selected as relevant.
+- [ ] Expected evidence is defined.
+- [ ] Owner, reviewer, dependencies, and target version are recorded.
+
 ## Behavior Under Test
 
 ## Scope

@@ -7,6 +7,26 @@ labels: "type:bug"
 
 ## Issue ID
 
+## Planning Metadata
+
+- Area: `foundation` / `discovery` / `adapter` / `normalization` / `cli` / `test` / `docs`
+- Priority: `P0` / `P1` / `P2`
+- Risk: `R0` / `R1` / `R2` / `R3`
+- Target version:
+- Milestone:
+- Sprint:
+- Owner:
+- Reviewer:
+- Dependencies: `None` or issue links
+
+## Definition of Ready
+
+- [ ] Impact and affected users are clear.
+- [ ] Reproduction is complete.
+- [ ] Expected behavior and failure behavior are defined.
+- [ ] Required regression test is named.
+- [ ] Owner, reviewer, dependencies, and target version are recorded.
+
 ## Observed Behavior
 
 ## Expected Behavior

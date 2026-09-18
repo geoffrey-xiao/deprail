@@ -130,8 +130,15 @@ Every implementation item should deliver code, tests, documentation, and evidenc
 ### Branch and merge policy
 
 - Keep `main` releasable and do not develop directly on it.
-- Create one short-lived branch per issue or bounded task from the current `main`.
-- Use descriptive names such as `chore/s0-002-toolchain-ci`, `feat/discovery-walker`, or `fix/path-containment`.
+- Before creating or checking out an issue branch, synchronize the local baseline:
+  ```bash
+  git fetch origin main
+  git switch main
+  git pull --ff-only origin main
+  git switch -c <issue-branch> main
+  ```
+  If switching or fast-forwarding fails, preserve local work and report the blocker; never reset or overwrite changes to force synchronization.
+- Create one short-lived branch per issue or bounded task from the synchronized local `main`.
 - Push the branch and open a pull request linked to the issue; do not push implementation commits directly to `main`.
 - Keep one primary outcome per pull request. Include scope, risk, contract impact, verification results, evidence, and rollback notes.
 - Merge only after required CI and human review pass. Use a squash merge tied to the issue ID, then delete the branch.

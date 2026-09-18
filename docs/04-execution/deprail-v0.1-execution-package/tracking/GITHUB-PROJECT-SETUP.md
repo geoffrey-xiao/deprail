@@ -34,12 +34,20 @@ After opening a PR, resolve the live `DepRail` project and field IDs, locate the
 For each issue, follow this sequence without reusing a previously completed issue branch:
 
 1. Confirm the GitHub issue, local contract, dependencies, reviewer, and Definition of Ready.
-2. Start from the current `main` and create one dedicated branch for that issue.
-3. Implement only that issue's primary outcome, including its tests and evidence.
-4. Run the required verification commands and record the results.
-5. Commit with the issue key and number, push the branch, and open one labeled pull request linked to the issue.
-6. Leave the issue and local checklist open until CI, human review, linked evidence, and owner acceptance are complete.
-7. Merge only through the reviewed pull request; then update the issue and checklist with the evidence.
+2. Synchronize the branch baseline before creating the issue branch:
+   ```bash
+   git fetch origin main
+   git switch main
+   git pull --ff-only origin main
+   git switch -c <issue-branch> main
+   ```
+   If local work prevents switching or `--ff-only` fails, preserve the work and resolve the blocker without resetting or overwriting it.
+3. Add the issue to the `DepRail` project if absent and set Project Status to `In Progress`.
+4. Implement only that issue's primary outcome, including its tests and evidence.
+5. Run the required verification commands and record the results.
+6. Commit with the issue key and number, push the branch, and open one labeled pull request linked to the issue.
+7. Set the linked project item to `Review`, verify labels and issue linkage, and leave the issue and local checklist open until CI, human review, linked evidence, and owner acceptance are complete.
+8. Merge only through the reviewed pull request; then update the issue and checklist with the evidence.
 
 ## Import Method
 

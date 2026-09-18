@@ -130,8 +130,15 @@ Every implementation item should deliver code, tests, documentation, and evidenc
 ### Branch and merge policy
 
 - Keep `main` releasable and do not develop directly on it.
-- Create one short-lived branch per issue or bounded task from the current `main`.
-- Use descriptive names such as `chore/s0-002-toolchain-ci`, `feat/discovery-walker`, or `fix/path-containment`.
+- Before creating or checking out an issue branch, synchronize the local baseline:
+  ```bash
+  git fetch origin main
+  git switch main
+  git pull --ff-only origin main
+  git switch -c <issue-branch> main
+  ```
+  If switching or fast-forwarding fails, preserve local work and report the blocker; never reset or overwrite changes to force synchronization.
+- Create one short-lived branch per issue or bounded task from the synchronized local `main`.
 - Push the branch and open a pull request linked to the issue; do not push implementation commits directly to `main`.
 - Keep one primary outcome per pull request. Include scope, risk, contract impact, verification results, evidence, and rollback notes.
 - Merge only after required CI and human review pass. Use a squash merge tied to the issue ID, then delete the branch.
@@ -152,6 +159,27 @@ Every implementation item should deliver code, tests, documentation, and evidenc
 - Every pull request must carry matching `area`, `risk`, `priority`, and `type` labels from the project label set.
 - Before requesting review, agents must check that the pull request has the required labels and issue link.
 - A missing issue reference or required label is a process defect; fix it before review or merge rather than deferring it.
+
+### Project status synchronization
+
+GitHub does not currently move DepRail Project items automatically when a pull request opens. Agents MUST synchronize the project item explicitly:
+
+- When implementation starts, add the issue to the `DepRail` project if absent and set Project Status to `In Progress`.
+- Immediately after opening the pull request, set the linked issue's Project Status to `Review`.
+- Before requesting review, verify the issue link, labels, project membership, and Project Status with `gh`.
+- Do not set `Done` on merge. The owner moves the item to `Done` only after acceptance, verification evidence, and review are complete.
+- If project-write permission is unavailable, report the exact missing permission and leave the issue status unchanged; never claim synchronization occurred.
+
+Resolve the project, item, Status field, and option IDs from the live project rather than hard-coding environment-specific IDs:
+
+```bash
+gh project list --owner geoffrey-xiao --format json
+gh project item-list <project-number> --owner geoffrey-xiao --format json
+gh project field-list <project-number> --owner geoffrey-xiao --format json
+gh project item-edit --project-id <project-id> --id <item-id> --field-id <status-field-id> --single-select-option-id <review-option-id>
+```
+
+The final `item-edit` command is required after PR creation because the current repository has no automatic PR-to-Project status mutation.
 
 ### Issue lifecycle and closure
 

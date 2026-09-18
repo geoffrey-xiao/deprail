@@ -57,7 +57,7 @@ labels: "type:bug"
 
 ## Final Acceptance
 
-- [ ] Owner reviewed the expected behavior and regression evidence.
+- [ ] Owner reviewed the expected behavior and regression evidence during PR review.
 - [ ] Verification and CI results were reviewed.
 - [ ] Evidence and remaining risk are recorded.
-- [ ] Owner explicitly authorized issue closure.
+- [ ] PR review and merge evidence are linked.

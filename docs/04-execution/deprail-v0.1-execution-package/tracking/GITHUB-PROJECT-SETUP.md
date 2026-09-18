@@ -33,11 +33,11 @@ Issue creation MUST provide enough information to satisfy Definition of Ready. M
 Use this lifecycle:
 
 ```text
-Todo → In Progress → Review → In Progress → Done
+Todo → In Progress → Review → Done
                     └→ Blocked → In Progress
 ```
 
-`Review` means an opened pull request. `Blocked` requires a blocked reason, owner, and next-check date. After merge, keep the issue in `In Progress` until verification evidence and owner acceptance are recorded. `Done` requires linked evidence and explicit owner authorization; merge alone is never sufficient.
+`Review` means an opened pull request. `Blocked` requires a blocked reason, owner, and next-check date. The owner reviews acceptance criteria and required evidence during PR review. After the reviewed PR merges and required CI/evidence pass, move the issue directly to `Done`; no separate post-merge owner-acceptance step is required.
 
 The metadata workflow validates labels, required issue and pull request sections, issue linkage, and label agreement. It does not mutate Project fields. Agents and maintainers MUST continue to synchronize Project status explicitly and verify it with `gh project item-list`.
 
@@ -47,7 +47,7 @@ The single long-lived `DepRail` project uses release-specific views over the sha
 
 ## Automation
 
-New issues enter `Todo`. Definition of Ready is recorded in the issue body rather than represented by a separate status. Creating a branch and starting implementation moves the item to `In Progress`. An opened PR moves the item to `Review`; because the current repository has no automatic PR-to-Project mutation, the agent or maintainer MUST set this explicitly with `gh project item-edit` and verify it with `gh project item-list`. An external dependency or unresolved decision moves it to `Blocked`; `Blocked Reason`, an owner, and a next-check date are required. Review rework returns to `In Progress`. Merge does not move to `Done` until verification, evidence, and owner acceptance are complete.
+New issues enter `Todo`. Definition of Ready is recorded in the issue body rather than represented by a separate status. Creating a branch and starting implementation moves the item to `In Progress`. An opened PR moves the item to `Review`; because the current repository has no automatic PR-to-Project mutation, the agent or maintainer MUST set this explicitly with `gh project item-edit` and verify it with `gh project item-list`. An external dependency or unresolved decision moves the item to `Blocked`; `Blocked Reason`, an owner, and a next-check date are required. Review rework returns to `In Progress`. After a reviewed PR merges, CI and required evidence pass, and PR review recorded owner acceptance, move the issue to `Done`.
 
 ### Required status synchronization
 
@@ -70,8 +70,8 @@ For each issue, follow this sequence without reusing a previously completed issu
 4. Implement only that issue's primary outcome, including its tests and evidence.
 5. Run the required verification commands and record the results.
 6. Commit with the issue key and number, push the branch, and open one labeled pull request linked to the issue.
-7. Set the linked project item to `Review`, verify labels and issue linkage, and leave the issue and local checklist open until CI, human review, linked evidence, and owner acceptance are complete.
-8. Merge only through the reviewed pull request; then update the issue and checklist with the evidence.
+7. Set the linked project item to `Review`, verify labels and issue linkage, and leave the issue and local checklist open until CI, human review, linked evidence, and owner acceptance during review are complete.
+8. Merge only through the reviewed pull request; then update the issue and checklist with the evidence and set the Project item to `Done`.
 
 ## Import Method
 

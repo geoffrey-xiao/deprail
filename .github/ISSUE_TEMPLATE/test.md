@@ -52,7 +52,7 @@ labels: "type:test"
 
 ## Final Acceptance
 
-- [ ] Owner reviewed every test case and result.
+- [ ] Owner reviewed every test case and result during PR review.
 - [ ] Verification and CI results were reviewed.
 - [ ] Evidence and remaining risk are recorded.
-- [ ] Owner explicitly authorized issue closure.
+- [ ] PR review and merge evidence are linked.

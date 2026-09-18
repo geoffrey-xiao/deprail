@@ -45,7 +45,7 @@ labels: "type:decision"
 
 ## Final Acceptance
 
-- [ ] Owner reviewed the decision and consequences.
+- [ ] Owner reviewed the decision and consequences during PR review.
 - [ ] Required human reviewers approved.
 - [ ] ADR and evidence links are attached.
-- [ ] Owner explicitly authorized issue closure.
+- [ ] PR review and merge evidence are linked.

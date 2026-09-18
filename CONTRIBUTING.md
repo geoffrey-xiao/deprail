@@ -69,6 +69,14 @@ Before starting a new issue, check the previous issue and pull request. If the p
 
 When an issue is finished, prepare a completion report for the owner covering every acceptance item, required command, CI result, human review result, evidence link, and remaining risk. The owner must inspect and check every acceptance item and explicitly confirm completion before closure. An agent may explain evidence and draft the closure comment, but may close the issue only after the owner authorizes it. A merged pull request alone does not prove completion, and local checklists require linked evidence and owner confirmation.
 
+## Defect triage
+
+Create a separate GitHub bug issue when a defect is outside the current issue, changes a contract/schema/security boundary, affects another component, needs follow-up, blocks work, or cannot be fixed without expanding the current pull request. Keep it in the current issue only when it is a direct acceptance failure and the fix preserves one primary outcome.
+
+Record reproduction, expected and observed behavior, impact, risk, priority, dependencies, regression-test requirements, reviewer, and evidence. Apply matching `type:bug`, `area:*`, `risk:*`, and `priority:*` labels, and link the bug from related issues and pull requests. Critical security, false-safe, data-loss, path-escape, command-injection, and credential-leak defects must be tracked immediately.
+
+Do not hide important defects in commits, TODOs, or review comments. Keep the bug open until regression evidence, verification, human review, and owner acceptance are complete.
+
 ## Change workflow
 
 1. Link the issue and identify scope, exclusions, risk, contracts, and acceptance evidence.

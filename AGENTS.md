@@ -162,6 +162,15 @@ Every implementation item should deliver code, tests, documentation, and evidenc
 - The project owner may close issues manually. An agent may close an issue only after that explicit confirmation or authorization; otherwise the agent must leave it open and remind the owner. A merged pull request alone does not prove completion.
 - Link a merged pull request with a closing keyword where appropriate, but do not treat merge alone as proof of completion. Update the local checklist only with linked evidence and owner confirmation.
 
+### Defect triage
+
+- Create a separate GitHub bug issue when a defect is outside the current issue, changes a contract/schema/security boundary, affects another component, needs follow-up, blocks work, or cannot be fixed without expanding the current PR.
+- Keep a defect in the current issue only when it is a direct acceptance failure, the fix preserves one primary outcome, and the current issue can still provide coherent evidence.
+- Record reproduction, expected and observed behavior, impact, risk, priority, dependencies, regression-test requirements, reviewer, and evidence. Apply matching `type:bug`, `area:*`, `risk:*`, and `priority:*` labels.
+- Critical security, false-safe, data-loss, path-escape, command-injection, and credential-leak defects interrupt normal work and are tracked immediately.
+- Link the defect issue from the active issue and pull request. Do not hide important defects in commits, TODOs, or review comments.
+- Keep the defect open until regression evidence, verification, human review, and owner acceptance are complete.
+
 Respect the execution controls:
 
 - At most two implementation issues and two review PRs are active.

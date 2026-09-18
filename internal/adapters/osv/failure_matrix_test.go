@@ -2,6 +2,7 @@ package osv
 
 import (
 	"context"
+	"fmt"
 	"os"
 	"strings"
 	"testing"
@@ -112,6 +113,12 @@ func TestScannerHelper(t *testing.T) {
 	case "empty":
 		_, _ = os.Stdout.WriteString(`{"results":[]}`)
 		os.Exit(0)
+	case "cwd":
+		cwd, err := os.Getwd()
+		if err != nil {
+			os.Exit(9)
+		}
+		_, _ = fmt.Fprintln(os.Stderr, cwd)
 	case "args":
 		want := []string{"scan", "source", "--format", "json", "."}
 		for i := range len(os.Args) - len(want) + 1 {

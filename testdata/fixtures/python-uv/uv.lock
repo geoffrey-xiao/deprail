@@ -1,0 +1,14 @@
+version = 1
+revision = 1
+requires-python = ">=3.11"
+
+[[package]]
+name = "deprail-fixture-uv"
+version = "1.0.0"
+source = { editable = "." }
+dependencies = [
+    { name = "requests" },
+]
+
+[package.metadata]
+requires-dist = [{ name = "requests", specifier = "==2.31.0" }]

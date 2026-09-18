@@ -38,6 +38,12 @@ fix/path-containment
 
 Push the branch and open a pull request linked to the issue. Keep one primary outcome per pull request. The pull request must include scope, risk, contract impact, verification results, evidence, and rollback notes. Required CI and human review must pass before a squash merge to `main`; delete the branch after merge. Emergency security changes may use an expedited path but still require an issue, review, verification, and follow-up record.
 
+## Issue lifecycle and closure
+
+Before starting a new issue, check the previous issue and pull request. If the previous work meets its acceptance criteria, verification, review, and evidence requirements, remind the project owner to close it. If it is incomplete, keep it open or mark it blocked with an owner and reason.
+
+When an issue is finished, confirm its acceptance checklist, required commands, CI result, human review, and evidence before closing it. The owner may close issues manually; an agent may help close one only when the evidence is complete and the owner requests or authorizes that action. A merged pull request alone does not prove completion, and local checklists must only be updated with linked evidence.
+
 ## Change workflow
 
 1. Link the issue and identify scope, exclusions, risk, contracts, and acceptance evidence.

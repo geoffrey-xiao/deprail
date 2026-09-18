@@ -137,6 +137,14 @@ Every implementation item should deliver code, tests, documentation, and evidenc
 - Merge only after required CI and human review pass. Use a squash merge tied to the issue ID, then delete the branch.
 - Emergency security changes may use an expedited path, but still require a linked issue, review, verification, and a follow-up record.
 
+### Issue lifecycle and closure
+
+- Before starting a new issue, check the previous issue and pull request. Remind the project owner to close the previous issue if its acceptance, verification, review, and evidence are complete.
+- Do not silently abandon or leave completed issues open. If the prior issue is incomplete, state the missing acceptance item and keep it open or mark it blocked with an owner and reason.
+- When an issue is finished, verify its acceptance checklist, required commands, CI result, human review, and evidence before recommending closure.
+- The project owner may close issues manually. An agent may help close an issue only when completion evidence is present and the owner requests or authorizes the action; otherwise the agent must remind the owner and provide the exact issue/PR action.
+- Link a merged pull request with a closing keyword where appropriate, but do not treat merge alone as proof of completion. Update the local checklist only with linked evidence.
+
 Respect the execution controls:
 
 - At most two implementation issues and two review PRs are active.

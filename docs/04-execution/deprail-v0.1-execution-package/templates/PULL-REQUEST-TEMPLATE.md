@@ -6,6 +6,13 @@
 - Primary outcome:
 - Target version:
 
+## Issue Link
+
+- [ ] Exactly one issue is linked with `Closes #N`, `Fixes #N`, `Resolves #N`, or `Refs #N`.
+- Issue URL/number:
+- Link type: `Closes` / `Fixes` / `Resolves` / `Refs`
+
+
 ## Scope
 
 - Included:

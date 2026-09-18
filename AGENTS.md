@@ -181,6 +181,24 @@ gh project item-edit --project-id <project-id> --id <item-id> --field-id <status
 
 The final `item-edit` command is required after PR creation because the current repository has no automatic PR-to-Project status mutation.
 
+### Release version baseline
+
+Before starting development for a new product-version line such as `0.2.0`, agents MUST establish the current release baseline:
+
+- Fetch the current branch and all tags: `git fetch origin main --tags`.
+- Verify the synchronized `origin/main` commit and inspect the latest stable tag and any preview or release-candidate tags:
+  ```bash
+  git log --oneline -1 origin/main
+  git tag --list 'v*' --sort=-v:refname
+  gh release list --repo geoffrey-xiao/deprail --limit 20
+  git show origin/main:.release-please-manifest.json
+  ```
+- Treat the latest stable `vMAJOR.MINOR.PATCH` tag as the release baseline. Preview tags such as `v0.1.0-preview.1` and release candidates such as `v0.1.0-rc.1` do not replace the stable baseline.
+- Record the next intended version in the issue or release plan before implementation. For example, `0.2.0` follows the completed `0.1.x` line; it must not be inferred from an arbitrary branch or unpublished local tag.
+- Create release tags only from a reviewed, CI-passing `main` commit. Tags are immutable: never move, overwrite, or reuse a version tag.
+- A bug fix after `v0.1.0` increments the patch version (`v0.1.1`); a new backward-compatible product line increments the minor version (`v0.2.0`).
+- If no prior stable tag exists, document the initial version decision explicitly before creating the first preview or stable tag.
+
 ### Issue lifecycle and closure
 
 - Before starting a new issue, check the previous issue and pull request. Remind the project owner to close the previous issue if its acceptance, verification, review, and evidence are complete.

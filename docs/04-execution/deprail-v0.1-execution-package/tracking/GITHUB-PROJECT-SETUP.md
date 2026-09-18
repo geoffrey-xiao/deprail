@@ -29,13 +29,15 @@ New issues enter `Todo`. Definition of Ready is recorded in the issue body rathe
 
 For each issue, follow this sequence without reusing a previously completed issue branch:
 
-1. Confirm the GitHub issue, local contract, dependencies, reviewer, and Definition of Ready.
+1. Confirm the GitHub issue, local contract, dependencies, reviewer, and Definition of Ready. Assign the issue to the implementation owner and record an independent reviewer.
 2. Start from the current `main` and create one dedicated branch for that issue.
 3. Implement only that issue's primary outcome, including its tests and evidence.
 4. Run the required verification commands and record the results.
-5. Commit with the issue key and number, push the branch, and open one labeled pull request linked to the issue.
+5. Commit with the issue key and number, push the branch, and open one labeled pull request linked to the issue. Assign the pull request to the implementation owner and request the recorded reviewer.
 6. Leave the issue and local checklist open until CI, human review, linked evidence, and owner acceptance are complete.
 7. Merge only through the reviewed pull request; then update the issue and checklist with the evidence.
+
+Assignment identifies responsibility for driving the issue or pull request; it does not constitute review or acceptance. The implementation owner and reviewer should be distinct when practical.
 
 ## Import Method
 

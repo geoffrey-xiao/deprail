@@ -19,6 +19,7 @@ jobs:
       - name: Validate issue and pull request metadata
         uses: actions/github-script@v7
         with:
+          script: |
             const payload = context.payload;
 
             const requiredLabels = {

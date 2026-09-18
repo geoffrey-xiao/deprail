@@ -1,16 +1,13 @@
 <!-- Use Closes/Fixes/Resolves #N, verify matching labels, and synchronize Project status before review. See the v0.2 WORKFLOW-GUIDE.md. -->
 # Summary
 
-- Issue: `Closes #`
-- Issue key:
 - Primary outcome:
 - Target version:
 
 ## Issue Link
 
-- [ ] Exactly one issue is linked with `Closes #N`, `Fixes #N`, `Resolves #N`, or `Refs #N`.
-- Issue URL/number:
-- Link type: `Closes` / `Fixes` / `Resolves` / `Refs`
+Issue: `{{issue}}`
+Relationship: `Closes #{{issue}}` / `Refs #{{issue}}`
 
 
 ## Scope
@@ -46,9 +43,8 @@
 
 ## Project Synchronization
 
-- [ ] Linked issue is present.
-- [ ] `area:*`, `risk:*`, `priority:*`, and `type:*` labels match the issue.
 - [ ] Project status is `Review`.
+- [ ] `area:*`, `risk:*`, `priority:*`, and `type:*` labels match the issue.
 - [ ] Target version, milestone, owner, and reviewer are correct.
 
 ## Human Review Focus

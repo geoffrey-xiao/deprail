@@ -48,13 +48,13 @@ Smoke each artifact with `doctor --format json` and `discover` against the fixed
 
 ## Automated release path
 
-Issue `REL-002` adds the reviewed automation path. `release-please` opens or updates a release PR from merged conventional commits. Only merging that reviewed PR creates the release tag. The tag-triggered workflow runs `make verify`, builds the four documented artifacts, generates `SHA256SUMS`, runs smoke checks, and uploads assets to the GitHub Release. SBOM generation and signing remain explicit gaps.
+Issue `REL-002` defines the release automation path, but automatic `release-please` checks are currently paused. The workflow is manual-only through `workflow_dispatch`; it does not open or update release PRs from ordinary pushes to `main`. When intentionally invoked and merged, the tag-triggered workflow runs `make verify`, builds the four documented artifacts, generates `SHA256SUMS`, runs smoke checks, and uploads assets to the GitHub Release. SBOM generation and signing remain explicit gaps.
 
 The artifact workflow pauses at the protected `release-approval` environment after build, checksum generation, and smoke checks. A named reviewer must approve that environment before assets are uploaded to the GitHub Release. Repository settings must configure required reviewers for this environment; the workflow reference alone does not enforce approval.
 
 ## Compatibility and known limitations
 
-- OSV-Scanner must be installed separately and currently requires the supported v1 compatibility range.
+- OSV-Scanner must be installed separately and currently requires the supported v2 compatibility range.
 - Discovery and scan completeness are explicit. Exit code `3` means scanner failure or incomplete scope.
 - Existing output files are not overwritten by atomic presenter output.
 - Windows process execution currently terminates the direct process; process-tree cleanup requires a future Job Object implementation and human review.

@@ -17,7 +17,7 @@ Check the environment before scanning:
 ./deprail doctor --format json
 ```
 
-`doctor` never installs tools or accesses the network. Install OSV-Scanner separately, then rerun the command. Supported scanner compatibility currently requires an OSV-Scanner v1 version.
+`doctor` never installs tools or accesses the network. Install OSV-Scanner separately, then rerun the command. Supported scanner compatibility currently requires an OSV-Scanner v2 version.
 
 ## Discover a repository
 

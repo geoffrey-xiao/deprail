@@ -18,7 +18,7 @@ Linux, macOS, and Windows are required. amd64 release artifacts are required; ar
 
 ## OSV-Scanner
 
-The exact supported version range is pinned in the repository. Missing, incompatible, or malformed output produces a stable diagnostic. Automatic installation is not supported.
+The pinned supported range is OSV-Scanner `>=2.0.0 <3.0.0`. The v2 CLI `scan source` command and JSON output are required. Missing, incompatible, or malformed output produces a stable diagnostic. Automatic installation is not supported.
 
 ## Explicitly Unsupported
 

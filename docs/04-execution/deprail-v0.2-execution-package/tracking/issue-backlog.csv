@@ -1,0 +1,15 @@
+id,title,type,area,priority,risk,target_version,epic,sprint,owner,reviewer,dependencies,acceptance_evidence,status
+V02-001,Normalize empty report collections,bug,normalization,P0,R1,0.2.0,EPIC-001,Sprint 0,TBD,TBD,None,JSON contract and schema examples,Ready for review
+V02-002,Reject unexpected command arguments,bug,cli,P0,R1,0.2.0,EPIC-001,Sprint 0,TBD,TBD,None,Invalid invocation returns code 2,Ready for review
+V02-003,Inject truthful build version identity,feature,cli,P1,R1,0.2.0,EPIC-001,Sprint 1,TBD,TBD,None,Release and development version smoke output,Draft
+V02-004,Establish release-mode evidence checklist,docs,docs,P0,R0,0.2.0,EPIC-001,Sprint 0,TBD,TBD,None,Reviewed release-mode checklist,Ready for review
+V02-005,Add real OSV-Scanner v2 fixtures,test,adapter,P0,R1,0.2.0,EPIC-002,Sprint 0,TBD,TBD,None,Raw fixtures and parser contract tests,Ready for review
+V02-006,Add scanner exit-code matrix,test,adapter,P0,R1,0.2.0,EPIC-002,Sprint 0,TBD,TBD,V02-005,Exit matrix with findings and failures,Ready for review
+V02-007,Verify scanner requested-root execution,bug,adapter,P0,R2,0.2.0,EPIC-002,Sprint 0,TBD,TBD,None,Root and artifact containment evidence,Ready for review
+V02-008,Add outside-root scan regression,test,test,P1,R2,0.2.0,EPIC-003,Sprint 1,TBD,TBD,V02-007,End-to-end regression test,Draft
+V02-009,Update report examples and arrays,bug,normalization,P0,R1,0.2.0,EPIC-003,Sprint 0,TBD,TBD,V02-001,Schema-valid array examples,Ready for review
+V02-010,Verify deterministic artifacts and ordering,test,test,P1,R2,0.2.0,EPIC-003,Sprint 1,TBD,TBD,V02-009,Golden or property evidence,Draft
+V02-011,Verify release identity across artifacts,test,cli,P1,R1,0.2.0,EPIC-004,Sprint 1,TBD,TBD,V02-003,Tag CLI artifact and commit identity evidence,Draft
+V02-012,Add release-mode smoke procedure,test,test,P1,R1,0.2.0,EPIC-004,Sprint 1,TBD,TBD,V02-004,Preview/RC/stable smoke record,Draft
+V02-013,Record release artifact and supply-chain evidence,docs,docs,P0,R2,0.2.0,EPIC-004,Sprint 0,TBD,TBD,V02-004,Artifacts checksums SBOM signing manual scans,Ready for review
+V02-014,Decide candidate capability boundary,decision,foundation,P1,R1,0.2.0,EPIC-005,Sprint 0,TBD,TBD,None,Approved scope decision,Decision required

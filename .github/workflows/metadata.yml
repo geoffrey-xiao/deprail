@@ -14,13 +14,12 @@ permissions:
 jobs:
   validate:
     name: Validate workflow metadata
+    runs-on: ubuntu-latest
     steps:
       - name: Validate issue and pull request metadata
         uses: actions/github-script@v7
         with:
           script: |
-            const context = require('@actions/github').context;
-            const core = require('@actions/core');
             const payload = context.payload;
 
             const requiredLabels = {
@@ -91,10 +90,11 @@ jobs:
               }
 
               const references = [...body.matchAll(/(?:Closes|Fixes|Resolves|Refs)\s+#(\d+)/gi)];
-              if (references.length !== 1) {
-                errors.push(`PR #${pullRequest.number} must contain exactly one issue reference using Closes, Fixes, Resolves, or Refs`);
+              const issueNumbers = [...new Set(references.map((reference) => Number(reference[1])))];
+              if (issueNumbers.length !== 1) {
+                errors.push(`PR #${pullRequest.number} must contain exactly one unique issue reference using Closes, Fixes, Resolves, or Refs`);
               } else {
-                const issueNumber = Number(references[0][1]);
+                const issueNumber = issueNumbers[0];
                 const issue = await github.rest.issues.get({
                   owner: context.repo.owner,
                   repo: context.repo.repo,

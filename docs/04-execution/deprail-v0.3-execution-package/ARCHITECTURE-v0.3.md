@@ -20,11 +20,11 @@ cmd/deprail
 | Component | Responsibility |
 | --- | --- |
 | `internal/remediation` | Finding context, candidate model, stable plan identity, risks, plan generation |
-| planning adapters | Read-only ownership, constraints, candidate compatibility, command templates, expected files |
-| `internal/app` | `fix plan` orchestration, source validation, stale-input handling |
+| planning adapters | Read-only ownership, constraints, candidate compatibility, command templates with working directories, expected files |
+| `internal/app` | `fix plan` orchestration, explicit report selection, source validation, stale-input handling |
 | `internal/presenter` | Terminal and JSON plan output |
 | `schemas` | Versioned remediation-plan schema and examples |
-| artifact/store | Plan persistence, source digests, safe atomic writes |
+| artifact/store | Plan persistence, source digests, safe external output handling |
 
 ## Trust boundary
 

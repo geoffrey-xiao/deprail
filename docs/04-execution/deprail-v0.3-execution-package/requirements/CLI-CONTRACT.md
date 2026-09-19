@@ -3,17 +3,21 @@
 ## Commands
 
 ```text
-deprail fix plan <finding-or-key>
-deprail fix plan <finding-or-key> --format json
-deprail fix plan <finding-or-key> --output <new-file>
+deprail fix plan --report <scan-report> --finding <finding-key>
+deprail fix plan --report <scan-report> --finding <finding-key> --format json
+deprail fix plan --report <scan-report> --finding <finding-key> --output <path-outside-repository>
 ```
+
+The report input is mandatory. v0.3 does not infer a latest report, rescan implicitly, or search an unindexed artifact directory. The report must carry or reference repository identity, source scan ID, artifact digests, workspace, finding key, and repository state.
 
 ## Behavior
 
-- Finding input is required and must resolve unambiguously.
+- `--report` must resolve to a readable, schema-valid normalized scan report.
+- `--finding` must resolve to exactly one finding in that report.
 - `--format json` writes only machine data to stdout.
 - Diagnostics and guidance use stderr.
-- `--output` writes atomically and does not overwrite unless explicitly permitted.
+- `--output` is optional, writes atomically, and MUST resolve outside the target repository root.
+- Output paths inside the repository, traversal paths, and symlink escapes fail before planning.
 - Planning does not mutate the repository, invoke package managers, or execute scripts.
 - Equivalent input produces equivalent plan JSON independent of finding/evidence order.
 

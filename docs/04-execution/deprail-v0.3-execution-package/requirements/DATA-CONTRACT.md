@@ -38,7 +38,8 @@ Unknown or unavailable evidence cannot be represented as safe compatibility. A v
 
 - Stable JSON is deterministic and schema-valid.
 - Repository-relative paths use `/`.
-- Commands are structured executable plus arguments.
+- Commands are structured objects with executable, arguments, and canonical repository-relative `working_directory`; `.` represents repository root.
+- `working_directory` MUST pass root containment and symlink checks and MUST NOT be absolute or traverse outside the repository.
 - Findings, candidates, risks, and evidence are canonicalized before serialization.
 - Provenance and raw source digests remain available.
 - Plan output never embeds secrets or unnecessary source content.

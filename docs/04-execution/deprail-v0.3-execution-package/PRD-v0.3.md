@@ -23,8 +23,7 @@ Help a developer understand which dependency change is viable, why it is risky, 
 - Understand why candidates are rejected or unavailable.
 
 ## Scope
-
-- `deprail fix plan <finding-or-key>` with terminal and JSON output.
+- `deprail fix plan --report <scan-report> --finding <finding-key>` with terminal and JSON output.
 - Read-only npm/pnpm/Yarn, Python requirements/uv/Poetry, and Maven/Gradle planning adapters.
 - Versioned remediation-plan schema with stable identity and provenance.
 - Candidate states: `recommended`, `viable`, `rejected`, `unavailable`, `unknown`.

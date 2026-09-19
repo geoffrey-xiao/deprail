@@ -101,18 +101,22 @@ Adapters must not execute package-manager mutation commands during planning.
 Provide:
 
 ```text
-deprail fix plan <finding-or-key>
-deprail fix plan <finding-or-key> --format json
-deprail fix plan <finding-or-key> --output plan.json
+deprail fix plan --report scan.json --finding <finding-key>
+deprail fix plan --report scan.json --finding <finding-key> --format json
+deprail fix plan --report scan.json --finding <finding-key> --output /tmp/plan.json
 ```
+
+The report input is mandatory and is the sole source of finding provenance. v0.3 does not infer a latest report, rescan implicitly, or guess among multiple reports. The report must identify repository, source scan, artifact digests, workspace, finding key, and repository state.
 
 Human output emphasizes the recommended candidate, risks, affected files, and verification steps. JSON is the normative machine contract. Diagnostics remain on stderr and machine data remains on stdout unless `--output` is used.
 
-A plan contains a stable schema version, plan ID, source scan identity, finding identity, candidate list, selected recommendation, affected files, commands, risks, assumptions, verification steps, rollback description, and provenance.
+Output paths must resolve outside the target repository root; in-repository output is rejected to preserve the planning-only mutation boundary.
+
+A plan contains a stable schema version, plan ID, source scan identity, finding identity, candidate list, selected recommendation, affected files, structured commands with working directories, risks, assumptions, verification steps, rollback description, and provenance.
 
 ### 4.5 Deterministic local storage
 
-- Store plans as explicit versioned JSON files under the existing local data boundary when persistence is requested.
+- Store plans as explicit versioned JSON files under an approved external output boundary when persistence is requested.
 - Use content-addressed or stable plan identity where appropriate.
 - Never overwrite an existing plan without an explicit output path and contract permission.
 - Include source scan/report digest and repository state needed to detect stale plans.

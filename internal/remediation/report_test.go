@@ -1,6 +1,7 @@
 package remediation
 
 import (
+	"bytes"
 	"encoding/json"
 	"errors"
 	"os"
@@ -14,7 +15,7 @@ func testReport() Report {
 	return Report{
 		SchemaVersion:      ReportSchemaVersion,
 		DocumentType:       ReportDocumentType,
-		ReportID:           "report-1",
+		ReportID:           "scan-1",
 		RepositoryIdentity: RepositoryIdentity{Root: ".", Repository: "repo", Revision: "rev-1"},
 		SourceScanID:       "scan-1",
 		ArtifactDigests:    []string{reportDigest},
@@ -48,10 +49,9 @@ func writeReport(t *testing.T, report Report) string {
 func marshalJSON(value any) ([]byte, error) {
 	return json.Marshal(value)
 }
-
 func TestResolveFindingRequiresExactUniqueKey(t *testing.T) {
 	report := testReport()
-	resolved, err := ResolveFinding(report, "finding-1")
+	resolved, err := ResolveFinding(report, "finding-1", "tree-1")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -59,12 +59,12 @@ func TestResolveFindingRequiresExactUniqueKey(t *testing.T) {
 		t.Fatalf("resolved = %#v", resolved)
 	}
 
-	if _, err := ResolveFinding(report, "missing"); !hasReportCode(err, FindingNotFound) {
+	if _, err := ResolveFinding(report, "missing", "tree-1"); !hasReportCode(err, FindingNotFound) {
 		t.Fatalf("missing finding error = %v", err)
 	}
 
 	report.Findings = append(report.Findings, report.Findings[0])
-	if _, err := ResolveFinding(report, "finding-1"); !hasReportCode(err, FindingAmbiguous) {
+	if _, err := ResolveFinding(report, "finding-1", "tree-1"); !hasReportCode(err, FindingAmbiguous) {
 		t.Fatalf("duplicate finding error = %v", err)
 	}
 }
@@ -83,20 +83,33 @@ func TestLoadAndResolveRejectsImplicitOrInvalidReports(t *testing.T) {
 	}
 
 	report := testReport()
-	report.Stale = true
-	if _, err := ResolveFinding(report, "finding-1"); !hasReportCode(err, ReportInputStale) {
+	if _, err := ResolveFinding(report, "finding-1", "changed-tree"); !hasReportCode(err, ReportInputStale) {
 		t.Fatalf("stale report error = %v", err)
 	}
 }
 
 func TestLoadAndResolvePreservesProvenance(t *testing.T) {
 	path := writeReport(t, testReport())
-	resolved, err := LoadAndResolve(path, "finding-1")
+	resolved, err := LoadAndResolve(path, "finding-1", "tree-1")
 	if err != nil {
 		t.Fatal(err)
 	}
 	if resolved.Report.RepositoryIdentity.Repository != "repo" || resolved.Report.SourceScanID != "scan-1" || len(resolved.Report.ArtifactDigests) != 1 {
 		t.Fatalf("provenance = %#v", resolved.Report)
+	}
+}
+func TestLoadReportRejectsOversizedInput(t *testing.T) {
+	path := filepath.Join(t.TempDir(), "oversized.json")
+	data, err := marshalJSON(testReport())
+	if err != nil {
+		t.Fatal(err)
+	}
+	data = append(data, bytes.Repeat([]byte(" "), maxReportBytes-len(data)+1)...)
+	if err := os.WriteFile(path, data, 0o600); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := LoadReport(path); !hasReportCode(err, ReportInvalid) {
+		t.Fatalf("oversized report error = %v", err)
 	}
 }
 

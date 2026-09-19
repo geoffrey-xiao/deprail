@@ -1,6 +1,7 @@
 package remediation
 
 import (
+	"bytes"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -10,8 +11,8 @@ import (
 )
 
 const (
-	ReportSchemaVersion = "v0alpha1"
-	ReportDocumentType  = "scan_report"
+	ReportSchemaVersion = "v1alpha"
+	ReportDocumentType  = "scan"
 	ReportComplete      = "complete"
 	ReportPartial       = "partial"
 	ReportFailed        = "failed"
@@ -21,13 +22,12 @@ const (
 type Report struct {
 	SchemaVersion      string             `json:"schema_version"`
 	DocumentType       string             `json:"document_type"`
-	ReportID           string             `json:"report_id"`
+	ReportID           string             `json:"scan_id"`
 	RepositoryIdentity RepositoryIdentity `json:"repository_identity"`
-	SourceScanID       string             `json:"source_scan_id"`
+	SourceScanID       string             `json:"-"`
 	ArtifactDigests    []string           `json:"artifact_digests"`
 	RepositoryState    string             `json:"repository_state"`
 	Status             string             `json:"status"`
-	Stale              bool               `json:"stale"`
 	Findings           []ReportFinding    `json:"findings"`
 }
 
@@ -74,7 +74,14 @@ func LoadReport(path string) (Report, error) {
 	}
 	defer file.Close()
 
-	decoder := json.NewDecoder(io.LimitReader(file, maxReportBytes))
+	data, err := io.ReadAll(io.LimitReader(file, maxReportBytes+1))
+	if err != nil {
+		return Report{}, &ReportError{Code: ReportInvalid, Message: "normalized scan report is unreadable"}
+	}
+	if len(data) > maxReportBytes {
+		return Report{}, &ReportError{Code: ReportInvalid, Message: "normalized scan report exceeds the input limit"}
+	}
+	decoder := json.NewDecoder(bytes.NewReader(data))
 	var report Report
 	if err := decoder.Decode(&report); err != nil {
 		return Report{}, &ReportError{Code: ReportInvalid, Message: "normalized scan report is malformed"}
@@ -83,15 +90,19 @@ func LoadReport(path string) (Report, error) {
 	if err := decoder.Decode(&extra); err != io.EOF {
 		return Report{}, &ReportError{Code: ReportInvalid, Message: "normalized scan report contains trailing data"}
 	}
+	report.SourceScanID = report.ReportID
 	if err := ValidateReport(report); err != nil {
 		return Report{}, err
 	}
 	return report, nil
 }
 
-func ResolveFinding(report Report, key string) (ResolvedFinding, error) {
+func ResolveFinding(report Report, key, currentRepositoryState string) (ResolvedFinding, error) {
 	if err := ValidateReport(report); err != nil {
 		return ResolvedFinding{}, err
+	}
+	if currentRepositoryState == "" || report.RepositoryState != currentRepositoryState {
+		return ResolvedFinding{}, &ReportError{Code: ReportInputStale, Message: "normalized scan report does not match the current repository state"}
 	}
 	if key == "" {
 		return ResolvedFinding{}, &ReportError{Code: FindingNotFound, Message: "finding key is required"}
@@ -112,12 +123,12 @@ func ResolveFinding(report Report, key string) (ResolvedFinding, error) {
 	}
 }
 
-func LoadAndResolve(path, key string) (ResolvedFinding, error) {
+func LoadAndResolve(path, key, currentRepositoryState string) (ResolvedFinding, error) {
 	report, err := LoadReport(path)
 	if err != nil {
 		return ResolvedFinding{}, err
 	}
-	return ResolveFinding(report, key)
+	return ResolveFinding(report, key, currentRepositoryState)
 }
 
 func ValidateReport(report Report) error {
@@ -129,9 +140,6 @@ func ValidateReport(report Report) error {
 	}
 	if report.RepositoryIdentity.Root == "" || report.RepositoryIdentity.Repository == "" {
 		return &ReportError{Code: ReportInvalid, Message: "normalized scan report repository identity is incomplete"}
-	}
-	if report.Stale {
-		return &ReportError{Code: ReportInputStale, Message: "normalized scan report is stale"}
 	}
 	if report.Status != ReportComplete && report.Status != ReportPartial {
 		return &ReportError{Code: ReportInvalid, Message: "normalized scan report has no usable completeness state"}

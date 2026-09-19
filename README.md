@@ -21,8 +21,10 @@ Download `SHA256SUMS` into the same directory as the binary. On macOS or Linux:
 
 ```bash
 cd ~/Downloads
-shasum -a 256 -c SHA256SUMS
+shasum -a 256 --ignore-missing -c SHA256SUMS
 ```
+
+This checks the downloaded artifact and ignores the other platform entries that are not present locally.
 
 The selected binary must report `OK`. Do not execute an artifact whose checksum fails.
 
@@ -59,16 +61,38 @@ xattr -d com.apple.quarantine "$HOME/bin/deprail" 2>/dev/null || true
 
 ### Install on Windows
 
-In PowerShell:
+In PowerShell, verify the downloaded artifact before installing it:
+
+```powershell
+$artifact = "$HOME\Downloads\deprail-windows-amd64.exe"
+$expected = (
+  Select-String `
+    -Path "$HOME\Downloads\SHA256SUMS" `
+    -Pattern "deprail-windows-amd64\.exe$"
+).Line.Split()[0]
+$actual = (Get-FileHash $artifact -Algorithm SHA256).Hash.ToLowerInvariant()
+if ($actual -ne $expected) {
+  throw "Checksum mismatch for deprail-windows-amd64.exe"
+}
+Write-Host "Checksum OK"
+```
+
+Install after the checksum passes:
 
 ```powershell
 New-Item -ItemType Directory -Force "$HOME\bin" | Out-Null
-Copy-Item "$HOME\Downloads\deprail-windows-amd64.exe" "$HOME\bin\deprail.exe"
+Copy-Item $artifact "$HOME\bin\deprail.exe"
 $env:Path = "$HOME\bin;$env:Path"
 deprail.exe --version
 ```
 
-For a persistent Windows PATH, add `$HOME\bin` through **System Settings → Environment Variables**, then open a new terminal.
+For a persistent Windows PATH, add this through **System Settings → Environment Variables**:
+
+```text
+%USERPROFILE%\bin
+```
+
+Then open a new terminal.
 
 ## Check the environment
 

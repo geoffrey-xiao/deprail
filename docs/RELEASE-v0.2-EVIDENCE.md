@@ -72,6 +72,17 @@ For every supported artifact, attach command output and the CI or manual-run lin
 | Mixed repository scan | `[not recorded]` | `[not recorded]` |
 
 Every release-gating scan must complete successfully. Partial or failed scans block the relevant release mode.
+## V02-025 pull-request validation evidence
+
+| Evidence | Result | Link or output |
+| --- | --- | --- |
+| Controlled mixed-repository fixture | Complete discovery; 3 workspaces | `testdata/fixtures/mixed-repository` |
+| Complete scan | Exit `0`; 9 findings; no scanner errors | Local transcript recorded during V02-025 validation |
+| Cross-platform CI | Ubuntu, macOS, and Windows passed | PR #182 |
+| Fixture pull-request change | Merged | [PR #182](https://github.com/geoffrey-xiao/deprail/pull/182) |
+
+The fixture intentionally retains vulnerable dependencies so findings and policy/SARIF paths remain testable. A clean scan result is not claimed from this fixture; the recorded complete result means all detected workspaces and scanner executions completed without scanner errors.
+
 
 ## Supply-chain controls
 

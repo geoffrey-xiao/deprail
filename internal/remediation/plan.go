@@ -390,6 +390,9 @@ func validateCommand(command Command) error {
 	if strings.TrimSpace(command.Executable) == "" {
 		return errors.New("command executable is required")
 	}
+	if command.Arguments == nil {
+		return errors.New("command arguments must be an array")
+	}
 	if err := validateRelativePath(command.WorkingDirectory); err != nil {
 		return fmt.Errorf("command working directory: %w", err)
 	}

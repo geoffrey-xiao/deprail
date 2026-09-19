@@ -90,6 +90,9 @@ func ValidatePlanningEvidence(evidence PlanningEvidence) error {
 		if candidate.ID == "" || candidate.Version == "" || !validCandidateState(candidate.State) {
 			return fmt.Errorf("candidate identity or state is invalid: %w", ErrInvalidPlanningEvidence)
 		}
+		if candidate.State == CandidateRecommended && !candidate.Evidence.recommendable() {
+			return fmt.Errorf("recommended candidate has unsafe compatibility evidence: %w", ErrInvalidPlanningEvidence)
+		}
 		if _, exists := seen[candidate.ID]; exists {
 			return fmt.Errorf("candidate IDs must be unique: %w", ErrInvalidPlanningEvidence)
 		}
@@ -105,10 +108,15 @@ func ValidatePlanningEvidence(evidence PlanningEvidence) error {
 			return fmt.Errorf("planning command is invalid: %w", ErrInvalidPlanningEvidence)
 		}
 	}
+	seenVerification := make(map[string]struct{}, len(evidence.Verification))
 	for _, verification := range evidence.Verification {
 		if verification.ID == "" {
 			return fmt.Errorf("verification identity is required: %w", ErrInvalidPlanningEvidence)
 		}
+		if _, exists := seenVerification[verification.ID]; exists {
+			return fmt.Errorf("verification IDs must be unique: %w", ErrInvalidPlanningEvidence)
+		}
+		seenVerification[verification.ID] = struct{}{}
 		if err := validateCommand(verification.Command); err != nil {
 			return fmt.Errorf("verification command is invalid: %w", ErrInvalidPlanningEvidence)
 		}

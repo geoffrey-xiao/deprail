@@ -84,8 +84,35 @@ func TestPlanningAdapterValidationRejectsUnsafeOrAmbiguousEvidence(t *testing.T)
 		t.Fatalf("unsafe request error = %v", err)
 	}
 
-	evidence := PlanningEvidence{State: AdapterSupported, Candidates: []Candidate{{ID: "same", Version: "1", State: CandidateUnknown}, {ID: "same", Version: "2", State: CandidateRejected}}, AffectedFiles: []AffectedFile{}, Commands: []Command{}, Risks: []Risk{}, Assumptions: []Assumption{}, Verification: []Verification{}}
+	evidence := PlanningEvidence{
+		State: AdapterSupported,
+		Candidates: []Candidate{
+			{ID: "same", Version: "1", State: CandidateUnknown},
+			{ID: "same", Version: "2", State: CandidateRejected},
+		},
+		AffectedFiles: []AffectedFile{}, Commands: []Command{}, Risks: []Risk{}, Assumptions: []Assumption{}, Verification: []Verification{},
+	}
 	if err := ValidatePlanningEvidence(evidence); !errors.Is(err, ErrInvalidPlanningEvidence) {
 		t.Fatalf("duplicate candidate error = %v", err)
+	}
+
+	evidence.Candidates = []Candidate{{ID: "unsafe", Version: "1", State: CandidateRecommended}}
+	if err := ValidatePlanningEvidence(evidence); !errors.Is(err, ErrInvalidPlanningEvidence) {
+		t.Fatalf("unsafe recommendation error = %v", err)
+	}
+
+	evidence.Candidates = []Candidate{}
+	evidence.Commands = []Command{{Executable: "npm", Arguments: nil, WorkingDirectory: "."}}
+	if err := ValidatePlanningEvidence(evidence); !errors.Is(err, ErrInvalidPlanningEvidence) {
+		t.Fatalf("nil command arguments error = %v", err)
+	}
+
+	evidence.Commands = []Command{}
+	evidence.Verification = []Verification{
+		{ID: "test", Command: Command{Executable: "go", Arguments: []string{"test"}, WorkingDirectory: "."}},
+		{ID: "test", Command: Command{Executable: "go", Arguments: []string{"vet"}, WorkingDirectory: "."}},
+	}
+	if err := ValidatePlanningEvidence(evidence); !errors.Is(err, ErrInvalidPlanningEvidence) {
+		t.Fatalf("duplicate verification error = %v", err)
 	}
 }

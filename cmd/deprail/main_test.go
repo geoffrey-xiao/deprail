@@ -85,7 +85,7 @@ func TestReleaseBuildReportsInjectedIdentity(t *testing.T) {
 	}
 	build := exec.Command("go", "build",
 		"-ldflags",
-		"-X github.com/geoffrey-xiao/deprail/internal/buildinfo.Version=v0.2.0 -X github.com/geoffrey-xiao/deprail/internal/buildinfo.Tag=v0.2.0-rc.1 -X github.com/geoffrey-xiao/deprail/internal/buildinfo.Commit=abc123",
+		"-X github.com/geoffrey-xiao/deprail/internal/buildinfo.Version=v0.2.0-rc.1 -X github.com/geoffrey-xiao/deprail/internal/buildinfo.Tag=v0.2.0-rc.1 -X github.com/geoffrey-xiao/deprail/internal/buildinfo.Commit=abc123",
 		"-o", binary, "./cmd/deprail",
 	)
 	build.Dir = repositoryRoot
@@ -106,7 +106,7 @@ func TestReleaseBuildReportsInjectedIdentity(t *testing.T) {
 	if err := json.Unmarshal(output, &report); err != nil {
 		t.Fatalf("doctor output is not JSON: %v", err)
 	}
-	if report.Version != "v0.2.0" || report.Tag != "v0.2.0-rc.1" || report.Commit != "abc123" {
+	if report.Version != "v0.2.0-rc.1" || report.Tag != "v0.2.0-rc.1" || report.Commit != "abc123" {
 		t.Fatalf("release identity = %#v", report)
 	}
 }

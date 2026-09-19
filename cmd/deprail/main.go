@@ -12,6 +12,7 @@ import (
 
 	"github.com/geoffrey-xiao/deprail/internal/app"
 	"github.com/geoffrey-xiao/deprail/internal/baseline"
+	"github.com/geoffrey-xiao/deprail/internal/buildinfo"
 	"github.com/geoffrey-xiao/deprail/internal/discovery"
 	"github.com/geoffrey-xiao/deprail/internal/policy"
 	"github.com/geoffrey-xiao/deprail/internal/presenter"
@@ -22,6 +23,11 @@ func main() {
 }
 
 func run(args []string, stdout, stderr io.Writer) int {
+	if len(args) == 1 && (args[0] == "--version" || args[0] == "version") {
+		identity := buildinfo.Current()
+		_, _ = fmt.Fprintf(stdout, "deprail %s (tag=%s commit=%s)\n", identity.Version, identity.Tag, identity.Commit)
+		return 0
+	}
 	if len(args) == 0 {
 		writeCLIError(stderr, "CONFIG_INVALID", "a command is required", "command")
 		return 2

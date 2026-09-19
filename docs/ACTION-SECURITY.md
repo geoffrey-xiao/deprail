@@ -17,11 +17,15 @@ Install `deprail` before invoking the composite Action and pin the executable to
 
 ## Cache and artifacts
 
-The Action does not use a package or scanner cache. Reports are written under the runner temporary directory, not the checkout, and uploaded only as the named report artifact. Callers should set repository-approved retention and avoid uploading source files or credentials.
+Cache keys must include all inputs that can change scan meaning:
 
-Cache keys, if introduced by a caller, must include repository identity, workflow/configuration inputs, DepRail version, and scanner database identity. Cache misses are safe; untrusted or stale cache data must never be treated as a complete scan.
+- repository identity and immutable commit/tree SHA;
+- dependency manifest and lockfile content digest;
+- DepRail version/tag and commit;
+- scanner/database identity;
+- effective repository and DepRail configuration digest.
 
-## Failure behavior
+A cache miss is safe. A cache entry from another commit, dependency-input digest, tool/database identity, or configuration must not be restored as a trusted result. The Action itself does not use a package or scanner cache; these requirements apply to caller workflows.
 
 Missing binaries, version mismatches, invalid paths, and invalid inputs fail explicitly. Scan exit status is preserved even when the report artifact upload runs after a partial or failed scan.
 

@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"strings"
+	"time"
 
 	"github.com/geoffrey-xiao/deprail/internal/baseline"
 )
@@ -24,6 +25,9 @@ type Input struct {
 	Comparison baseline.Comparison
 	Complete   bool
 	Errors     []string
+	Scope      string
+	Now        time.Time
+	Exceptions []Exception
 }
 type Decision struct {
 	Outcome Outcome  `json:"outcome"`
@@ -54,7 +58,21 @@ func Evaluate(policy Policy, input Input) (Decision, error) {
 		return Decision{Outcome: Block, Reasons: []string{"comparison is incomplete or contains scanner errors"}}, nil
 	}
 	decision := Decision{Outcome: Pass, Reasons: []string{}}
+	now := input.Now
+	if now.IsZero() {
+		now = time.Now().UTC()
+	}
 	for _, change := range input.Comparison.Changes {
+		exempted := false
+		for _, exception := range input.Exceptions {
+			if exception.Matches(change.Key, input.Scope, now) {
+				exempted = true
+				break
+			}
+		}
+		if exempted {
+			continue
+		}
 		if change.Kind != baseline.Added && change.Kind != baseline.Changed {
 			continue
 		}

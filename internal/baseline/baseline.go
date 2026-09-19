@@ -78,6 +78,16 @@ func Validate(d Document) error {
 		if finding.StableKey == "" || finding.Component == "" || finding.Version == "" {
 			return errors.New("baseline finding identity is incomplete")
 		}
+		aliases := make(map[string]struct{}, len(finding.VulnerabilityAliases))
+		for _, alias := range finding.VulnerabilityAliases {
+			if !validID(alias) {
+				return errors.New("baseline vulnerability alias is invalid")
+			}
+			if _, ok := aliases[alias]; ok {
+				return errors.New("baseline vulnerability aliases must be unique")
+			}
+			aliases[alias] = struct{}{}
+		}
 		if _, ok := seen[finding.StableKey]; ok {
 			return errors.New("baseline finding keys must be unique")
 		}

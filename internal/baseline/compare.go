@@ -3,6 +3,7 @@ package baseline
 import (
 	"errors"
 	"sort"
+	"strings"
 )
 
 type ChangeKind string
@@ -29,8 +30,15 @@ type Comparison struct {
 	Changes             []Change `json:"changes"`
 }
 
+func dependencyIdentity(component string) string {
+	if at := strings.LastIndex(component, "@"); at > strings.LastIndex(component, "/") {
+		return component[:at]
+	}
+	return component
+}
+
 func findingIdentity(f Finding) string {
-	return f.WorkspaceID + "\x00" + f.Component + "\x00" + f.TargetID
+	return f.WorkspaceID + "\x00" + dependencyIdentity(f.Component) + "\x00" + f.TargetID
 }
 
 func aliasesEqual(left, right []string) bool {

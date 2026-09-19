@@ -8,8 +8,8 @@ import (
 func TestCompareIsOrderIndependentAndClassifiesChanges(t *testing.T) {
 	base := validBaseline()
 	head := validBaseline()
-	base.Findings = []Finding{{StableKey: "same", Component: "a", Version: "1"}, {StableKey: "resolved", Component: "b", Version: "1"}}
-	head.Findings = []Finding{{StableKey: "same", Component: "a", Version: "2"}, {StableKey: "added", Component: "c", Version: "2"}}
+	base.Findings = []Finding{{StableKey: "same", Component: "pkg:npm/a@1", Version: "1"}, {StableKey: "resolved", Component: "pkg:npm/b@1", Version: "1"}}
+	head.Findings = []Finding{{StableKey: "same", Component: "pkg:npm/a@2", Version: "2"}, {StableKey: "added", Component: "pkg:npm/c@2", Version: "2"}}
 	base.ArtifactDigests = []string{"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"}
 	head.ArtifactDigests = []string{"bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"}
 	first, err := Compare(base, head)

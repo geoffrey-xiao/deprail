@@ -2,8 +2,11 @@ package main
 
 import (
 	"bytes"
+	"crypto/sha256"
+	"encoding/hex"
 	"encoding/json"
 	"os"
+	"os/exec"
 	"path/filepath"
 	"runtime"
 	"strings"
@@ -103,6 +106,154 @@ func TestRejectsUnexpectedCommandArguments(t *testing.T) {
 			}
 		})
 	}
+}
+
+func TestScanFromOutsideRootUsesTargetAndContainsArtifacts(t *testing.T) {
+	raw := []byte(`{"results":[{"packages":[{"package":{"name":"target-only","version":"1.0.0"},"vulnerabilities":[{"id":"OSV-TARGET","aliases":["CVE-TARGET"],"database_specific":{"severity":"HIGH"},"affected":[{"ranges":[{"events":[{"introduced":"0"},{"fixed":"1.0.1"}]}]}]}]}]}]}`)
+	sum := sha256.Sum256(raw)
+	expectedDigest := hex.EncodeToString(sum[:])
+	repositoryRoot := filepath.Join(filepath.Dir(fixturePath(t, "npm-basic")), "..", "..")
+	cliPath := filepath.Join(t.TempDir(), "deprail")
+	if runtime.GOOS == "windows" {
+		cliPath += ".exe"
+	}
+	build := exec.Command("go", "build", "-o", cliPath, "./cmd/deprail")
+	build.Dir = repositoryRoot
+	if output, err := build.CombinedOutput(); err != nil {
+		t.Fatalf("build deprail: %v\n%s", err, output)
+	}
+	for _, absolute := range []bool{true, false} {
+		t.Run(map[bool]string{true: "absolute target", false: "relative target"}[absolute], func(t *testing.T) {
+			target := t.TempDir()
+			writeTestFile(t, filepath.Join(target, "package.json"), `{"name":"target"}`)
+			writeTestFile(t, filepath.Join(target, "package-lock.json"), `{"name":"target","lockfileVersion":3,"packages":{}}`)
+			writeTestFile(t, filepath.Join(target, "target.marker"), "")
+			caller := t.TempDir()
+			writeTestFile(t, filepath.Join(caller, "caller.marker"), "")
+			bin := t.TempDir()
+			scannerName := "osv-scanner"
+			if runtime.GOOS == "windows" {
+				scannerName += ".exe"
+			}
+			executable, err := os.ReadFile(mustExecutable(t))
+			if err != nil {
+				t.Fatal(err)
+			}
+			if err := os.WriteFile(filepath.Join(bin, scannerName), executable, 0o755); err != nil {
+				t.Fatal(err)
+			}
+			targetArg := target
+			if !absolute {
+				targetArg, err = filepath.Rel(caller, target)
+				if err != nil {
+					t.Fatal(err)
+				}
+			}
+			home := t.TempDir()
+			command := exec.Command(cliPath, "scan", targetArg, "--format", "json")
+			command.Dir = caller
+			command.Env = append(os.Environ(),
+				"PATH="+bin+string(os.PathListSeparator)+os.Getenv("PATH"),
+				"HOME="+home,
+			)
+			stdout, stderr, err := commandOutput(command)
+			if err != nil {
+				t.Fatalf("scan: %v stdout=%q stderr=%q", err, stdout, stderr)
+			}
+			var report struct {
+				Status   string `json:"status"`
+				Findings []struct {
+					TargetID string `json:"TargetID"`
+				} `json:"findings"`
+				ArtifactDigests []string `json:"artifact_digests"`
+			}
+			if err := json.Unmarshal(stdout, &report); err != nil {
+				t.Fatalf("stdout is not JSON: %v", err)
+			}
+			if report.Status != "complete" || len(report.Findings) != 1 || report.Findings[0].TargetID != "OSV-TARGET" {
+				t.Fatalf("report = %#v", report)
+			}
+			if len(report.ArtifactDigests) != 1 || report.ArtifactDigests[0] != expectedDigest {
+				t.Fatalf("artifact digests = %#v, want %q", report.ArtifactDigests, expectedDigest)
+			}
+			artifactPath := filepath.Join(target, ".deprail", "artifacts", expectedDigest[:2], expectedDigest)
+			stored, err := os.ReadFile(artifactPath)
+			if err != nil || string(stored) != string(raw) {
+				t.Fatalf("stored artifact = %q, err=%v", stored, err)
+			}
+			if _, err := os.Stat(filepath.Join(caller, ".deprail")); !os.IsNotExist(err) {
+				t.Fatalf("caller received artifact tree: %v", err)
+			}
+			scannerCWD, err := os.ReadFile(filepath.Join(home, "scanner-cwd"))
+			if err != nil {
+				t.Fatal(err)
+			}
+			targetInfo, err := os.Stat(target)
+			if err != nil {
+				t.Fatal(err)
+			}
+			scannerInfo, err := os.Stat(strings.TrimSpace(string(scannerCWD)))
+			if err != nil || !os.SameFile(targetInfo, scannerInfo) {
+				t.Fatalf("scanner cwd=%q target=%q err=%v", scannerCWD, target, err)
+			}
+		})
+	}
+}
+
+func commandOutput(command *exec.Cmd) ([]byte, []byte, error) {
+	var stdout, stderr bytes.Buffer
+	command.Stdout = &stdout
+	command.Stderr = &stderr
+	err := command.Run()
+	return stdout.Bytes(), stderr.Bytes(), err
+}
+
+func TestMain(m *testing.M) {
+	if strings.HasPrefix(filepath.Base(os.Args[0]), "osv-scanner") {
+		runScannerHelper()
+		return
+	}
+	os.Exit(m.Run())
+}
+
+func runScannerHelper() {
+	cwd, err := os.Getwd()
+	if err != nil {
+		os.Exit(9)
+	}
+	if home := os.Getenv("HOME"); home != "" {
+		_ = os.WriteFile(filepath.Join(home, "scanner-cwd"), []byte(cwd), 0o600)
+	}
+	for _, arg := range os.Args[1:] {
+		if arg == "--version" {
+			_, _ = os.Stdout.Write([]byte("osv-scanner 1.0.0"))
+			os.Exit(0)
+		}
+	}
+	if len(os.Args) == 0 {
+		os.Exit(9)
+	}
+	targetArg := os.Args[len(os.Args)-1]
+	target := targetArg
+	if !filepath.IsAbs(target) {
+		target = filepath.Join(cwd, target)
+	}
+	targetID := "OSV-CALLER"
+	if _, err := os.Stat(filepath.Join(filepath.Clean(target), "target.marker")); err == nil {
+		targetID = "OSV-TARGET"
+	}
+	output := `{"results":[{"packages":[{"package":{"name":"target-only","version":"1.0.0"},"vulnerabilities":[{"id":"` + targetID + `","aliases":["CVE-TARGET"],"database_specific":{"severity":"HIGH"},"affected":[{"ranges":[{"events":[{"introduced":"0"},{"fixed":"1.0.1"}]}]}]}]}]}]}`
+	_, _ = os.Stdout.Write([]byte(output))
+	os.Exit(0)
+}
+
+func mustExecutable(t *testing.T) string {
+	t.Helper()
+	executable, err := os.Executable()
+	if err != nil {
+		t.Fatal(err)
+	}
+	return executable
 }
 
 func fixturePath(t *testing.T, fixture string) string {

@@ -1,0 +1,145 @@
+name: Review Intake
+
+on:
+  pull_request:
+    types: [opened, reopened, synchronize]
+  pull_request_review:
+    types: [submitted, dismissed]
+  pull_request_review_comment:
+    types: [created, edited, deleted]
+  workflow_dispatch:
+    inputs:
+      pr_number:
+        description: Pull request number to inspect
+        required: true
+        type: number
+
+permissions:
+  contents: read
+  pull-requests: read
+
+jobs:
+  collect:
+    name: Collect automated review findings
+    runs-on: ubuntu-latest
+    steps:
+      - name: Collect review threads
+        id: collect
+        uses: actions/github-script@v8
+        env:
+          PR_NUMBER: ${{ inputs.pr_number || github.event.pull_request.number }}
+        with:
+          script: |
+            const fs = require('fs');
+            const prNumber = Number(process.env.PR_NUMBER);
+            if (!Number.isInteger(prNumber) || prNumber < 1) {
+              core.setFailed('A valid pull request number is required');
+              return;
+            }
+
+            const query = `
+              query($owner: String!, $repo: String!, $number: Int!) {
+                repository(owner: $owner, name: $repo) {
+                  pullRequest(number: $number) {
+                    number
+                    url
+                    headRefOid
+                    reviewThreads(first: 100) {
+                      nodes {
+                        isResolved
+                        comments(first: 100) {
+                          nodes {
+                            databaseId
+                            author { login }
+                            body
+                            createdAt
+                            updatedAt
+                            path
+                            line
+                            originalLine
+                            url
+                            commit { oid }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            `;
+            const result = await github.graphql(query, {
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              number: prNumber,
+            });
+            const pullRequest = result.repository.pullRequest;
+            if (!pullRequest) {
+              core.setFailed(`Pull request #${prNumber} was not found`);
+              return;
+            }
+
+            const automatedReviewers = new Set([
+              'chatgpt-codex-connector',
+              'coderabbitai',
+              'coderabbitai[bot]',
+            ]);
+            const findings = [];
+            for (const thread of pullRequest.reviewThreads.nodes || []) {
+              for (const comment of thread.comments.nodes || []) {
+                if (!automatedReviewers.has(comment.author?.login || '')) continue;
+                findings.push({
+                  id: comment.databaseId,
+                  reviewer: comment.author.login,
+                  body: comment.body,
+                  path: comment.path,
+                  line: comment.line,
+                  original_line: comment.originalLine,
+                  url: comment.url,
+                  created_at: comment.createdAt,
+                  updated_at: comment.updatedAt,
+                  commit: comment.commit?.oid || null,
+                  resolved: thread.isResolved,
+                });
+              }
+            }
+            findings.sort((left, right) =>
+              `${left.path || ''}\u0000${left.line || 0}\u0000${left.id}`
+                .localeCompare(`${right.path || ''}\u0000${right.line || 0}\u0000${right.id}`)
+            );
+
+            const document = {
+              pull_request: prNumber,
+              url: pullRequest.url,
+              head_commit: pullRequest.headRefOid,
+              generated_at: new Date().toISOString(),
+              reviewers: [...automatedReviewers],
+              findings,
+              unresolved_count: findings.filter((finding) => !finding.resolved).length,
+            };
+            fs.writeFileSync('review-comments.json', `${JSON.stringify(document, null, 2)}\n`);
+
+            await core.summary
+              .addHeading(`Automated review findings for PR #${prNumber}`)
+              .addRaw(`Head commit: \`${pullRequest.headRefOid}\`\n\n`)
+              .addRaw(`Findings: **${findings.length}**; unresolved: **${document.unresolved_count}**\n\n`)
+              .addTable([
+                [{data: 'Reviewer', header: true}, {data: 'Location', header: true}, {data: 'Resolved', header: true}, {data: 'Link', header: true}],
+                ...findings.map((finding) => [
+                  finding.reviewer,
+                  `${finding.path || '(general)'}:${finding.line || finding.original_line || '-'}`,
+                  finding.resolved ? 'yes' : 'no',
+                  finding.url ? `[comment](${finding.url})` : '-',
+                ]),
+              ])
+              .write();
+
+            core.setOutput('count', String(findings.length));
+            core.setOutput('unresolved', String(document.unresolved_count));
+
+      - name: Upload review findings
+        uses: actions/upload-artifact@v4
+        with:
+          name: automated-review-findings
+          path: review-comments.json
+          if-no-files-found: error
+          retention-days: 14

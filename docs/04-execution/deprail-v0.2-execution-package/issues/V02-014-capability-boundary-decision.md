@@ -28,6 +28,33 @@ Decide which candidate capabilities, if any, may enter v0.2 implementation witho
 
 Evaluate baseline comparison, policy gates, SARIF, additional scanner ecosystems, SBOM/signing, and remote publishing/history. Select, defer, or reject each candidate.
 
+## Decision
+
+The required v0.2 CI-guardrail capabilities remain in scope and proceed through their existing implementation issues:
+
+| Capability | Decision | Implementation path |
+| --- | --- | --- |
+| Baseline representation, storage, and compatibility | Retained for v0.2 | V02-015 |
+| Base/head comparison and deterministic diff | Retained for v0.2 | V02-016, V02-018 |
+| New/resolved/unchanged classification | Retained for v0.2 | V02-017 |
+| Typed policy gates, completeness, and exit behavior | Retained for v0.2 | V02-019, V02-021 |
+| Expiring exceptions | Retained for v0.2 | V02-020 |
+| SARIF output | Retained for v0.2 | V02-022 |
+
+The following capabilities remain deferred because they require separate contracts, compatibility analysis, security review, and explicit inclusion approval:
+
+| Capability | Decision | Rationale |
+| --- | --- | --- |
+| Additional scanner ecosystems | Deferred | The v0.2 scope remains limited to the currently supported JavaScript, Python, and Java flows. |
+| SBOM/signing implementation | Deferred | No reviewed implementation, platform process, or supply-chain evidence exists yet. |
+| Remote publishing/history | Deferred | Requires network, storage, authentication, permissions, and retention decisions outside the current release boundary. |
+
+V02-015 through V02-022 remain implementation-ready according to their individual contracts; this decision does not remove or defer those issues. No PRD or requirements update is required because this decision reconciles the issue package with the existing v0.2 plan.
+
+### Consequences and remaining risk
+
+V0.2 retains its CI-guardrail outcome: deterministic baselines and diffs, policy evaluation, and SARIF output remain required before the v0.2 boundary is complete. Additional scanner ecosystems, SBOM/signing implementation, and remote history remain explicit future work. Each deferred capability requires a new or updated issue contract before implementation.
+
 ## Out of Scope
 
 Implementing any candidate capability before the decision and contract updates are approved.

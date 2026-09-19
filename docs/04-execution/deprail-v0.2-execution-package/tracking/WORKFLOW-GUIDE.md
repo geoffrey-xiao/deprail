@@ -117,16 +117,16 @@ The reviewer checks:
 - path containment, subprocess, file-write, credential, and permission risks;
 - focused tests, cross-platform evidence, documentation, issue link, labels, and rollback.
 
-Record findings using:
+Present the findings to the owner without editing the branch. Use these classifications:
 
 ```text
-BLOCKER  Must fix before creating the PR.
-MAJOR    Must fix before creating the PR.
-MINOR    Fix before review when practical.
-NOTE     No action required; preserve as review context.
+BLOCKER  Blocks PR creation unless the owner explicitly changes the plan.
+MAJOR    Requires an owner decision before PR creation.
+MINOR    Owner decides whether to fix now or record for later.
+NOTE     Context only; no action required.
 ```
 
-Fix every `BLOCKER` and `MAJOR`, rerun focused verification, and rerun the OMP review. Repeat that cycle until the reviewer reports no unresolved blocker or major finding. Do not create the PR before that condition is met. Human review remains required after the PR opens.
+Stop after reporting the findings. Do not automatically fix, suppress, accept, or reject any finding. The owner chooses the next action. If the owner requests fixes, apply only those requested changes, rerun focused verification, and rerun the OMP review. If the owner accepts remaining risk, record that decision and its rationale before proceeding. Human review remains required after the PR opens.
 
 ## 6. Prepare and create the PR
 

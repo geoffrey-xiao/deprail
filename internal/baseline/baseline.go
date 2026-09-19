@@ -22,10 +22,12 @@ const (
 )
 
 type Finding struct {
-	StableKey string `json:"stable_key"`
-	Component string `json:"component"`
-	Version   string `json:"version"`
-	TargetID  string `json:"target_id"`
+	StableKey            string   `json:"stable_key"`
+	WorkspaceID          string   `json:"workspace_id,omitempty"`
+	Component            string   `json:"component"`
+	Version              string   `json:"version"`
+	TargetID             string   `json:"target_id"`
+	VulnerabilityAliases []string `json:"vulnerability_aliases,omitempty"`
 }
 
 type Document struct {
@@ -39,6 +41,9 @@ type Document struct {
 }
 
 func (d *Document) Canonicalize() {
+	for i := range d.Findings {
+		sort.Strings(d.Findings[i].VulnerabilityAliases)
+	}
 	sort.Slice(d.Findings, func(i, j int) bool { return d.Findings[i].StableKey < d.Findings[j].StableKey })
 	sort.Strings(d.ArtifactDigests)
 }
@@ -72,6 +77,16 @@ func Validate(d Document) error {
 	for _, finding := range d.Findings {
 		if finding.StableKey == "" || finding.Component == "" || finding.Version == "" {
 			return errors.New("baseline finding identity is incomplete")
+		}
+		aliases := make(map[string]struct{}, len(finding.VulnerabilityAliases))
+		for _, alias := range finding.VulnerabilityAliases {
+			if !validID(alias) {
+				return errors.New("baseline vulnerability alias is invalid")
+			}
+			if _, ok := aliases[alias]; ok {
+				return errors.New("baseline vulnerability aliases must be unique")
+			}
+			aliases[alias] = struct{}{}
 		}
 		if _, ok := seen[finding.StableKey]; ok {
 			return errors.New("baseline finding keys must be unique")

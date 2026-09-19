@@ -110,9 +110,11 @@
             "required": ["stable_key", "component", "version"],
             "properties": {
               "stable_key": { "$ref": "#/$defs/id" },
+              "workspace_id": { "$ref": "#/$defs/id" },
               "component": { "$ref": "#/$defs/id" },
               "version": { "$ref": "#/$defs/id" },
-              "target_id": { "type": "string" }
+              "target_id": { "type": "string" },
+              "vulnerability_aliases": { "type": "array", "items": { "$ref": "#/$defs/id" }, "uniqueItems": true }
             },
             "additionalProperties": false
           }

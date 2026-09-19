@@ -98,3 +98,15 @@ func TestStoreRejectsUnsafeIDsUppercaseDigestsUnknownFieldsAndOverwrite(t *testi
 		t.Fatal("unknown baseline field was accepted")
 	}
 }
+func TestValidateRejectsInvalidAliases(t *testing.T) {
+	empty := validBaseline()
+	empty.Findings[0].VulnerabilityAliases = []string{""}
+	if err := Validate(empty); err == nil {
+		t.Fatal("empty alias was accepted")
+	}
+	duplicate := validBaseline()
+	duplicate.Findings[0].VulnerabilityAliases = []string{"CVE-1", "CVE-1"}
+	if err := Validate(duplicate); err == nil {
+		t.Fatal("duplicate alias was accepted")
+	}
+}

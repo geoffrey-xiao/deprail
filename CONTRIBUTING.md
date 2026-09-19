@@ -64,12 +64,20 @@ When an issue is finished, prepare a completion report for the owner covering ev
 
 1. State the goal, linked contract or issue, intended files and symbols, out-of-scope changes, risk level, and verification commands or scenarios.
 2. Confirm the issue is assigned to the correct milestone and Project fields.
-3. Create a short-lived branch from the current `main`.
+3. Synchronize `main` with `origin` before branching:
+
+   ```bash
+   git fetch origin
+   git switch main
+   git pull --ff-only origin main
+   git switch -c <issue-branch>
+   ```
+
 4. Run the narrow checks first, then `make verify` when the Sprint 0 toolchain is available.
 5. Review the changed files, acceptance evidence, failure behavior, security impact, cross-platform behavior, and rollback before opening the PR.
 6. Attach command results, review decisions, sample output, remaining risk, and required human review to the pull request.
 
-Use the repository templates under `docs/04-execution/deprail-v0.1-execution-package/templates/` for issues, pull requests, and ADRs. Schema, external-process, file-write, permission, credential, migration, and publishing changes require human review.
+Schema, external-process, file-write, permission, credential, compatibility, migration, and publishing changes require human review.
 
 ## Code of conduct and licensing
 

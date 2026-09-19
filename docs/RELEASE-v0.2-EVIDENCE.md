@@ -39,10 +39,10 @@ Every artifact requires a recorded SHA-256 checksum and a smoke result from the 
 
 | Artifact | Platform | Size | SHA-256 | Smoke result | Evidence |
 | --- | --- | ---: | --- | --- | --- |
-| `deprail-linux-amd64` | Linux amd64 | 3,760,288 | `ec3da498e07a2b1bac63e5d5682beb753478822bffde6d8a1e0552a0e226f72e` | Release smoke passed | Release workflow |
-| `deprail-darwin-amd64` | macOS amd64 | 3,761,376 | `ed86ff1891db59ffce20ef98fab72d44386706f791f2fc065d3efe79647b143c` | Manual doctor passed | Release workflow / local |
-| `deprail-darwin-arm64` | macOS arm64 | 3,514,258 | `54fb08db4e7a5bb3ecdcc8610290dd61bf7514368e10d0b46994b8b69fd17a82` | Manual smoke passed | Release workflow / owner report |
-| `deprail-windows-amd64.exe` | Windows amd64 | 3,904,512 | `28d3f9b44717c9f423cc98a06821b11c8b1cba9a3b0aeb0d8626ac4555ed6625` | Release smoke passed | Release workflow |
+| `deprail-linux-amd64` | Linux amd64 | 3,760,288 | `ec3da498e07a2b1bac63e5d5682beb753478822bffde6d8a1e0552a0e226f72e` | Doctor/discover smoke passed | Release workflow |
+| `deprail-darwin-amd64` | macOS amd64 | 3,761,376 | `ed86ff1891db59ffce20ef98fab72d44386706f791f2fc065d3efe79647b143c` | Manual doctor passed | Local owner report |
+| `deprail-darwin-arm64` | macOS arm64 | 3,514,258 | `54fb08db4e7a5bb3ecdcc8610290dd61bf7514368e10d0b46994b8b69fd17a82` | Manual doctor passed | Local owner report |
+| `deprail-windows-amd64.exe` | Windows amd64 | 3,904,512 | `28d3f9b44717c9f423cc98a06821b11c8b1cba9a3b0aeb0d8626ac4555ed6625` | Not verified in release workflow | Missing; requires Windows artifact smoke |
 | Checksum manifest | All artifacts | — | — | `shasum -a 256 -c SHA256SUMS`: all OK | Preview release |
 
 ## Platform and CLI smoke evidence
@@ -56,9 +56,9 @@ For every supported artifact, attach command output and the CI or manual-run lin
 
 | Platform | CI or run link | Doctor | Discover | Scan failure behavior | Identity match |
 | --- | --- | --- | --- | --- | --- |
-| Linux | https://github.com/geoffrey-xiao/deprail/actions/runs/35433949073 | Release smoke passed | Workflow | Workflow | Tag/commit injected |
-| macOS | Local smoke plus release workflow | Passed | Passed | Passed | `darwin/amd64` and `darwin/arm64` verified |
-| Windows | https://github.com/geoffrey-xiao/deprail/actions/runs/35433949073 | Release smoke passed | Workflow | Workflow | Tag/commit injected |
+| Linux | https://github.com/geoffrey-xiao/deprail/actions/runs/35433949073 | Passed | Passed | Not run | Tag/commit injected |
+| macOS | Local owner report; no attached run link | Passed for amd64 and arm64 | Not attached | Not attached | Owner-reported |
+| Windows | No artifact execution evidence attached | Missing | Missing | Missing | Build identity only |
 
 ## Scanner and representative repositories
 

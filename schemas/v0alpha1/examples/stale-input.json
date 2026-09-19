@@ -1,0 +1,54 @@
+{
+  "schema_version": "v0alpha1",
+  "plan_id": "a26e71cc587284b6e2e42f3b7936794db9c47d8b94a6b05866fb517b3d2923ba",
+  "created_from": {
+    "report_digest": "stale-report",
+    "source_scan_id": "scan-old",
+    "scanner": "osv-scanner",
+    "repository_state": "old-tree"
+  },
+  "repository_identity": {
+    "root": ".",
+    "repository": "example",
+    "revision": "old-rev"
+  },
+  "workspace_identity": {
+    "id": "service",
+    "path": "."
+  },
+  "finding_identity": {
+    "stable_key": "finding-stale",
+    "current_version": "1.0.0"
+  },
+  "component": {
+    "purl": "pkg:npm/example@1.0.0",
+    "name": "example",
+    "version": "1.0.0"
+  },
+  "current_state": {
+    "direct": true,
+    "vulnerable": true
+  },
+  "candidates": [],
+  "recommendation": null,
+  "affected_files": [],
+  "commands": [],
+  "risks": [
+    {
+      "code": "stale_input",
+      "severity": "high",
+      "detected": true
+    }
+  ],
+  "assumptions": [],
+  "verification": [],
+  "rollback": {},
+  "provenance": {
+    "artifact_digests": [
+      "fedcba9876543210fedcba9876543210fedcba9876543210fedcba9876543210"
+    ],
+    "sources": [
+      "old-scan.json"
+    ]
+  }
+}

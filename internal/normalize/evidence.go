@@ -1,6 +1,9 @@
 package normalize
 
-import "sort"
+import (
+	"math"
+	"sort"
+)
 
 type SeverityObservation struct {
 	Source   string
@@ -39,7 +42,10 @@ func NormalizeEvidence(inputs []EvidenceInput) Evidence {
 		if severities[i].Source != severities[j].Source {
 			return severities[i].Source < severities[j].Source
 		}
-		return severities[i].Severity < severities[j].Severity
+		if severities[i].Severity != severities[j].Severity {
+			return severities[i].Severity < severities[j].Severity
+		}
+		return compareScores(severities[i].Score, severities[j].Score) < 0
 	})
 	sort.Slice(fixed, func(i, j int) bool {
 		if fixed[i].Source != fixed[j].Source {
@@ -48,6 +54,35 @@ func NormalizeEvidence(inputs []EvidenceInput) Evidence {
 		return fixed[i].Version < fixed[j].Version
 	})
 	return Evidence{Severities: dedupeSeverity(severities), FixedVersions: dedupeFixed(fixed)}
+}
+
+func compareScores(left, right *float64) int {
+	if left == nil {
+		if right == nil {
+			return 0
+		}
+		return -1
+	}
+	if right == nil {
+		return 1
+	}
+	leftNaN, rightNaN := math.IsNaN(*left), math.IsNaN(*right)
+	if leftNaN || rightNaN {
+		if leftNaN == rightNaN {
+			return 0
+		}
+		if leftNaN {
+			return -1
+		}
+		return 1
+	}
+	if *left < *right {
+		return -1
+	}
+	if *left > *right {
+		return 1
+	}
+	return 0
 }
 
 func dedupeSeverity(values []SeverityObservation) []SeverityObservation {

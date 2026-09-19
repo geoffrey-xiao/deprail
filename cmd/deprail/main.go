@@ -6,12 +6,14 @@ import (
 	"encoding/json"
 	"flag"
 	"fmt"
-	"github.com/geoffrey-xiao/deprail/internal/app"
-	"github.com/geoffrey-xiao/deprail/internal/discovery"
-	"github.com/geoffrey-xiao/deprail/internal/presenter"
 	"io"
 	"os"
 	"path/filepath"
+
+	"github.com/geoffrey-xiao/deprail/internal/app"
+	"github.com/geoffrey-xiao/deprail/internal/baseline"
+	"github.com/geoffrey-xiao/deprail/internal/discovery"
+	"github.com/geoffrey-xiao/deprail/internal/presenter"
 )
 
 func main() {
@@ -28,6 +30,8 @@ func run(args []string, stdout, stderr io.Writer) int {
 		return runDiscover(args[1:], stdout, stderr)
 	case "scan":
 		return runScan(args[1:], stdout, stderr)
+	case "diff":
+		return runDiff(args[1:], stdout, stderr)
 	case "doctor":
 		return runDoctor(args[1:], stdout, stderr)
 	default:
@@ -208,6 +212,38 @@ func runDoctor(args []string, stdout, stderr io.Writer) int {
 		}
 	}
 	if !report.Scanner.Available || !report.Scanner.Compatible {
+		return 3
+	}
+	return 0
+}
+func runDiff(args []string, stdout, stderr io.Writer) int {
+	flags := flag.NewFlagSet("diff", flag.ContinueOnError)
+	flags.SetOutput(io.Discard)
+	basePath := flags.String("base", "", "base baseline path")
+	headPath := flags.String("head", "", "head baseline path")
+	format := flags.String("format", "json", "output format: json")
+	if err := flags.Parse(args); err != nil || *basePath == "" || *headPath == "" || *format != "json" || len(flags.Args()) != 0 {
+		writeCLIError(stderr, "CONFIG_INVALID", "diff requires --base and --head and supports only --format json", "diff")
+		return 2
+	}
+	store := baseline.Store{Root: filepath.Dir(*basePath)}
+	base, err := store.Load(*basePath)
+	if err != nil {
+		writeCLIError(stderr, "BASELINE_INVALID", err.Error(), "base")
+		return 3
+	}
+	head, err := store.Load(*headPath)
+	if err != nil {
+		writeCLIError(stderr, "BASELINE_INVALID", err.Error(), "head")
+		return 3
+	}
+	comparison, err := baseline.Compare(base, head)
+	if err != nil {
+		writeCLIError(stderr, "BASELINE_INVALID", err.Error(), "comparison")
+		return 3
+	}
+	if err := json.NewEncoder(stdout).Encode(comparison); err != nil {
+		writeCLIError(stderr, "OUTPUT_WRITE_FAILED", err.Error(), "output")
 		return 3
 	}
 	return 0

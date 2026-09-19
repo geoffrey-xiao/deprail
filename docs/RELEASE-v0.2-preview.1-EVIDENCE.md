@@ -1,11 +1,11 @@
 # DepRail v0.2 Release Evidence Record
 
-**Status:** Preview 2 preparation; artifact evidence pending.
+**Status:** Superseded; preview.1 evidence retained for historical reference.
 **Release mode:** Preview
-**Target version:** `0.2.0-preview.2`
-**Release owner:** `@geoffrey-xiao`
-**Reviewer:** `@geoffreyxiaoai`
-**Decision:** `GO WITH APPROVED GAPS`
+**Target version:** `0.2.0-preview.1`
+**Release owner:** `[not recorded in preview.1 evidence]`
+**Reviewer:** `[not recorded in preview.1 evidence]`
+**Decision:** `[not recorded in preview.1 evidence]`
 
 Missing or inconsistent evidence blocks the applicable release mode. Do not replace missing evidence with an unchecked claim.
 

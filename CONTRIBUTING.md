@@ -66,7 +66,8 @@ When an issue is finished, prepare a completion report for the owner covering ev
 2. Present a short implementation plan before editing.
 3. Add or update focused tests, fixtures, and documentation with the behavior change.
 4. Run the narrow checks first, then `make verify` when the Sprint 0 toolchain is available.
-5. Attach command results, sample output, remaining risk, and required human review to the pull request.
+5. Run the OMP reviewer role against the branch using the current verification evidence. Resolve every `BLOCKER` and `MAJOR`, rerun focused verification and the OMP review, and repeat until no unresolved `BLOCKER` or `MAJOR` remains.
+6. Attach command results, reviewer findings/resolutions, sample output, remaining risk, and required human review to the pull request.
 
 Use the repository templates under `docs/04-execution/deprail-v0.1-execution-package/templates/` for issues, pull requests, and ADRs. Schema, external-process, file-write, permission, credential, migration, and publishing changes require human review.
 

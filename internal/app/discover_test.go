@@ -16,8 +16,8 @@ func TestDiscoverMixedRepositoryFindsAllSupportedWorkspaceTypes(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if graph.Completeness != discovery.Partial {
-		t.Fatalf("completeness = %q, want partial because npm lockfile is absent", graph.Completeness)
+	if graph.Completeness != discovery.Complete {
+		t.Fatalf("completeness = %q, want complete because all workspaces have authoritative inputs", graph.Completeness)
 	}
 	if len(graph.Workspaces) != 3 {
 		t.Fatalf("workspaces = %#v", graph.Workspaces)
@@ -26,7 +26,7 @@ func TestDiscoverMixedRepositoryFindsAllSupportedWorkspaceTypes(t *testing.T) {
 		ecosystem    discovery.Ecosystem
 		completeness discovery.Completeness
 	}{
-		"frontend":        {discovery.EcosystemNPM, discovery.Partial},
+		"frontend":        {discovery.EcosystemNPM, discovery.Complete},
 		"services/api":    {discovery.EcosystemPython, discovery.Complete},
 		"services/worker": {discovery.EcosystemMaven, discovery.Complete},
 	}

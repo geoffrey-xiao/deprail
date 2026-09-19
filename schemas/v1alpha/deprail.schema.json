@@ -8,7 +8,7 @@
   "properties": {
     "schema_version": { "const": "v1alpha" },
     "document_type": {
-      "enum": ["project", "workspace", "scan", "baseline", "diff", "component", "vulnerability", "finding", "evidence", "diagnostic"]
+      "enum": ["project", "workspace", "scan", "baseline", "diff", "exception", "component", "vulnerability", "finding", "evidence", "diagnostic"]
     }
   },
   "oneOf": [
@@ -17,6 +17,7 @@
     { "$ref": "#/$defs/scan" },
     { "$ref": "#/$defs/baseline" },
     { "$ref": "#/$defs/diff" },
+    { "$ref": "#/$defs/exception" },
     { "$ref": "#/$defs/component" },
     { "$ref": "#/$defs/vulnerability" },
     { "$ref": "#/$defs/finding" },
@@ -135,6 +136,22 @@
         "base_artifact_digests": { "type": "array", "items": { "type": "string", "pattern": "^[a-f0-9]{64}$" }, "uniqueItems": true },
         "head_artifact_digests": { "type": "array", "items": { "type": "string", "pattern": "^[a-f0-9]{64}$" }, "uniqueItems": true },
         "changes": { "type": "array" }
+      },
+      "additionalProperties": false
+    },
+    "exception": {
+      "type": "object",
+      "required": ["schema_version", "id", "finding_key", "scope", "rationale", "approver", "created_at", "expires_at", "review_condition"],
+      "properties": {
+        "schema_version": { "const": "v1alpha" },
+        "id": { "$ref": "#/$defs/id" },
+        "finding_key": { "$ref": "#/$defs/id" },
+        "scope": { "$ref": "#/$defs/id" },
+        "rationale": { "$ref": "#/$defs/id" },
+        "approver": { "$ref": "#/$defs/id" },
+        "created_at": { "$ref": "#/$defs/timestamp" },
+        "expires_at": { "$ref": "#/$defs/timestamp" },
+        "review_condition": { "$ref": "#/$defs/id" }
       },
       "additionalProperties": false
     },

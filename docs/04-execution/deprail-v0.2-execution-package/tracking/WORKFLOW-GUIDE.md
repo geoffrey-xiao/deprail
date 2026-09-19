@@ -106,7 +106,29 @@ gh project item-list <project-number> \
 Verify the item reports `In Progress` before creating the branch. After the PR opens, the required next transition is `Review`; the issue is not closed until the reviewed PR merges and evidence is complete.
 
 
-## 5. Prepare and create the PR
+## 5. Run the OMP pre-PR review
+
+Before invoking the reviewer, run the applicable focused verification and record its command and output. The reviewer must read the linked issue, applicable requirements, changed files, tests, and current verification evidence.
+
+The reviewer checks:
+
+- scope, dependencies, acceptance criteria, and contract compatibility;
+- failure, incomplete, boundary, security, and deterministic behavior;
+- path containment, subprocess, file-write, credential, and permission risks;
+- focused tests, cross-platform evidence, documentation, issue link, labels, and rollback.
+
+Present the findings to the owner without editing the branch. Use these classifications:
+
+```text
+BLOCKER  Blocks PR creation unless the owner explicitly changes the plan.
+MAJOR    Requires an owner decision before PR creation.
+MINOR    Owner decides whether to fix now or record for later.
+NOTE     Context only; no action required.
+```
+
+Stop after reporting the findings. Do not automatically fix, suppress, accept, or reject any finding. The owner chooses the next action. If the owner requests fixes, apply only those requested changes, rerun focused verification, and rerun the OMP review. If the owner accepts remaining risk, record that decision and its rationale before proceeding. Human review remains required after the PR opens.
+
+## 6. Prepare and create the PR
 
 Use the PR template. The PR body must contain exactly one unique linked issue number. For an implementation PR, use a closing keyword:
 
@@ -150,13 +172,13 @@ gh pr edit <pr-number> \
   --add-label "type:bug"
 ```
 
-## 6. Synchronize Project review status
+## 7. Synchronize Project review status
 
 After the PR opens, locate the linked issue’s Project item and set Status to `Review` using the live Project and field IDs. Verify the result with `gh project item-list`.
 
 Do not claim synchronization if the token lacks Project write permission.
 
-## 7. Run checks before requesting review
+## 8. Run checks before requesting review
 
 ```bash
 gh pr checks <pr-number> --repo geoffrey-xiao/deprail
@@ -170,7 +192,7 @@ The metadata check requires:
 - one unique linked issue;
 - required Project synchronization checklist in the PR body.
 
-## 8. Merge and close
+## 9. Merge and close
 
 During PR review, the owner reviews acceptance criteria, evidence, compatibility, security impact, and remaining risk. After the reviewed PR merges and required CI/evidence pass:
 

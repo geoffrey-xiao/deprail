@@ -8,7 +8,7 @@ func testPlan() Plan {
 		CreatedFrom:        CreatedFrom{ReportDigest: "report-digest", SourceScanID: "scan-1", Scanner: "osv", RepositoryState: "tree-digest"},
 		RepositoryIdentity: RepositoryIdentity{Root: ".", Repository: "repo", Revision: "rev-1"},
 		WorkspaceIdentity:  WorkspaceIdentity{ID: "service", Path: "services/api"},
-		FindingIdentity:    FindingIdentity{StableKey: "finding-1", Aliases: []string{"OSV-2", "CVE-1"}, CurrentVersion: "1.0.0"},
+		FindingIdentity:    FindingIdentity{StableKey: "finding-1", Aliases: []string{"OSV-2", "CVE-1"}, DependencyPath: []string{"app", "library", "vulnerable"}, CurrentVersion: "1.0.0"},
 		Component:          Component{PURL: "pkg:npm/example@1.0.0", Name: "example", Version: "1.0.0"},
 		CurrentState:       CurrentState{Direct: true, Constraint: "^1.0.0", Manifest: "package.json", Vulnerable: true},
 		Candidates:         []Candidate{{ID: "candidate-2", Version: "1.2.0", State: CandidateViable, Evidence: CompatibilityEvidence{ConstraintSatisfied: true, LockfileResolution: true, PeerCompatible: true, RuntimeCompatible: true, EngineCompatible: true}}, {ID: "candidate-1", Version: "1.1.0", State: CandidateRecommended, Evidence: CompatibilityEvidence{ConstraintSatisfied: true, LockfileResolution: true, PeerCompatible: true, RuntimeCompatible: true, EngineCompatible: true}}},
@@ -35,8 +35,53 @@ func TestStablePlanIDIgnoresOrderingAndProse(t *testing.T) {
 	right.Assumptions[0].Details = "different prose"
 	right.Verification[0].Reason = "different prose"
 	right.Rollback.Steps[0] = "different prose"
+	right.Recommendation.Reason = "different prose"
 	if StablePlanID(left) != StablePlanID(right) {
 		t.Fatal("equivalent plans produced different stable IDs")
+	}
+}
+
+func TestStablePlanIDPreservesDependencyPathOrder(t *testing.T) {
+	plan := testPlan()
+	reversed := testPlan()
+	reversed.FindingIdentity.DependencyPath[0], reversed.FindingIdentity.DependencyPath[2] = reversed.FindingIdentity.DependencyPath[2], reversed.FindingIdentity.DependencyPath[0]
+	if StablePlanID(plan) == StablePlanID(reversed) {
+		t.Fatal("reversed dependency paths produced the same stable ID")
+	}
+}
+func TestValidateRejectsFailedCompatibilityRecommendation(t *testing.T) {
+	plan := testPlan()
+	plan.Candidates[0].Evidence.PeerCompatible = false
+	plan.PlanID = StablePlanID(plan)
+	if err := plan.Validate(); err == nil {
+		t.Fatal("expected failed compatibility evidence to reject recommendation")
+	}
+}
+
+func TestValidateRejectsUnsupportedSchemaAndMissingScanner(t *testing.T) {
+	plan := testPlan()
+	plan.SchemaVersion = "invalid"
+	plan.PlanID = StablePlanID(plan)
+	if err := plan.Validate(); err == nil {
+		t.Fatal("expected unsupported schema to be rejected")
+	}
+
+	plan = testPlan()
+	plan.CreatedFrom.Scanner = ""
+	plan.PlanID = StablePlanID(plan)
+	if err := plan.Validate(); err == nil {
+		t.Fatal("expected missing scanner provenance to be rejected")
+	}
+}
+
+func TestValidateRejectsNoncanonicalPaths(t *testing.T) {
+	for _, path := range []string{"services/./api", "services//api", "services/api/"} {
+		plan := testPlan()
+		plan.WorkspaceIdentity.Path = path
+		plan.PlanID = StablePlanID(plan)
+		if err := plan.Validate(); err == nil {
+			t.Fatalf("path %q was accepted", path)
+		}
 	}
 }
 

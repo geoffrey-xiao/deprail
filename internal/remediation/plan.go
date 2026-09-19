@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"path"
 	"sort"
 	"strings"
 )
@@ -103,6 +104,15 @@ type CompatibilityEvidence struct {
 	Unknown             []string `json:"unknown,omitempty"`
 }
 
+func (e CompatibilityEvidence) recommendable() bool {
+	return len(e.Unknown) == 0 &&
+		e.ConstraintSatisfied &&
+		e.LockfileResolution &&
+		e.PeerCompatible &&
+		e.RuntimeCompatible &&
+		e.EngineCompatible
+}
+
 type Recommendation struct {
 	CandidateID string         `json:"candidate_id"`
 	State       CandidateState `json:"state"`
@@ -151,7 +161,6 @@ type Provenance struct {
 
 func (p *Plan) Canonicalize() {
 	sort.Strings(p.FindingIdentity.Aliases)
-	sort.Strings(p.FindingIdentity.DependencyPath)
 	sort.Strings(p.FindingIdentity.FixedVersions)
 	sort.Slice(p.Candidates, func(i, j int) bool { return p.Candidates[i].ID < p.Candidates[j].ID })
 	for i := range p.Candidates {
@@ -167,11 +176,11 @@ func (p *Plan) Canonicalize() {
 }
 
 func (p Plan) Validate() error {
-	if p.SchemaVersion == "" || p.PlanID == "" {
-		return errors.New("plan schema version and plan ID are required")
+	if p.SchemaVersion != SchemaVersion || p.PlanID == "" {
+		return errors.New("plan schema version is unsupported or plan ID is missing")
 	}
-	if p.CreatedFrom.ReportDigest == "" || p.CreatedFrom.SourceScanID == "" || p.CreatedFrom.RepositoryState == "" {
-		return errors.New("plan source report digest, scan ID, and repository state are required")
+	if p.CreatedFrom.ReportDigest == "" || p.CreatedFrom.SourceScanID == "" || p.CreatedFrom.Scanner == "" || p.CreatedFrom.RepositoryState == "" {
+		return errors.New("plan source report digest, scan ID, scanner, and repository state are required")
 	}
 	if p.RepositoryIdentity.Root == "" || p.WorkspaceIdentity.ID == "" || p.FindingIdentity.StableKey == "" || p.Component.PURL == "" {
 		return errors.New("plan repository, workspace, finding, and component identity are required")
@@ -201,8 +210,8 @@ func (p Plan) Validate() error {
 			return fmt.Errorf("candidate ID is duplicated: %q", candidate.ID)
 		}
 		seen[candidate.ID] = struct{}{}
-		if candidate.State == CandidateRecommended && len(candidate.Evidence.Unknown) > 0 {
-			return fmt.Errorf("candidate %q cannot be recommended with unknown evidence", candidate.ID)
+		if candidate.State == CandidateRecommended && !candidate.Evidence.recommendable() {
+			return fmt.Errorf("candidate %q cannot be recommended with incomplete or incompatible evidence", candidate.ID)
 		}
 	}
 	if p.Recommendation != nil {
@@ -210,8 +219,8 @@ func (p Plan) Validate() error {
 		if !ok || candidate.State != CandidateRecommended || p.Recommendation.State != CandidateRecommended {
 			return errors.New("recommendation must reference a recommended candidate")
 		}
-		if len(candidate.Evidence.Unknown) > 0 {
-			return errors.New("recommendation cannot use unknown compatibility evidence")
+		if len(candidate.Evidence.Unknown) > 0 || !candidate.Evidence.recommendable() {
+			return errors.New("recommendation cannot use incomplete or incompatible compatibility evidence")
 		}
 	}
 	for _, command := range p.Commands {
@@ -241,7 +250,7 @@ func StablePlanID(plan Plan) string {
 		Component:          plan.Component,
 		CurrentState:       plan.CurrentState,
 		Candidates:         identityCandidates(plan.Candidates),
-		Recommendation:     plan.Recommendation,
+		Recommendation:     identityRecommendation(plan.Recommendation),
 		AffectedFiles:      identityAffectedFiles(plan.AffectedFiles),
 		Commands:           plan.Commands,
 		Risks:              identityRisks(plan.Risks),
@@ -255,21 +264,26 @@ func StablePlanID(plan Plan) string {
 }
 
 type planIdentity struct {
-	SchemaVersion      string                 `json:"schema_version"`
-	CreatedFrom        CreatedFrom            `json:"created_from"`
-	RepositoryIdentity RepositoryIdentity     `json:"repository_identity"`
-	WorkspaceIdentity  WorkspaceIdentity      `json:"workspace_identity"`
-	FindingIdentity    FindingIdentity        `json:"finding_identity"`
-	Component          Component              `json:"component"`
-	CurrentState       CurrentState           `json:"current_state"`
-	Candidates         []candidateIdentity    `json:"candidates"`
-	Recommendation     *Recommendation        `json:"recommendation"`
-	AffectedFiles      []affectedFileIdentity `json:"affected_files"`
-	Commands           []Command              `json:"commands"`
-	Risks              []riskIdentity         `json:"risks"`
-	Assumptions        []assumptionIdentity   `json:"assumptions"`
-	Verification       []verificationIdentity `json:"verification"`
-	Provenance         Provenance             `json:"provenance"`
+	SchemaVersion      string                  `json:"schema_version"`
+	CreatedFrom        CreatedFrom             `json:"created_from"`
+	RepositoryIdentity RepositoryIdentity      `json:"repository_identity"`
+	WorkspaceIdentity  WorkspaceIdentity       `json:"workspace_identity"`
+	FindingIdentity    FindingIdentity         `json:"finding_identity"`
+	Component          Component               `json:"component"`
+	CurrentState       CurrentState            `json:"current_state"`
+	Candidates         []candidateIdentity     `json:"candidates"`
+	Recommendation     *recommendationIdentity `json:"recommendation"`
+	AffectedFiles      []affectedFileIdentity  `json:"affected_files"`
+	Commands           []Command               `json:"commands"`
+	Risks              []riskIdentity          `json:"risks"`
+	Assumptions        []assumptionIdentity    `json:"assumptions"`
+	Verification       []verificationIdentity  `json:"verification"`
+	Provenance         Provenance              `json:"provenance"`
+}
+
+type recommendationIdentity struct {
+	CandidateID string         `json:"candidate_id"`
+	State       CandidateState `json:"state"`
 }
 
 type candidateIdentity struct {
@@ -291,6 +305,13 @@ type riskIdentity struct {
 	Code     string `json:"code"`
 	Severity string `json:"severity"`
 	Detected bool   `json:"detected"`
+}
+
+func identityRecommendation(value *Recommendation) *recommendationIdentity {
+	if value == nil {
+		return nil
+	}
+	return &recommendationIdentity{CandidateID: value.CandidateID, State: value.State}
 }
 
 type assumptionIdentity struct {
@@ -381,6 +402,9 @@ func validateRelativePath(value string) error {
 	}
 	if strings.Contains(value, "\\") {
 		return errors.New("must use slash separators")
+	}
+	if value != "." && path.Clean(value) != value {
+		return errors.New("must use canonical path spelling")
 	}
 	for _, part := range strings.Split(value, "/") {
 		if part == ".." {

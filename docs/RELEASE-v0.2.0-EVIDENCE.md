@@ -24,6 +24,8 @@ This record applies only to the immutable `v0.2.0` tag. Preview evidence remains
 
 ## Required stable controls
 
+The release workflow generates and verifies the controls in the build job. Publication is blocked at the protected `release-approval` environment until an authorized reviewer presses the GitHub Actions approval button. The approval job then verifies checksums and uploads the already-reviewed assets.
+
 | Control | Status | Evidence or disposition |
 | --- | --- | --- |
 | SBOM | `[required or approved exception]` | Stable policy requires linked evidence or explicit owner-approved exception |

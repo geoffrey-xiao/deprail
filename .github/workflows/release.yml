@@ -6,6 +6,8 @@ on:
 
 permissions:
   contents: write
+  id-token: write
+  attestations: write
 
 jobs:
   build:
@@ -41,6 +43,78 @@ jobs:
             GOOS="$goos" GOARCH="$goarch" go build -trimpath -ldflags="$ldflags" -o "dist/deprail-${target}${suffix}" ./cmd/deprail
           done
           (cd dist && sha256sum deprail-*) > dist/SHA256SUMS
+      - name: Generate SBOM
+        uses: anchore/sbom-action@v0
+        with:
+          path: .
+          format: spdx-json
+          output-file: dist/deprail-${{ github.event.release.tag_name }}.spdx.json
+
+      - name: Install Cosign
+        uses: sigstore/cosign-installer@v3
+
+      - name: Sign release artifacts
+        shell: bash
+        run: |
+          set -euo pipefail
+          for artifact in dist/deprail-*; do
+            case "$artifact" in
+              *.sig|*.pem) continue ;;
+            esac
+            cosign sign-blob \
+              --yes \
+              --output-signature "${artifact}.sig" \
+              --output-certificate "${artifact}.pem" \
+              "$artifact"
+          done
+
+      - name: Verify release signatures
+        shell: bash
+        run: |
+          set -euo pipefail
+          for artifact in dist/deprail-*; do
+            case "$artifact" in
+              *.sig|*.pem) continue ;;
+            esac
+            cosign verify-blob \
+              --signature "${artifact}.sig" \
+              --certificate "${artifact}.pem" \
+              --certificate-identity-regexp 'https://github.com/${{ github.repository }}/.github/workflows/release.yml@refs/tags/.*' \
+              --certificate-oidc-issuer 'https://token.actions.githubusercontent.com' \
+              "$artifact"
+          done
+
+      - name: Attest release artifacts
+        uses: actions/attest-build-provenance@v2
+        with:
+          subject-path: |
+            dist/deprail-linux-amd64
+            dist/deprail-darwin-amd64
+            dist/deprail-darwin-arm64
+            dist/deprail-windows-amd64.exe
+
+      - name: Verify build provenance
+        shell: bash
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          for artifact in \
+            dist/deprail-linux-amd64 \
+            dist/deprail-darwin-amd64 \
+            dist/deprail-darwin-arm64 \
+            dist/deprail-windows-amd64.exe; do
+            gh attestation verify "$artifact" --repo "${{ github.repository }}"
+          done
+
+      - name: Verify checksums, signatures, and release controls
+        shell: bash
+        run: |
+          set -euo pipefail
+          (cd dist && sha256sum -c SHA256SUMS)
+          test -s "dist/deprail-${{ github.event.release.tag_name }}.spdx.json"
+          test -s dist/deprail-linux-amd64.sig
+          test -s dist/deprail-linux-amd64.pem
 
       - name: Run release smoke checks
         shell: bash
@@ -58,7 +132,7 @@ jobs:
           path: dist/*
 
   manual-verify:
-    name: Manual release verification
+    name: Manual release approval and publication
     needs: build
     runs-on: ubuntu-latest
     environment:

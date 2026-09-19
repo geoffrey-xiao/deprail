@@ -1,0 +1,47 @@
+name: Codex Review Signal
+
+on:
+  pull_request_review:
+    types: [submitted]
+
+# This workflow only records immutable event identifiers. In particular, it
+# never needs a write-capable GITHUB_TOKEN, even when the PR comes from a fork.
+permissions:
+  contents: read
+
+jobs:
+  capture:
+    name: Capture submitted review
+    runs-on: ubuntu-latest
+    steps:
+      - name: Record review identifiers
+        uses: actions/github-script@v8
+        env:
+          SIGNAL_PATH: codex-review-signal/review-event.json
+        with:
+          script: |
+            const fs = require('fs');
+            const path = require('path');
+
+            const signal = {
+              repository: context.payload.repository?.full_name,
+              pull_request: context.payload.pull_request?.number,
+              review_id: context.payload.review?.id,
+              source_run_id: context.runId,
+            };
+
+            fs.mkdirSync(path.dirname(process.env.SIGNAL_PATH), {recursive: true});
+            fs.writeFileSync(
+              process.env.SIGNAL_PATH,
+              `${JSON.stringify(signal, null, 2)}\n`,
+              {encoding: 'utf8', mode: 0o600},
+            );
+
+      - name: Upload review signal
+        uses: actions/upload-artifact@v4
+        with:
+          name: codex-review-signal
+          path: codex-review-signal/review-event.json
+          if-no-files-found: error
+          retention-days: 1
+

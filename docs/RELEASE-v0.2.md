@@ -119,7 +119,7 @@ If artifact identity, checksums, smoke tests, or release evidence are incorrect:
 
 ## 8. Release evidence record
 
-Use [`docs/RELEASE-v0.2-EVIDENCE.md`](RELEASE-v0.2-EVIDENCE.md) as the durable record and attach linked command output, CI runs, artifact checksums, scan evidence, reviewer decisions, and remaining risks.
+Use a version-specific evidence record, such as [`docs/RELEASE-v0.2-preview.2-EVIDENCE.md`](RELEASE-v0.2-preview.2-EVIDENCE.md). Preserve superseded preview records unchanged and never mix artifact checksums across tags.
 
 The release record must link:
 

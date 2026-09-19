@@ -1,0 +1,61 @@
+name: DepRail
+
+description: Run the pinned DepRail dependency security guardrail.
+author: DepRail maintainers
+branding:
+  icon: shield
+  color: blue
+
+inputs:
+  version:
+    description: DepRail release or immutable commit to execute.
+    required: false
+    default: v0.2.0
+  path:
+    description: Repository path to scan.
+    required: false
+    default: .
+  format:
+    description: Output format.
+    required: false
+    default: json
+
+outputs:
+  report:
+    description: Path to the machine-readable DepRail report.
+    value: ${{ steps.scan.outputs.report }}
+
+runs:
+  using: composite
+  steps:
+    - id: scan
+      name: Run DepRail scan
+      shell: bash
+      env:
+        DEPRAIL_VERSION: ${{ inputs.version }}
+        DEPRAIL_PATH: ${{ inputs.path }}
+        DEPRAIL_FORMAT: ${{ inputs.format }}
+      run: |
+        set -uo pipefail
+        test -n "$DEPRAIL_VERSION"
+        test -d "$DEPRAIL_PATH"
+        command -v deprail >/dev/null 2>&1 || { echo 'deprail must be installed by the caller at a pinned version' >&2; exit 2; }
+        version_output="$(deprail --version 2>&1)" || { echo "$version_output" >&2; exit 2; }
+        case "$version_output" in
+          *"$DEPRAIL_VERSION"*) ;;
+          *) echo "deprail version mismatch: requested $DEPRAIL_VERSION, got $version_output" >&2; exit 2;;
+        esac
+        report_dir="${RUNNER_TEMP:-${TMPDIR:-/tmp}}/deprail"
+        mkdir -p "$report_dir"
+        report_path="$report_dir/report.json"
+        deprail scan "$DEPRAIL_PATH" --format "$DEPRAIL_FORMAT" >"$report_path"
+        status=$?
+        echo "report=$report_path" >> "$GITHUB_OUTPUT"
+        exit "$status"
+    - name: Upload DepRail report
+      if: always() && steps.scan.outputs.report != ''
+      uses: actions/upload-artifact@v4
+      with:
+        name: deprail-report
+        path: ${{ steps.scan.outputs.report }}
+        if-no-files-found: error

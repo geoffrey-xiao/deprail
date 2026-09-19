@@ -5,12 +5,16 @@ on:
     types: [published]
 
 permissions:
-  contents: write
-  id-token: write
-  attestations: write
+  contents: read
+  actions: read
 
 jobs:
   build:
+    permissions:
+      contents: read
+      actions: read
+      id-token: write
+      attestations: write
     runs-on: ubuntu-latest
     steps:
       - name: Check out tagged source
@@ -134,6 +138,9 @@ jobs:
   manual-verify:
     name: Manual release approval and publication
     needs: build
+    permissions:
+      contents: write
+      actions: read
     runs-on: ubuntu-latest
     environment:
       name: release-approval

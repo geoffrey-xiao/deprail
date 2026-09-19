@@ -53,6 +53,8 @@ jobs:
           path: .
           format: spdx-json
           output-file: dist/deprail-${{ github.event.release.tag_name }}.spdx.json
+          upload-artifact: false
+          upload-release-assets: false
 
       - name: Install Cosign
         uses: sigstore/cosign-installer@v3

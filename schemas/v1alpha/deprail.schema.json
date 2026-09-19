@@ -8,13 +8,14 @@
   "properties": {
     "schema_version": { "const": "v1alpha" },
     "document_type": {
-      "enum": ["project", "workspace", "scan", "component", "vulnerability", "finding", "evidence", "diagnostic"]
+      "enum": ["project", "workspace", "scan", "baseline", "component", "vulnerability", "finding", "evidence", "diagnostic"]
     }
   },
   "oneOf": [
     { "$ref": "#/$defs/project" },
     { "$ref": "#/$defs/workspace" },
     { "$ref": "#/$defs/scan" },
+    { "$ref": "#/$defs/baseline" },
     { "$ref": "#/$defs/component" },
     { "$ref": "#/$defs/vulnerability" },
     { "$ref": "#/$defs/finding" },
@@ -92,6 +93,33 @@
         "artifact_digests": { "type": "array", "items": { "type": "string", "pattern": "^[a-f0-9]{64}$" }, "uniqueItems": true }
       },
       "additionalProperties": true
+    },
+    "baseline": {
+      "type": "object",
+      "required": ["schema_version", "document_type", "baseline_id", "source_scan_id", "status", "findings", "artifact_digests"],
+      "properties": {
+        "schema_version": { "const": "v1alpha" },
+        "document_type": { "const": "baseline" },
+        "baseline_id": { "$ref": "#/$defs/id" },
+        "source_scan_id": { "$ref": "#/$defs/id" },
+        "status": { "const": "complete" },
+        "findings": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["stable_key", "component", "version"],
+            "properties": {
+              "stable_key": { "$ref": "#/$defs/id" },
+              "component": { "$ref": "#/$defs/id" },
+              "version": { "$ref": "#/$defs/id" },
+              "target_id": { "type": "string" }
+            },
+            "additionalProperties": false
+          }
+        },
+        "artifact_digests": { "type": "array", "items": { "type": "string", "pattern": "^[a-f0-9]{64}$" }, "uniqueItems": true }
+      },
+      "additionalProperties": false
     },
     "component": {
       "type": "object",

@@ -1,0 +1,9 @@
+{
+  "schema_version": "v1alpha",
+  "document_type": "baseline",
+  "baseline_id": "base-001",
+  "source_scan_id": "scan-001",
+  "status": "complete",
+  "findings": [],
+  "artifact_digests": []
+}

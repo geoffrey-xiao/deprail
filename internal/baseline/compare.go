@@ -29,7 +29,21 @@ type Comparison struct {
 	Changes             []Change `json:"changes"`
 }
 
-func findingIdentity(f Finding) string { return f.Component + "\x00" + f.TargetID }
+func findingIdentity(f Finding) string {
+	return f.WorkspaceID + "\x00" + f.Component + "\x00" + f.TargetID
+}
+
+func aliasesEqual(left, right []string) bool {
+	if len(left) != len(right) {
+		return false
+	}
+	for i := range left {
+		if left[i] != right[i] {
+			return false
+		}
+	}
+	return true
+}
 
 func Compare(base, head Document) (Comparison, error) {
 	if err := Validate(base); err != nil {
@@ -103,7 +117,7 @@ func Compare(base, head Document) (Comparison, error) {
 		case inBase && inHead:
 			bb, hh := b, h
 			kind := Unchanged
-			if bb.Component != hh.Component || bb.Version != hh.Version || bb.TargetID != hh.TargetID {
+			if bb.Component != hh.Component || bb.Version != hh.Version || bb.TargetID != hh.TargetID || !aliasesEqual(bb.VulnerabilityAliases, hh.VulnerabilityAliases) {
 				kind = Changed
 			}
 			changes = append(changes, Change{Kind: kind, Key: key, Base: &bb, Head: &hh})

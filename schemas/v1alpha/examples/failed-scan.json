@@ -1,0 +1,19 @@
+{
+  "schema_version": "v1alpha",
+  "document_type": "scan",
+  "scan_id": "scan-failed-001",
+  "started_at": "2026-09-18T00:02:00Z",
+  "finished_at": "2026-09-18T00:02:01Z",
+  "tool": {"name": "OSV-Scanner", "version": "2.6.0", "database": "osv.dev"},
+  "status": "failed",
+  "findings": [],
+  "errors": [
+    {
+      "code": "SCANNER_NOT_FOUND",
+      "message": "OSV-Scanner is not installed.",
+      "scope": "workspace:.",
+      "retryable": false
+    }
+  ],
+  "artifact_digests": []
+}

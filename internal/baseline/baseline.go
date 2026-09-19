@@ -27,6 +27,7 @@ type Finding struct {
 	Component            string   `json:"component"`
 	Version              string   `json:"version"`
 	TargetID             string   `json:"target_id"`
+	Severity             string   `json:"severity,omitempty"`
 	VulnerabilityAliases []string `json:"vulnerability_aliases,omitempty"`
 }
 

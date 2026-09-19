@@ -14,4 +14,4 @@ Path schemas reject absolute paths. Repository-root containment, traversal, and 
 
 Unknown fields are allowed so adapters can preserve safe upstream data while the contract evolves additively. Stable keys must not include descriptions, timestamps, severity labels, or evidence ordering.
 
-Examples live under `schemas/v1alpha/examples/`. The `invalid-scan.json` fixture intentionally violates the schema and is used for negative validation checks.
+Examples live under `schemas/v1alpha/examples/`. `scan.json`, `partial-scan.json`, and `failed-scan.json` demonstrate complete, partial, and failed outcomes with array-valued collections. The `invalid-scan.json` fixture intentionally violates the schema and is used for negative validation checks.

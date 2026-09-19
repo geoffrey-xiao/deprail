@@ -1,0 +1,19 @@
+{
+  "schema_version": "v1alpha",
+  "document_type": "scan",
+  "scan_id": "scan-partial-001",
+  "started_at": "2026-09-18T00:01:00Z",
+  "finished_at": "2026-09-18T00:01:02Z",
+  "tool": {"name": "OSV-Scanner", "version": "2.6.0", "database": "osv.dev"},
+  "status": "partial",
+  "findings": [],
+  "errors": [
+    {
+      "code": "SCANNER_TIMEOUT",
+      "message": "The scanner timed out for one workspace.",
+      "scope": "workspace:services/api",
+      "retryable": true
+    }
+  ],
+  "artifact_digests": []
+}

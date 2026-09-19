@@ -16,6 +16,8 @@ func TestSchemaAndExamplesAreValidJSON(t *testing.T) {
 		"deprail.schema.json",
 		"examples/project.json",
 		"examples/scan.json",
+		"examples/partial-scan.json",
+		"examples/failed-scan.json",
 		"examples/invalid-scan.json",
 	} {
 		data, err := schemaFiles.ReadFile(name)
@@ -48,7 +50,7 @@ func TestExamplesValidateAgainstSchema(t *testing.T) {
 		t.Fatalf("compile schema: %v", err)
 	}
 
-	for _, name := range []string{"examples/project.json", "examples/scan.json"} {
+	for _, name := range []string{"examples/project.json", "examples/scan.json", "examples/partial-scan.json", "examples/failed-scan.json"} {
 		data, err := schemaFiles.ReadFile(name)
 		if err != nil {
 			t.Fatal(err)
@@ -76,7 +78,7 @@ func TestExamplesValidateAgainstSchema(t *testing.T) {
 }
 
 func TestValidExamplesHaveVersionedDocumentTypes(t *testing.T) {
-	for _, name := range []string{"examples/project.json", "examples/scan.json"} {
+	for _, name := range []string{"examples/project.json", "examples/scan.json", "examples/partial-scan.json", "examples/failed-scan.json"} {
 		data, err := schemaFiles.ReadFile(name)
 		if err != nil {
 			t.Fatalf("read %s: %v", name, err)

@@ -1,11 +1,11 @@
 # DepRail v0.2 Release Evidence Record
 
-**Status:** Preview evidence collected; owner decision pending.
+**Status:** Preview evidence collected; owner decision recorded.
 **Release mode:** Preview
 **Target version:** `0.2.0-preview.1`
 **Release owner:** `@geoffrey-xiao`
 **Reviewer:** `@geoffreyxiaoai`
-**Decision:** `[GO / GO WITH APPROVED GAPS / NO-GO — owner to confirm]`
+**Decision:** `GO WITH APPROVED GAPS`
 
 Missing or inconsistent evidence blocks the applicable release mode. Do not replace missing evidence with an unchecked claim.
 
@@ -100,12 +100,12 @@ A preview may carry explicitly approved gaps. These gaps are not approval for st
   - No remote baseline history or hosted publishing.
   - No automatic remediation or source mutation.
   - GitHub Action requires a preinstalled version-matching CLI.
-- Remaining release risks: supply-chain controls and final owner/security decision remain open.
+- Remaining release risks: SBOM, signing, and formal provenance remain unimplemented for this preview; stable release is not approved by this decision.
 - Last known-good tag: `[owner to confirm]`
-- Rollback owner: `[owner to confirm]`
+- Rollback owner: `@geoffrey-xiao`
 - Rollback procedure: withdraw the preview reference, preserve artifacts and logs, restore the last known-good tag, create a new immutable preview tag, and rerun the applicable checklist.
-- Owner go/no-go decision: `[owner to confirm]`
-- Decision date: `[owner to confirm]`
+- Owner go/no-go decision: `GO WITH APPROVED GAPS`
+- Decision date: `2026-09-19`
 ## Evidence review checklist
 
 - [ ] Source commit and tag are recorded and match the build.

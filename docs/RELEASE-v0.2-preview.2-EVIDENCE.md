@@ -1,6 +1,6 @@
 # DepRail v0.2.0-preview.2 Release Evidence
 
-**Status:** Evidence pending
+**Status:** Artifact evidence collected; platform smoke evidence remains incomplete.
 **Release mode:** Preview
 **Target version:** `v0.2.0-preview.2`
 **Release owner:** `@geoffrey-xiao`
@@ -15,30 +15,30 @@ This record is immutable evidence for `v0.2.0-preview.2` only. Do not mix checks
 
 | Field | Evidence |
 | --- | --- |
-| Source commit | `[record after merge]` |
+| Source commit | `05189eacdbda433eec9dc451cc3f5544bac32608` |
 | Release tag | `v0.2.0-preview.2` |
 | DepRail version | `v0.2.0-preview.2` |
-| CLI identity output | `[attach artifact output]` |
-| Release workflow run | `[attach workflow URL]` |
+| CLI identity output | Release artifact build embeds tag and commit; local CLI output pending |
+| Release workflow run | https://github.com/geoffrey-xiao/deprail/actions/runs/35436690490 |
 | Manifest value | `0.2.0-preview.2` |
 
 ## Artifact inventory and checksums
 
 | Artifact | Platform | Size | SHA-256 | Smoke result | Evidence |
 | --- | --- | ---: | --- | --- | --- |
-| `deprail-linux-amd64` | Linux amd64 | `[pending]` | `[pending]` | `[pending]` | `[workflow URL]` |
-| `deprail-darwin-amd64` | macOS amd64 | `[pending]` | `[pending]` | `[pending]` | `[manual output or URL]` |
-| `deprail-darwin-arm64` | macOS arm64 | `[pending]` | `[pending]` | `[pending]` | `[manual output or URL]` |
-| `deprail-windows-amd64.exe` | Windows amd64 | `[pending]` | `[pending]` | `[pending]` | `[manual output or URL]` |
-| `SHA256SUMS` | All artifacts | — | `[pending]` | `[pending]` | `[release URL]` |
+| `deprail-linux-amd64` | Linux amd64 | 3,760,288 | `ec3da498e07a2b1bac63e5d5682beb753478822bffde6d8a1e0552a0e226f72e` | Doctor/discover smoke passed | Release workflow |
+| `deprail-darwin-amd64` | macOS amd64 | 3,761,376 | `ed86ff1891db59ffce20ef98fab72d44386706f791f2fc065d3efe79647b143c` | Artifact checksum verified; runtime smoke pending | Release assets |
+| `deprail-darwin-arm64` | macOS arm64 | 3,514,258 | `54fb08db4e7a5bb3ecdcc8610290dd61bf7514368e10d0b46994b8b69fd17a82` | Artifact checksum verified; runtime smoke pending | Release assets |
+| `deprail-windows-amd64.exe` | Windows amd64 | 3,904,512 | `28d3f9b44717c9f423cc98a06821b11c8b1cba9a3b0aeb0d8626ac4555ed6625` | Artifact checksum verified; runtime smoke pending | Release assets |
+| `SHA256SUMS` | All artifacts | — | `shasum -a 256 -c SHA256SUMS`: all OK | Checksum verification passed | Release workflow |
 
 ## Platform smoke
 
 | Platform | Doctor | Discover | Scan failure behavior | Identity match | Evidence |
 | --- | --- | --- | --- | --- | --- |
-| Linux | `[pending]` | `[pending]` | `[pending]` | `[pending]` | `[URL]` |
-| macOS | `[pending]` | `[pending]` | `[pending]` | `[pending]` | `[URL/output]` |
-| Windows | `[pending]` | `[pending]` | `[pending]` | `[pending]` | `[URL/output]` |
+| Linux | Doctor/discover passed | Passed | Not run | Tag/commit injected | https://github.com/geoffrey-xiao/deprail/actions/runs/35436690490 |
+| macOS | Pending | Pending | Pending | Build identity embedded | Release assets; runtime smoke needed |
+| Windows | Pending | Pending | Pending | Build identity embedded | Release assets; runtime smoke needed |
 
 ## Scanner and representative repositories
 

@@ -280,14 +280,27 @@ func runPolicyCheck(args []string, stdout, stderr io.Writer) int {
 	flags := flag.NewFlagSet("policy check", flag.ContinueOnError)
 	flags.SetOutput(io.Discard)
 	baselinePath := flags.String("baseline", "", "baseline path")
-	format := flags.String("format", "json", "output format: json")
-	if err := flags.Parse(args); err != nil || *baselinePath == "" || *format != "json" || len(flags.Args()) != 0 {
-		writeCLIError(stderr, "CONFIG_INVALID", "policy check requires --baseline and --format json", "policy check")
+	format := flags.String("format", "json", "output format: json or sarif")
+	if err := flags.Parse(args); err != nil || *baselinePath == "" || (*format != "json" && *format != "sarif") || len(flags.Args()) != 0 {
+		writeCLIError(stderr, "CONFIG_INVALID", "policy check requires --baseline and --format json or sarif", "policy check")
 		return 2
 	}
-	if _, err := (baseline.Store{Root: filepath.Dir(*baselinePath)}).Load(*baselinePath); err != nil {
+	document, err := (baseline.Store{Root: filepath.Dir(*baselinePath)}).Load(*baselinePath)
+	if err != nil {
 		writeCLIError(stderr, "SCAN_UNUSABLE", err.Error(), "baseline")
 		return 3
+	}
+	if *format == "sarif" {
+		data, err := presenter.SARIFFromBaseline(document)
+		if err != nil {
+			writeCLIError(stderr, "SCAN_UNUSABLE", err.Error(), "baseline")
+			return 3
+		}
+		if _, err := stdout.Write(append(data, '\n')); err != nil {
+			writeCLIError(stderr, "OUTPUT_WRITE_FAILED", err.Error(), "output")
+			return 3
+		}
+		return 0
 	}
 	decision, err := policy.Evaluate(policy.Policy{}, policy.Input{Complete: true})
 	if err != nil {

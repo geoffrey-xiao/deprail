@@ -51,6 +51,18 @@ Before starting a new Sprint or version stage such as v0.1, first establish the 
 6. Do not start implementation until the issue is assigned to the correct milestone/Sprint and satisfies Definition of Ready: value, scope, dependencies, contracts, failure behavior, acceptance tests, risk, reviewer, and evidence are explicit.
 
 At stage kickoff, reconcile the GitHub state with the local roadmap, release plan, epics, issue backlog, Sprint checklist, and Master Checklist. GitHub is the workflow and review source of truth; repository documents remain the durable contract.
+## Ad hoc GitHub issue tracking
+
+When the user asks to create a GitHub issue that is not directly generated from a documented epic or issue backlog item:
+
+1. Check for an existing issue and avoid duplicates.
+2. Create the issue with the current release version, owner, reviewer, scope, acceptance criteria, evidence requirements, and explicit exclusions.
+3. Unless the user explicitly says otherwise, assign the issue to the current release milestone (for example, `v0.2.0`).
+4. Unless the user explicitly says otherwise, add the issue to the active DepRail GitHub Project and set its Project status to the appropriate workflow state, normally `Todo` for newly created work or `Review` for evidence awaiting human review.
+5. Link the issue from related PRs with `Refs #N`; use `Closes #N` only after the owner confirms every acceptance criterion.
+6. Record the issue URL/number in the durable local document or retrospective that motivated it.
+
+An ad hoc issue is still subject to the same Definition of Ready, review, evidence, and owner-acceptance rules as an epic-derived issue.
 
 ## Project identity and scope
 

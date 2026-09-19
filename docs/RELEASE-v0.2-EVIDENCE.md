@@ -3,8 +3,8 @@
 **Status:** Preview evidence collected; owner decision pending.
 **Release mode:** Preview
 **Target version:** `0.2.0-preview.1`
-**Release owner:** `[owner to confirm]`
-**Reviewer:** `[security/release reviewer to confirm]`
+**Release owner:** `@geoffrey-xiao`
+**Reviewer:** `@geoffreyxiaoai`
 **Decision:** `[GO / GO WITH APPROVED GAPS / NO-GO — owner to confirm]`
 
 Missing or inconsistent evidence blocks the applicable release mode. Do not replace missing evidence with an unchecked claim.

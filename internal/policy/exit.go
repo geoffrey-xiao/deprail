@@ -7,6 +7,8 @@ func ExitCode(decision Decision) int {
 		return 0
 	case Block:
 		return 4
+	case Unusable:
+		return 3
 	default:
 		return 3
 	}

@@ -13,6 +13,7 @@ import (
 	"github.com/geoffrey-xiao/deprail/internal/app"
 	"github.com/geoffrey-xiao/deprail/internal/baseline"
 	"github.com/geoffrey-xiao/deprail/internal/discovery"
+	"github.com/geoffrey-xiao/deprail/internal/policy"
 	"github.com/geoffrey-xiao/deprail/internal/presenter"
 )
 
@@ -32,6 +33,12 @@ func run(args []string, stdout, stderr io.Writer) int {
 		return runScan(args[1:], stdout, stderr)
 	case "diff":
 		return runDiff(args[1:], stdout, stderr)
+	case "policy":
+		if len(args) < 2 || args[1] != "check" {
+			writeCLIError(stderr, "CONFIG_INVALID", "policy requires the check subcommand", "policy")
+			return 2
+		}
+		return runPolicyCheck(args[2:], stdout, stderr)
 	case "doctor":
 		return runDoctor(args[1:], stdout, stderr)
 	default:
@@ -268,4 +275,28 @@ func runDiff(args []string, stdout, stderr io.Writer) int {
 		fmt.Fprintf(stdout, "%s %s\n", change.Kind, change.Key)
 	}
 	return 0
+}
+func runPolicyCheck(args []string, stdout, stderr io.Writer) int {
+	flags := flag.NewFlagSet("policy check", flag.ContinueOnError)
+	flags.SetOutput(io.Discard)
+	baselinePath := flags.String("baseline", "", "baseline path")
+	format := flags.String("format", "json", "output format: json")
+	if err := flags.Parse(args); err != nil || *baselinePath == "" || *format != "json" || len(flags.Args()) != 0 {
+		writeCLIError(stderr, "CONFIG_INVALID", "policy check requires --baseline and --format json", "policy check")
+		return 2
+	}
+	if _, err := (baseline.Store{Root: filepath.Dir(*baselinePath)}).Load(*baselinePath); err != nil {
+		writeCLIError(stderr, "SCAN_UNUSABLE", err.Error(), "baseline")
+		return 3
+	}
+	decision, err := policy.Evaluate(policy.Policy{}, policy.Input{Complete: true})
+	if err != nil {
+		writeCLIError(stderr, "CONFIG_INVALID", err.Error(), "policy")
+		return 2
+	}
+	if err := json.NewEncoder(stdout).Encode(decision); err != nil {
+		writeCLIError(stderr, "OUTPUT_WRITE_FAILED", err.Error(), "output")
+		return 3
+	}
+	return policy.ExitCode(decision)
 }

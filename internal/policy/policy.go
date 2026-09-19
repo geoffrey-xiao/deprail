@@ -12,9 +12,10 @@ import (
 type Outcome string
 
 const (
-	Pass  Outcome = "pass"
-	Warn  Outcome = "warn"
-	Block Outcome = "block"
+	Pass     Outcome = "pass"
+	Warn     Outcome = "warn"
+	Block    Outcome = "block"
+	Unusable Outcome = "unusable"
 )
 
 type Policy struct {
@@ -55,7 +56,7 @@ func Evaluate(policy Policy, input Input) (Decision, error) {
 		return Decision{}, errors.New("invalid minimum severity")
 	}
 	if !input.Complete || len(input.Errors) > 0 {
-		return Decision{Outcome: Block, Reasons: []string{"comparison is incomplete or contains scanner errors"}}, nil
+		return Decision{Outcome: Unusable, Reasons: []string{"comparison is incomplete or contains scanner errors"}}, nil
 	}
 	decision := Decision{Outcome: Pass, Reasons: []string{}}
 	now := input.Now

@@ -25,7 +25,7 @@ func TestEvaluateEnforcesSeverityAndCompleteness(t *testing.T) {
 		t.Fatalf("decision = %#v, err = %v", got, err)
 	}
 	got, err = Evaluate(Policy{}, Input{Complete: false})
-	if err != nil || got.Outcome != Block {
+	if err != nil || got.Outcome != Unusable {
 		t.Fatalf("incomplete decision = %#v, err = %v", got, err)
 	}
 }

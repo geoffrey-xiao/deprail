@@ -2,10 +2,10 @@ package java
 
 import (
 	"context"
+	"github.com/geoffrey-xiao/deprail/internal/remediation"
+	"os"
 	"path/filepath"
 	"testing"
-
-	"github.com/geoffrey-xiao/deprail/internal/remediation"
 )
 
 func javaRequest(t *testing.T) remediation.PlanningRequest {
@@ -39,5 +39,40 @@ func TestJavaAdapterRejectsMissingManifest(t *testing.T) {
 	}
 	if assessment.State != remediation.AdapterUnavailable {
 		t.Fatalf("assessment = %#v", assessment)
+	}
+}
+func TestJavaPlannerRejectsEscapingManifest(t *testing.T) {
+	root := t.TempDir()
+	outside := filepath.Join(t.TempDir(), "pom.xml")
+	if err := os.WriteFile(outside, []byte(`<project><dependencies/></project>`), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.Symlink(outside, filepath.Join(root, "pom.xml")); err != nil {
+		t.Fatal(err)
+	}
+	r := javaRequest(t)
+	r.Repository.Root = root
+	evidence, err := (Adapter{}).Plan(context.Background(), r)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if evidence.State != remediation.AdapterRejected {
+		t.Fatalf("evidence = %#v", evidence)
+	}
+}
+
+func TestGradlePlannerWithholdsUnverifiedCommand(t *testing.T) {
+	root := t.TempDir()
+	if err := os.WriteFile(filepath.Join(root, "build.gradle"), []byte(`implementation "com.google.guava:guava:32.1.2"`), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	r := javaRequest(t)
+	r.Repository.Root = root
+	evidence, err := (Adapter{}).Plan(context.Background(), r)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if evidence.State != remediation.AdapterUnknown || len(evidence.Commands) != 0 {
+		t.Fatalf("evidence = %#v", evidence)
 	}
 }

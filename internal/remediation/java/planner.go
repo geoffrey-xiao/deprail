@@ -3,6 +3,8 @@ package java
 import (
 	"context"
 	"encoding/xml"
+	"errors"
+	"fmt"
 	"os"
 	"path/filepath"
 	"regexp"
@@ -54,8 +56,9 @@ func (Adapter) Plan(ctx context.Context, request remediation.PlanningRequest) (r
 		if !direct {
 			return unknown("direct dependency owner is not identifiable", request, filepath.ToSlash(filepath.Join(request.Workspace.Path, filepath.Base(manifest)))), nil
 		}
-		constraint, _ = findDependency(string(data), manager, owner)
+		return unknown("transitive fixed version cannot be mapped to a direct owner version", request, filepath.ToSlash(filepath.Join(request.Workspace.Path, filepath.Base(manifest)))), nil
 	}
+	_ = owner
 	candidates := build(request, constraint, direct)
 	files := []remediation.AffectedFile{{Path: filepath.ToSlash(filepath.Join(request.Workspace.Path, filepath.Base(manifest))), Kind: "manifest"}}
 	risks := risk(candidates)
@@ -65,6 +68,9 @@ func (Adapter) Plan(ctx context.Context, request remediation.PlanningRequest) (r
 	viable := firstViable(candidates)
 	if viable == nil {
 		return remediation.PlanningEvidence{State: remediation.AdapterUnknown, Reason: "all retained Java candidates require constraint changes", Candidates: candidates, AffectedFiles: files, Commands: []remediation.Command{}, Risks: risks, Assumptions: []remediation.Assumption{}, Verification: []remediation.Verification{}}, nil
+	}
+	if manager == "gradle" {
+		return remediation.PlanningEvidence{State: remediation.AdapterUnknown, Reason: "no verified Gradle upgrade command is available", Candidates: candidates, AffectedFiles: files, Commands: []remediation.Command{}, Risks: risks, Assumptions: []remediation.Assumption{}, Verification: []remediation.Verification{}}, nil
 	}
 	return remediation.PlanningEvidence{State: remediation.AdapterSupported, Candidates: candidates, AffectedFiles: files, Commands: []remediation.Command{{Executable: manager, Arguments: command(manager, owner, viable.Version), WorkingDirectory: request.Workspace.Path}}, Risks: risks, Assumptions: []remediation.Assumption{}, Verification: []remediation.Verification{}}, nil
 }
@@ -91,10 +97,17 @@ func locate(r remediation.PlanningRequest) (string, string, error) {
 			if e != nil {
 				return "", "", e
 			}
+			if !within(root, resolved) {
+				return "", "", errors.New("Java build manifest escapes repository root")
+			}
 			return v.manager, resolved, nil
 		}
 	}
 	return "", "", nil
+}
+func within(root, path string) bool {
+	rel, err := filepath.Rel(root, path)
+	return err == nil && rel != ".." && !strings.HasPrefix(rel, ".."+string(os.PathSeparator))
 }
 
 var gradleDep = regexp.MustCompile(`([A-Za-z0-9_.-]+):([A-Za-z0-9_.-]+):([0-9][A-Za-z0-9_.-]*)`)
@@ -180,10 +193,20 @@ func build(r remediation.PlanningRequest, c string, d bool) []remediation.Candid
 		}
 		out = append(out, x)
 	}
-	sort.Slice(out, func(i, j int) bool { return out[i].Version < out[j].Version })
+	sort.Slice(out, func(i, j int) bool {
+		a, _ := pv(out[i].Version)
+		b, _ := pv(out[j].Version)
+		if a != b {
+			return newer(b, fmtv(a))
+		}
+		return out[i].Version < out[j].Version
+	})
 	return out
 }
 
+func fmtv(v ver) string {
+	return fmt.Sprintf("%d.%d.%d", v.a, v.b, v.c)
+}
 func firstViable(values []remediation.Candidate) *remediation.Candidate {
 	for i := range values {
 		if values[i].State == remediation.CandidateViable {

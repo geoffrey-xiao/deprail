@@ -5,7 +5,6 @@ import (
 	"errors"
 	"os"
 	"path/filepath"
-	"regexp"
 	"sort"
 	"strconv"
 	"strings"
@@ -61,8 +60,9 @@ func (Adapter) Plan(ctx context.Context, request remediation.PlanningRequest) (r
 		if !direct {
 			return unknown("direct dependency owner is not identifiable", request, lockfile), nil
 		}
-		constraint, _ = findConstraint(string(data), owner)
+		return unknown("transitive fixed version cannot be mapped to a direct owner version", request, lockfile), nil
 	}
+	_ = owner
 	planned := candidates(request, constraint, direct)
 	files := []remediation.AffectedFile{{Path: filepath.ToSlash(filepath.Join(request.Workspace.Path, filepath.Base(manifest))), Kind: "manifest"}, {Path: lockfile, Kind: "lockfile"}}
 	risks := risks(planned)
@@ -87,10 +87,17 @@ func manifestPath(r remediation.PlanningRequest) (string, error) {
 			if e != nil {
 				return "", e
 			}
+			if !within(root, resolved) {
+				return "", errors.New("Python manifest escapes repository root")
+			}
 			return resolved, nil
 		}
 	}
 	return "", errors.New("Python manifest is unavailable")
+}
+func within(root, path string) bool {
+	rel, err := filepath.Rel(root, path)
+	return err == nil && rel != ".." && !strings.HasPrefix(rel, ".."+string(os.PathSeparator))
 }
 func locateManager(r remediation.PlanningRequest) (string, string, error) {
 	root, err := remediation.CanonicalRepositoryRoot(r.Repository.Root)
@@ -100,18 +107,62 @@ func locateManager(r remediation.PlanningRequest) (string, string, error) {
 	dir := filepath.Join(root, filepath.FromSlash(r.Workspace.Path))
 	if r.CurrentState.Lockfile != "" {
 		p := filepath.Join(root, filepath.FromSlash(r.CurrentState.Lockfile))
+		if !within(root, p) {
+			return "", "", errors.New("retained Python lockfile escapes repository root")
+		}
 		if _, e := os.Stat(p); e != nil {
 			return "", "", errors.New("retained Python lockfile is unavailable")
 		}
-		return managerFor(filepath.Base(p)), filepath.ToSlash(r.CurrentState.Lockfile), nil
+		manager := managerFor(filepath.Base(p))
+		if manager == "" {
+			return "", "", errors.New("retained Python lockfile type is unsupported")
+		}
+		if err := validateLockfile(p, manager); err != nil {
+			return "", "", err
+		}
+		return manager, filepath.ToSlash(r.CurrentState.Lockfile), nil
 	}
 	for _, v := range []struct{ file, manager string }{{"uv.lock", "uv"}, {"poetry.lock", "poetry"}, {"requirements.txt", "pip"}} {
-		if _, e := os.Stat(filepath.Join(dir, v.file)); e == nil {
+		p := filepath.Join(dir, v.file)
+		if _, e := os.Stat(p); e == nil {
+			if err := validateLockfile(p, v.manager); err != nil {
+				return "", "", err
+			}
 			return v.manager, filepath.ToSlash(filepath.Join(r.Workspace.Path, v.file)), nil
 		}
 	}
 	return "", "", nil
 }
+func validateLockfile(path, manager string) error {
+	data, err := os.ReadFile(path)
+	if err != nil {
+		return errors.New("Python lockfile is unreadable")
+	}
+	text := strings.TrimSpace(string(data))
+	if text == "" {
+		return errors.New("Python lockfile is empty")
+	}
+	switch manager {
+	case "uv":
+		if !strings.Contains(text, "[[package]]") && !strings.Contains(text, "version =") {
+			return errors.New("Python uv lockfile is malformed")
+		}
+	case "poetry":
+		if !strings.Contains(text, "[[package]]") && !strings.Contains(text, "[metadata]") {
+			return errors.New("Python Poetry lockfile is malformed")
+		}
+	case "pip":
+		for _, line := range strings.Split(text, "\n") {
+			line = strings.TrimSpace(line)
+			if line != "" && !strings.HasPrefix(line, "#") {
+				return nil
+			}
+		}
+		return errors.New("Python requirements lockfile is malformed")
+	}
+	return nil
+}
+
 func managerFor(name string) string {
 	switch name {
 	case "uv.lock":
@@ -124,15 +175,33 @@ func managerFor(name string) string {
 	return ""
 }
 
-var depPattern = regexp.MustCompile(`(?m)(?:^|["'\s])([A-Za-z0-9_.-]+)\s*(==|~=|>=|<=|>|<|\^)?\s*([0-9]+(?:\.[0-9]+){0,2})`)
-
 func findConstraint(data, name string) (string, bool) {
-	for _, m := range depPattern.FindAllStringSubmatch(data, -1) {
-		if strings.EqualFold(m[1], name) {
-			return m[2] + m[3], true
+	for _, line := range strings.Split(data, "\n") {
+		clean := strings.TrimSpace(strings.SplitN(line, "#", 2)[0])
+		lower, target := strings.ToLower(clean), strings.ToLower(name)
+		for start := 0; ; {
+			i := strings.Index(lower[start:], target)
+			if i < 0 {
+				break
+			}
+			i += start
+			beforeOK := i == 0 || !isNameChar(lower[i-1])
+			end := i + len(target)
+			afterOK := end == len(lower) || !isNameChar(lower[end])
+			if beforeOK && afterOK {
+				expr := strings.TrimSpace(clean[end:])
+				expr = strings.Trim(expr, " \t\"'[](),")
+				if expr != "" && strings.ContainsAny(expr, "=<>~^") {
+					return expr, true
+				}
+			}
+			start = end
 		}
 	}
 	return "", false
+}
+func isNameChar(b byte) bool {
+	return b == '_' || b == '-' || b == '.' || b >= 'a' && b <= 'z' || b >= '0' && b <= '9'
 }
 func ownerFromPath(data string, path []string) (string, bool) {
 	for _, name := range path {
@@ -165,38 +234,43 @@ func newer(a ver, s string) bool {
 	return ok && (a.a > b.a || a.a == b.a && (a.b > b.b || a.b == b.b && a.c > b.c))
 }
 func satisfies(c string, v ver) bool {
-	c = strings.TrimSpace(c)
-	if c == "" {
-		return true
-	}
-	op := "=="
-	for _, x := range []string{"~=", "==", ">=", "<=", "^", ">", "<"} {
-		if strings.HasPrefix(c, x) {
-			op = x
-			c = strings.TrimSpace(strings.TrimPrefix(c, x))
-			break
+	parts := strings.Split(c, ",")
+	for _, part := range parts {
+		part = strings.TrimSpace(part)
+		op := "=="
+		for _, candidate := range []string{"~=", "==", ">=", "<=", "^", ">", "<"} {
+			if strings.HasPrefix(part, candidate) {
+				op = candidate
+				part = strings.TrimSpace(strings.TrimPrefix(part, candidate))
+				break
+			}
+		}
+		b, ok := pv(part)
+		if !ok {
+			return false
+		}
+		ok = false
+		switch op {
+		case ">=":
+			ok = newer(v, fmtv(b)) || v == b
+		case "<=":
+			ok = !newer(v, fmtv(b))
+		case ">":
+			ok = newer(v, fmtv(b))
+		case "<":
+			ok = newer(b, fmtv(v))
+		case "^":
+			ok = v.a == b.a && (newer(v, fmtv(b)) || v == b)
+		case "~=":
+			ok = v.a == b.a && v.b == b.b && (newer(v, fmtv(b)) || v == b)
+		default:
+			ok = v == b
+		}
+		if !ok {
+			return false
 		}
 	}
-	b, ok := pv(c)
-	if !ok {
-		return false
-	}
-	switch op {
-	case ">=":
-		return newer(v, fmtv(b)) || v == b
-	case "<=":
-		return !newer(v, fmtv(b))
-	case ">":
-		return newer(v, fmtv(b))
-	case "<":
-		return newer(b, fmtv(v))
-	case "^":
-		return v.a == b.a && (newer(v, fmtv(b)) || v == b)
-	case "~=":
-		return v.a == b.a && v.b == b.b && (newer(v, fmtv(b)) || v == b)
-	default:
-		return v == b
-	}
+	return true
 }
 func fmtv(v ver) string { return strconv.Itoa(v.a) + "." + strconv.Itoa(v.b) + "." + strconv.Itoa(v.c) }
 func candidates(r remediation.PlanningRequest, c string, direct bool) []remediation.Candidate {
@@ -216,7 +290,14 @@ func candidates(r remediation.PlanningRequest, c string, direct bool) []remediat
 		}
 		out = append(out, x)
 	}
-	sort.Slice(out, func(i, j int) bool { return out[i].Version < out[j].Version })
+	sort.Slice(out, func(i, j int) bool {
+		a, _ := pv(out[i].Version)
+		b, _ := pv(out[j].Version)
+		if a != b {
+			return newer(b, fmtv(a))
+		}
+		return out[i].Version < out[j].Version
+	})
 	return out
 }
 func firstViable(values []remediation.Candidate) *remediation.Candidate {

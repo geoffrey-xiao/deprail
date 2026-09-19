@@ -22,14 +22,17 @@ func (Adapter) Assess(_ context.Context, request remediation.PlanningRequest) (r
 	if err := remediation.ValidatePlanningRequest(request); err != nil {
 		return remediation.AdapterAssessment{State: remediation.AdapterRejected, Reason: err.Error()}, nil
 	}
-	manifest := filepath.Join(request.Repository.Root, filepath.FromSlash(request.Workspace.Path), "package.json")
-	if _, err := os.Stat(manifest); err != nil {
+	root, err := safeRepositoryPath(request.Repository.Root, filepath.ToSlash(filepath.Join(request.Workspace.Path, "package.json")))
+	if err != nil {
+		return remediation.AdapterAssessment{State: remediation.AdapterRejected, Reason: "workspace manifest escapes repository"}, nil
+	}
+	if _, err := os.Stat(root); err != nil {
 		if errors.Is(err, os.ErrNotExist) {
 			return remediation.AdapterAssessment{State: remediation.AdapterUnsupported, Reason: "package.json is unavailable"}, nil
 		}
 		return remediation.AdapterAssessment{State: remediation.AdapterRejected, Reason: "package.json is unreadable"}, nil
 	}
-	manager, _, err := locateLockfile(request.Repository.Root, request.Workspace.Path)
+	manager, _, err := locateLockfile(request)
 	if err != nil {
 		return remediation.AdapterAssessment{State: remediation.AdapterRejected, Reason: err.Error()}, nil
 	}
@@ -44,59 +47,48 @@ func (Adapter) Plan(ctx context.Context, request remediation.PlanningRequest) (r
 		return remediation.PlanningEvidence{}, err
 	}
 	if err := remediation.ValidatePlanningRequest(request); err != nil {
-		return remediation.PlanningEvidence{State: remediation.AdapterRejected, Reason: err.Error(), Candidates: []remediation.Candidate{}, AffectedFiles: []remediation.AffectedFile{}, Commands: []remediation.Command{}, Risks: []remediation.Risk{}, Assumptions: []remediation.Assumption{}, Verification: []remediation.Verification{}}, nil
+		return emptyEvidence(remediation.AdapterRejected, err.Error()), nil
 	}
-	workspaceRoot := filepath.Join(request.Repository.Root, filepath.FromSlash(request.Workspace.Path))
-	manifestPath := filepath.Join(workspaceRoot, "package.json")
+	manifestPath, err := safeRepositoryPath(request.Repository.Root, filepath.ToSlash(filepath.Join(request.Workspace.Path, "package.json")))
+	if err != nil {
+		return emptyEvidence(remediation.AdapterRejected, "workspace manifest escapes repository"), nil
+	}
 	manifest, err := readManifest(manifestPath)
 	if err != nil {
 		return emptyEvidence(remediation.AdapterRejected, "package.json is malformed or unreadable"), nil
 	}
-	manager, lockfile, err := locateLockfile(request.Repository.Root, request.Workspace.Path)
+	manager, lockfile, err := locateLockfile(request)
 	if err != nil {
 		return emptyEvidence(remediation.AdapterRejected, err.Error()), nil
 	}
 	if manager == "" {
 		return emptyEvidence(remediation.AdapterUnavailable, "no supported JavaScript lockfile is available"), nil
 	}
-	if err := validateLockfile(filepath.Join(request.Repository.Root, filepath.FromSlash(lockfile)), manager); err != nil {
+	lockPath, err := safeRepositoryPath(request.Repository.Root, lockfile)
+	if err != nil {
+		return emptyEvidence(remediation.AdapterRejected, "lockfile escapes repository"), nil
+	}
+	if err := validateLockfile(lockPath, manager); err != nil {
 		return emptyEvidence(remediation.AdapterRejected, err.Error()), nil
 	}
+
 	constraint, direct := dependencyConstraint(manifest, request.Component.Name)
-	if constraint == "" {
-		direct = false
-		constraint = request.CurrentState.Constraint
-	}
-	candidates := make([]remediation.Candidate, 0, len(request.Finding.FixedVersions))
-	for _, version := range request.Finding.FixedVersions {
-		parsed, ok := parseVersion(version)
-		if !ok || (constraint != "" && !satisfies(constraint, parsed)) || !isNewer(parsed, request.Component.Version) {
-			continue
+	owner := request.Component.Name
+	if !direct {
+		owner, direct = directOwner(manifest, request.Finding.DependencyPath)
+		if !direct {
+			return unknownEvidence("direct dependency owner is not identifiable", lockfile, request), nil
 		}
-		candidates = append(candidates, remediation.Candidate{
-			ID: version, Version: version, State: remediation.CandidateViable, Direct: direct,
-			MajorChange: parseMajor(parsed) != parseMajorVersion(request.Component.Version),
-			Evidence: remediation.CompatibilityEvidence{
-				ConstraintSatisfied: true, LockfileResolution: true, PeerCompatible: true,
-				RuntimeCompatible: true, EngineCompatible: true,
-			},
-		})
+		constraint, _ = dependencyConstraint(manifest, owner)
 	}
-	sort.Slice(candidates, func(i, j int) bool { return compareVersions(candidates[i].Version, candidates[j].Version) < 0 })
+	candidates := buildCandidates(request, constraint, direct)
 	files := []remediation.AffectedFile{{Path: filepath.ToSlash(filepath.Join(request.Workspace.Path, "package.json")), Kind: "manifest", Effect: "dependency constraint"}, {Path: lockfile, Kind: "lockfile", Effect: "resolution"}}
-	commands := make([]remediation.Command, 0, 1)
-	commands = append(commands, remediation.Command{Executable: manager, Arguments: commandArguments(manager, request.Component.Name, candidates), WorkingDirectory: request.Workspace.Path})
-	risks := make([]remediation.Risk, 0)
-	for _, candidate := range candidates {
-		if candidate.MajorChange {
-			risks = append(risks, remediation.Risk{Code: "MAJOR_VERSION_CHANGE", Severity: "high", Detected: true, Details: "candidate crosses a major version boundary"})
-			break
-		}
-	}
+	risks := candidateRisks(candidates)
 	if len(candidates) == 0 {
-		return remediation.PlanningEvidence{State: remediation.AdapterUnknown, Reason: "no non-vulnerable candidate version is available in retained evidence", Candidates: candidates, AffectedFiles: files, Commands: commands, Risks: risks, Assumptions: []remediation.Assumption{}, Verification: []remediation.Verification{}}, nil
+		return remediation.PlanningEvidence{State: remediation.AdapterUnknown, Reason: "no non-vulnerable candidate version is available in retained evidence", Candidates: candidates, AffectedFiles: files, Commands: []remediation.Command{}, Risks: risks, Assumptions: []remediation.Assumption{}, Verification: []remediation.Verification{}}, nil
 	}
-	return remediation.PlanningEvidence{State: remediation.AdapterSupported, Candidates: candidates, AffectedFiles: files, Commands: commands, Risks: risks, Assumptions: []remediation.Assumption{}, Verification: []remediation.Verification{}}, nil
+	command := remediation.Command{Executable: manager, Arguments: commandArguments(manager, owner, candidates), WorkingDirectory: request.Workspace.Path}
+	return remediation.PlanningEvidence{State: remediation.AdapterSupported, Candidates: candidates, AffectedFiles: files, Commands: []remediation.Command{command}, Risks: risks, Assumptions: []remediation.Assumption{}, Verification: []remediation.Verification{}}, nil
 }
 
 type packageManifest struct {
@@ -127,22 +119,73 @@ func dependencyConstraint(manifest packageManifest, name string) (string, bool) 
 	return "", false
 }
 
-func locateLockfile(root, workspace string) (string, string, error) {
-	dir := filepath.Join(root, filepath.FromSlash(workspace))
-	candidates := []struct{ name, manager string }{{"package-lock.json", "npm"}, {"npm-shrinkwrap.json", "npm"}, {"pnpm-lock.yaml", "pnpm"}, {"yarn.lock", "yarn"}}
-	found := make([]struct{ name, manager string }, 0, 1)
-	for _, candidate := range candidates {
-		if _, err := os.Stat(filepath.Join(dir, candidate.name)); err == nil {
-			found = append(found, candidate)
+func directOwner(manifest packageManifest, dependencyPath []string) (string, bool) {
+	for _, name := range dependencyPath {
+		if _, ok := dependencyConstraint(manifest, name); ok {
+			return name, true
 		}
 	}
-	if len(found) > 1 {
-		return "", "", errors.New("conflicting JavaScript lockfiles are present")
+	return "", false
+}
+
+func locateLockfile(request remediation.PlanningRequest) (string, string, error) {
+	if request.CurrentState.Lockfile != "" {
+		lockfile := filepath.ToSlash(filepath.Clean(request.CurrentState.Lockfile))
+		if filepath.IsAbs(filepath.FromSlash(lockfile)) || strings.Contains(lockfile, "..") {
+			return "", "", errors.New("retained lockfile path is unsafe")
+		}
+		manager := lockfileManager(lockfile)
+		if manager == "" {
+			return "", "", errors.New("retained lockfile type is unsupported")
+		}
+		if _, err := safeRepositoryPath(request.Repository.Root, lockfile); err != nil {
+			return "", "", errors.New("retained lockfile escapes repository")
+		}
+		return manager, lockfile, nil
 	}
-	if len(found) == 0 {
-		return "", "", nil
+	dir := filepath.Join(request.Repository.Root, filepath.FromSlash(request.Workspace.Path))
+	candidates := []struct{ name, manager string }{{"package-lock.json", "npm"}, {"npm-shrinkwrap.json", "npm"}, {"pnpm-lock.yaml", "pnpm"}, {"yarn.lock", "yarn"}}
+	for _, candidate := range candidates {
+		path := filepath.Join(dir, candidate.name)
+		if _, err := os.Stat(path); err == nil {
+			return candidate.manager, filepath.ToSlash(filepath.Join(request.Workspace.Path, candidate.name)), nil
+		}
 	}
-	return found[0].manager, filepath.ToSlash(filepath.Join(workspace, found[0].name)), nil
+	return "", "", nil
+}
+
+func lockfileManager(path string) string {
+	switch filepath.Base(filepath.FromSlash(path)) {
+	case "package-lock.json", "npm-shrinkwrap.json":
+		return "npm"
+	case "pnpm-lock.yaml":
+		return "pnpm"
+	case "yarn.lock":
+		return "yarn"
+	default:
+		return ""
+	}
+}
+
+func safeRepositoryPath(root, relative string) (string, error) {
+	canonicalRoot, err := remediation.CanonicalRepositoryRoot(root)
+	if err != nil {
+		return "", err
+	}
+	clean := filepath.Clean(filepath.Join(canonicalRoot, filepath.FromSlash(relative)))
+	rel, err := filepath.Rel(canonicalRoot, clean)
+	if err != nil || rel == ".." || strings.HasPrefix(rel, ".."+string(filepath.Separator)) {
+		return "", errors.New("path escapes repository")
+	}
+	resolved, err := filepath.EvalSymlinks(clean)
+	if err != nil {
+		return "", err
+	}
+	resolvedRel, err := filepath.Rel(canonicalRoot, resolved)
+	if err != nil || resolvedRel == ".." || strings.HasPrefix(resolvedRel, ".."+string(filepath.Separator)) {
+		return "", errors.New("resolved path escapes repository")
+	}
+	return resolved, nil
 }
 
 func validateLockfile(path, manager string) error {
@@ -153,24 +196,84 @@ func validateLockfile(path, manager string) error {
 	if len(data) == 0 {
 		return errors.New("JavaScript lockfile is empty")
 	}
-	if manager == "npm" {
+	switch manager {
+	case "npm":
 		var document map[string]any
 		if err := json.Unmarshal(data, &document); err != nil {
 			return errors.New("npm lockfile is malformed")
+		}
+	case "pnpm":
+		if !validPnpmLockfile(string(data)) {
+			return errors.New("pnpm lockfile is malformed")
+		}
+	case "yarn":
+		if !validYarnLockfile(string(data)) {
+			return errors.New("Yarn lockfile is malformed")
 		}
 	}
 	return nil
 }
 
+func validPnpmLockfile(data string) bool {
+	for _, line := range strings.Split(data, "\n") {
+		if strings.HasPrefix(strings.TrimSpace(line), "lockfileVersion:") {
+			return strings.TrimSpace(strings.TrimPrefix(strings.TrimSpace(line), "lockfileVersion:")) != ""
+		}
+	}
+	return false
+}
+
+func validYarnLockfile(data string) bool {
+	if !strings.HasPrefix(strings.TrimSpace(data), "# yarn lockfile v") {
+		return false
+	}
+	return strings.Contains(data, "\n  version ") || strings.Contains(data, "\nversion ")
+}
+
+func buildCandidates(request remediation.PlanningRequest, constraint string, direct bool) []remediation.Candidate {
+	candidates := make([]remediation.Candidate, 0, len(request.Finding.FixedVersions))
+	for _, raw := range request.Finding.FixedVersions {
+		parsed, ok := parseVersion(raw)
+		if !ok || !isNewer(parsed, request.Component.Version) {
+			continue
+		}
+		candidate := remediation.Candidate{ID: raw, Version: raw, Direct: direct, Evidence: remediation.CompatibilityEvidence{Unknown: []string{"candidate_metadata_unavailable"}}}
+		if constraint != "" && !satisfies(constraint, parsed) {
+			candidate.State = remediation.CandidateRejected
+			candidate.RejectionCode = "CONSTRAINT_CHANGE_REQUIRED"
+			candidate.Reason = "candidate requires changing the manifest constraint"
+			candidate.MajorChange = parseMajor(parsed) != parseMajorVersion(request.Component.Version)
+		} else {
+			candidate.State = remediation.CandidateViable
+			candidate.Evidence.Unknown = append(candidate.Evidence.Unknown, "peer_compatibility_unknown", "runtime_compatibility_unknown", "engine_compatibility_unknown")
+			candidate.MajorChange = parseMajor(parsed) != parseMajorVersion(request.Component.Version)
+		}
+		candidates = append(candidates, candidate)
+	}
+	sort.Slice(candidates, func(i, j int) bool { return compareVersions(candidates[i].Version, candidates[j].Version) < 0 })
+	return candidates
+}
+
+func candidateRisks(candidates []remediation.Candidate) []remediation.Risk {
+	risks := make([]remediation.Risk, 0)
+	for _, candidate := range candidates {
+		if candidate.MajorChange {
+			risks = append(risks, remediation.Risk{Code: "MAJOR_VERSION_CHANGE", Severity: "high", Detected: true, Details: "candidate crosses a major version boundary"})
+		}
+		if candidate.State == remediation.CandidateRejected && candidate.RejectionCode == "CONSTRAINT_CHANGE_REQUIRED" {
+			risks = append(risks, remediation.Risk{Code: "CONSTRAINT_CHANGE_REQUIRED", Severity: "high", Detected: true, Details: "candidate is outside the current manifest constraint"})
+		}
+	}
+	return risks
+}
+
+func unknownEvidence(reason, lockfile string, request remediation.PlanningRequest) remediation.PlanningEvidence {
+	return remediation.PlanningEvidence{State: remediation.AdapterUnknown, Reason: reason, Candidates: []remediation.Candidate{}, AffectedFiles: []remediation.AffectedFile{{Path: filepath.ToSlash(filepath.Join(request.Workspace.Path, "package.json")), Kind: "manifest"}, {Path: lockfile, Kind: "lockfile"}}, Commands: []remediation.Command{}, Risks: []remediation.Risk{}, Assumptions: []remediation.Assumption{}, Verification: []remediation.Verification{}}
+}
+
 func commandArguments(manager, name string, candidates []remediation.Candidate) []string {
-	version := ""
-	if len(candidates) > 0 {
-		version = candidates[0].Version
-	}
-	spec := name
-	if version != "" {
-		spec += "@" + version
-	}
+	version := candidates[0].Version
+	spec := name + "@" + version
 	switch manager {
 	case "pnpm":
 		return []string{"update", spec}

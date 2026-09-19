@@ -8,7 +8,7 @@
   "properties": {
     "schema_version": { "const": "v1alpha" },
     "document_type": {
-      "enum": ["project", "workspace", "scan", "baseline", "component", "vulnerability", "finding", "evidence", "diagnostic"]
+      "enum": ["project", "workspace", "scan", "baseline", "diff", "component", "vulnerability", "finding", "evidence", "diagnostic"]
     }
   },
   "oneOf": [
@@ -16,6 +16,7 @@
     { "$ref": "#/$defs/workspace" },
     { "$ref": "#/$defs/scan" },
     { "$ref": "#/$defs/baseline" },
+    { "$ref": "#/$defs/diff" },
     { "$ref": "#/$defs/component" },
     { "$ref": "#/$defs/vulnerability" },
     { "$ref": "#/$defs/finding" },
@@ -120,6 +121,20 @@
           }
         },
         "artifact_digests": { "type": "array", "items": { "type": "string", "pattern": "^[a-f0-9]{64}$" }, "uniqueItems": true }
+      },
+      "additionalProperties": false
+    },
+    "diff": {
+      "type": "object",
+      "required": ["schema_version", "document_type", "base_scan_id", "head_scan_id", "base_artifact_digests", "head_artifact_digests", "changes"],
+      "properties": {
+        "schema_version": { "const": "v1alpha" },
+        "document_type": { "const": "diff" },
+        "base_scan_id": { "$ref": "#/$defs/id" },
+        "head_scan_id": { "$ref": "#/$defs/id" },
+        "base_artifact_digests": { "type": "array", "items": { "type": "string", "pattern": "^[a-f0-9]{64}$" }, "uniqueItems": true },
+        "head_artifact_digests": { "type": "array", "items": { "type": "string", "pattern": "^[a-f0-9]{64}$" }, "uniqueItems": true },
+        "changes": { "type": "array" }
       },
       "additionalProperties": false
     },

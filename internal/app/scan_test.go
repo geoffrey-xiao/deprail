@@ -3,12 +3,11 @@ package app
 import (
 	"context"
 	"encoding/json"
+	"github.com/geoffrey-xiao/deprail/internal/adapter"
+	"github.com/geoffrey-xiao/deprail/internal/artifact"
 	"path/filepath"
 	"strings"
 	"testing"
-
-	"github.com/geoffrey-xiao/deprail/internal/adapter"
-	"github.com/geoffrey-xiao/deprail/internal/artifact"
 )
 
 type emptyScanner struct {

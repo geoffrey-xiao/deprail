@@ -9,6 +9,7 @@ import (
 	"os"
 	"path/filepath"
 	"sort"
+	"strings"
 )
 
 var (
@@ -51,6 +52,9 @@ func ValidateExternalOutput(root, output string) (string, error) {
 	if output == "" {
 		return "", fmt.Errorf("output path is required: %w", ErrUnsafePath)
 	}
+	if hasTraversalComponent(output) {
+		return "", fmt.Errorf("output path contains traversal: %w", ErrUnsafePath)
+	}
 	absolute, err := filepath.Abs(output)
 	if err != nil {
 		return "", fmt.Errorf("resolve output path: %w", err)
@@ -74,6 +78,16 @@ func pathWithin(root, path string) bool {
 	rel, err := filepath.Rel(root, path)
 	return err == nil && rel != ".." && !hasParentPrefix(rel)
 }
+func hasTraversalComponent(path string) bool {
+	for _, component := range strings.FieldsFunc(path, func(r rune) bool {
+		return r == '/' || r == '\\'
+	}) {
+		if component == ".." {
+			return true
+		}
+	}
+	return false
+}
 
 func hasParentPrefix(path string) bool {
 	return path == ".." || len(path) > 3 && path[:3] == ".."+string(filepath.Separator)
@@ -85,35 +99,8 @@ func WriteExternalOutput(root, output string, data []byte) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	if _, err := os.Stat(filepath.Dir(path)); err != nil {
-		return "", fmt.Errorf("output parent is unavailable: %w", err)
-	}
-	temp, err := os.CreateTemp(filepath.Dir(path), ".deprail-output-*")
-	if err != nil {
-		return "", fmt.Errorf("create output temporary file: %w", err)
-	}
-	tempName := temp.Name()
-	defer os.Remove(tempName)
-	if err := temp.Chmod(0o600); err != nil {
-		temp.Close()
-		return "", fmt.Errorf("restrict output temporary file: %w", err)
-	}
-	if _, err := temp.Write(data); err != nil {
-		temp.Close()
-		return "", fmt.Errorf("write external output: %w", err)
-	}
-	if err := temp.Sync(); err != nil {
-		temp.Close()
-		return "", fmt.Errorf("sync external output: %w", err)
-	}
-	if err := temp.Close(); err != nil {
-		return "", fmt.Errorf("close external output: %w", err)
-	}
-	if err := os.Link(tempName, path); err != nil {
-		if os.IsExist(err) {
-			return "", ErrOutputExists
-		}
-		return "", fmt.Errorf("publish external output without overwrite: %w", err)
+	if err := publishExternalOutput(path, data); err != nil {
+		return "", err
 	}
 	return path, nil
 }

@@ -16,6 +16,10 @@ func TestValidateExternalOutputRejectsRootTraversalAndSymlinkEscapes(t *testing.
 	if _, err := ValidateExternalOutput(root, filepath.Join(root, "nested", "..", "plan.json")); !errors.Is(err, ErrUnsafePath) {
 		t.Fatalf("traversal output error = %v", err)
 	}
+	traversal := root + string(filepath.Separator) + ".." + string(filepath.Separator) + "external" + string(filepath.Separator) + "plan.json"
+	if _, err := ValidateExternalOutput(root, traversal); !errors.Is(err, ErrUnsafePath) {
+		t.Fatalf("external traversal error = %v", err)
+	}
 	external := t.TempDir()
 	link := filepath.Join(root, "external")
 	if err := os.Symlink(external, link); err != nil {

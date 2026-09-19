@@ -23,3 +23,7 @@ Prove planning cannot mutate the target repository and all paths/outputs remain 
 
 ## Evidence
 Security tests, process audit, filesystem snapshots, and platform smoke results.
+## GitHub tracking
+
+- Issue: [#209](https://github.com/geoffrey-xiao/deprail/issues/209)
+- Parent epic: [#203](https://github.com/geoffrey-xiao/deprail/issues/203)

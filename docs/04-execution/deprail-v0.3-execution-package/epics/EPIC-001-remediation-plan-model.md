@@ -23,3 +23,7 @@ Plans are deterministic, schema-valid, provenance-preserving, explicit about unk
 ## Exclusions
 
 No CLI, package-manager adapter, file mutation, command execution, or network metadata.
+## GitHub tracking
+
+- Parent issue: [#202](https://github.com/geoffrey-xiao/deprail/issues/202)
+- Child issues: [#206](https://github.com/geoffrey-xiao/deprail/issues/206), [#207](https://github.com/geoffrey-xiao/deprail/issues/207)

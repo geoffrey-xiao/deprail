@@ -23,3 +23,7 @@ Plan npm, pnpm, and Yarn dependency upgrades from manifests, lockfiles, and reta
 
 ## Exclusions
 No install, update, script, lockfile rewrite, or network fallback.
+## GitHub tracking
+
+- Issue: [#211](https://github.com/geoffrey-xiao/deprail/issues/211)
+- Parent epic: [#204](https://github.com/geoffrey-xiao/deprail/issues/204)

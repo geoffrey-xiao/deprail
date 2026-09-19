@@ -20,3 +20,7 @@ Planning consumes an explicit normalized scan report and enforces repository/out
 ## Acceptance
 
 A finding resolves only from the supplied report; missing, invalid, stale, or ambiguous reports fail with stable diagnostics. In-repository output and traversal are rejected. Planning leaves the target tree unchanged.
+## GitHub tracking
+
+- Parent issue: [#203](https://github.com/geoffrey-xiao/deprail/issues/203)
+- Child issues: [#208](https://github.com/geoffrey-xiao/deprail/issues/208), [#209](https://github.com/geoffrey-xiao/deprail/issues/209)

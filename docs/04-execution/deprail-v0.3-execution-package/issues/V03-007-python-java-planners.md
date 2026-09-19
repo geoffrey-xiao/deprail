@@ -23,3 +23,7 @@ Plan requirements/uv/Poetry and Maven/Gradle upgrades through the shared read-on
 
 ## Exclusions
 No new scanner family, install, update, build, or rescan.
+## GitHub tracking
+
+- Issue: [#212](https://github.com/geoffrey-xiao/deprail/issues/212)
+- Parent epic: [#204](https://github.com/geoffrey-xiao/deprail/issues/204)

@@ -20,3 +20,7 @@ Supported v0.2 ecosystems produce normalized remediation candidates without exec
 ## Acceptance
 
 Adapters produce the same domain plan contract, return explicit unknown/unavailable/rejected states, preserve provenance, use structured future commands with working directories, and never execute package managers or scripts.
+## GitHub tracking
+
+- Parent issue: [#204](https://github.com/geoffrey-xiao/deprail/issues/204)
+- Child issues: [#210](https://github.com/geoffrey-xiao/deprail/issues/210), [#211](https://github.com/geoffrey-xiao/deprail/issues/211), [#212](https://github.com/geoffrey-xiao/deprail/issues/212)

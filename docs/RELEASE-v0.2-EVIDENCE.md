@@ -1,0 +1,104 @@
+# DepRail v0.2 Release Evidence Record
+
+**Status:** Evidence collection pending; this record is not release approval.
+**Release mode:** Preview / RC / Stable (select one before completing)
+**Target version:** `0.2.0`
+**Release owner:** `[not recorded]`
+**Reviewer:** `[not recorded]`
+**Decision:** `[not recorded]`
+
+Missing or inconsistent evidence blocks the applicable release mode. Do not replace missing evidence with an unchecked claim.
+
+## Source and identity
+
+| Field | Evidence |
+| --- | --- |
+| Source commit | `[not recorded]` |
+| Release tag | `[not recorded]` |
+| DepRail version | `[not recorded]` |
+| CLI identity output | Link to `deprail doctor --format json` output |
+| Build command and Go version | `[not recorded]` |
+| Release workflow run | Link to GitHub Actions run |
+
+## Pre-release gate
+
+Record each gate from a clean detached checkout of the reviewed source commit. A missing result or non-zero exit code blocks the applicable release mode.
+
+| Gate | Result | Exit code | Evidence |
+| --- | --- | ---: | --- |
+| Clean detached checkout at reviewed commit | `[not recorded]` | `[not recorded]` | `[not recorded]` |
+| `go version` | `[not recorded]` | `[not recorded]` | `[not recorded]` |
+| `make verify` | `[not recorded]` | `[not recorded]` | `[not recorded]` |
+| `git diff --check` | `[not recorded]` | `[not recorded]` | `[not recorded]` |
+
+Attach command output or a CI run link for each row. The record is incomplete until every gate has an explicit result and exit code.
+
+## Artifact inventory and checksums
+
+Every artifact requires a recorded SHA-256 checksum and a smoke result from the same reviewed source commit.
+
+| Artifact | Platform | Size | SHA-256 | Smoke result | Evidence |
+| --- | --- | ---: | --- | --- | --- |
+| `deprail-linux-amd64` | Linux amd64 | `[not recorded]` | `[not recorded]` | `[not recorded]` | `[not recorded]` |
+| `deprail-darwin-amd64` | macOS amd64 | `[not recorded]` | `[not recorded]` | `[not recorded]` | `[not recorded]` |
+| `deprail-darwin-arm64` | macOS arm64 | `[not recorded]` | `[not recorded]` | `[not recorded]` | `[not recorded]` |
+| `deprail-windows-amd64.exe` | Windows amd64 | `[not recorded]` | `[not recorded]` | `[not recorded]` | `[not recorded]` |
+
+Checksum manifest: `[not recorded]`
+
+## Platform and CLI smoke evidence
+
+For every supported artifact, attach command output and the CI or manual-run link:
+
+- `deprail doctor --format json`
+- discovery against `testdata/fixtures/mixed-repository`
+- scan behavior when OSV-Scanner is unavailable, including exit code `3`
+- reported version, tag, and commit identity
+
+| Platform | CI or run link | Doctor | Discover | Scan failure behavior | Identity match |
+| --- | --- | --- | --- | --- | --- |
+| Linux | `[not recorded]` | `[not recorded]` | `[not recorded]` | `[not recorded]` | `[not recorded]` |
+| macOS | `[not recorded]` | `[not recorded]` | `[not recorded]` | `[not recorded]` | `[not recorded]` |
+| Windows | `[not recorded]` | `[not recorded]` | `[not recorded]` | `[not recorded]` | `[not recorded]` |
+
+## Scanner and representative repositories
+
+| Evidence | Result | Link or output |
+| --- | --- | --- |
+| OSV-Scanner version | `[not recorded]` | `[not recorded]` |
+| JavaScript repository scan | `[not recorded]` | `[not recorded]` |
+| Python repository scan | `[not recorded]` | `[not recorded]` |
+| Java repository scan | `[not recorded]` | `[not recorded]` |
+| Mixed repository scan | `[not recorded]` | `[not recorded]` |
+
+Every release-gating scan must complete successfully. Partial or failed scans block the relevant release mode.
+
+## Supply-chain controls
+
+| Control | Status | Evidence or gap rationale |
+| --- | --- | --- |
+| SBOM | Not implemented unless linked evidence is supplied | `[not recorded]` |
+| Signing | Not implemented unless linked evidence is supplied | `[not recorded]` |
+| Provenance | Not implemented unless linked evidence is supplied | `[not recorded]` |
+
+A preview may carry explicitly approved gaps. An RC with missing SBOM, signing, or provenance evidence is not stable-ready. A stable release must have evidence for each control; otherwise the stable release is explicitly rejected and the missing control is recorded as a release blocker.
+
+## Risks, rollback, and decision
+
+- Known limitations: `[not recorded]`
+- Remaining release risks: `[not recorded]`
+- Last known-good tag: `[not recorded]`
+- Rollback owner: `[not recorded]`
+- Rollback procedure: stop publication, preserve evidence, create a new immutable corrective tag, and rerun the applicable mode checklist.
+- Owner go/no-go decision: `[not recorded]`
+- Decision date: `[not recorded]`
+
+## Evidence review checklist
+
+- [ ] Source commit and tag are recorded and match the build.
+- [ ] Every required artifact has a checksum and smoke result.
+- [ ] Platform CI links and manual scan evidence are attached.
+- [ ] Scanner version and compatibility are recorded.
+- [ ] SBOM, signing, and provenance status are explicit.
+- [ ] Remaining risks and rollback owner are recorded.
+- [ ] Release/security reviewer decision is recorded.

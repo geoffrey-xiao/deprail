@@ -77,6 +77,40 @@ func TestDoctorJSONIncludesBuildIdentity(t *testing.T) {
 	}
 }
 
+func TestReleaseBuildReportsInjectedIdentity(t *testing.T) {
+	repositoryRoot := filepath.Join(filepath.Dir(fixturePath(t, "npm-basic")), "..", "..")
+	binary := filepath.Join(t.TempDir(), "deprail")
+	if runtime.GOOS == "windows" {
+		binary += ".exe"
+	}
+	build := exec.Command("go", "build",
+		"-ldflags",
+		"-X github.com/geoffrey-xiao/deprail/internal/buildinfo.Version=v0.2.0 -X github.com/geoffrey-xiao/deprail/internal/buildinfo.Tag=v0.2.0-rc.1 -X github.com/geoffrey-xiao/deprail/internal/buildinfo.Commit=abc123",
+		"-o", binary, "./cmd/deprail",
+	)
+	build.Dir = repositoryRoot
+	if output, err := build.CombinedOutput(); err != nil {
+		t.Fatalf("build release binary: %v\n%s", err, output)
+	}
+	command := exec.Command(binary, "doctor", "--format", "json")
+	command.Env = []string{"PATH=" + t.TempDir()}
+	output, err := command.Output()
+	if exitErr, ok := err.(*exec.ExitError); !ok || exitErr.ExitCode() != 3 {
+		t.Fatalf("doctor error = %v, want scanner failure exit code 3", err)
+	}
+	var report struct {
+		Version string `json:"version"`
+		Tag     string `json:"tag"`
+		Commit  string `json:"commit"`
+	}
+	if err := json.Unmarshal(output, &report); err != nil {
+		t.Fatalf("doctor output is not JSON: %v", err)
+	}
+	if report.Version != "v0.2.0" || report.Tag != "v0.2.0-rc.1" || report.Commit != "abc123" {
+		t.Fatalf("release identity = %#v", report)
+	}
+}
+
 func TestDiscoverRejectsMultiplePaths(t *testing.T) {
 	var stdout, stderr bytes.Buffer
 	code := run([]string{"discover", ".", "other"}, &stdout, &stderr)

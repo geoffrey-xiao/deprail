@@ -1,6 +1,8 @@
 package baseline
 
 import (
+	"crypto/sha256"
+	"encoding/hex"
 	"os"
 	"path/filepath"
 	"reflect"
@@ -60,5 +62,39 @@ func TestStoreRejectsIncompleteAndTamperedBaselines(t *testing.T) {
 	}
 	if _, err := store.Load(path); err == nil {
 		t.Fatal("tampered baseline was accepted")
+	}
+}
+
+func TestStoreRejectsUnsafeIDsUppercaseDigestsUnknownFieldsAndOverwrite(t *testing.T) {
+	unsafe := validBaseline()
+	unsafe.BaselineID = "../escape"
+	if _, err := (Store{Root: t.TempDir()}).Save(unsafe); err == nil {
+		t.Fatal("unsafe baseline ID was accepted")
+	}
+	uppercase := validBaseline()
+	uppercase.ArtifactDigests[0] = "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
+	if _, err := (Store{Root: t.TempDir()}).Save(uppercase); err == nil {
+		t.Fatal("uppercase artifact digest was accepted")
+	}
+	store := Store{Root: t.TempDir()}
+	path, err := store.Save(validBaseline())
+	if err != nil {
+		t.Fatal(err)
+	}
+	if _, err := store.Save(validBaseline()); err == nil {
+		t.Fatal("existing baseline was overwritten")
+	}
+	data, err := os.ReadFile(path)
+	if err != nil {
+		t.Fatal(err)
+	}
+	data = append(data[:len(data)-2], []byte(`,"unexpected":true}`+"\n")...)
+	digest := sha256.Sum256(data)
+	unknownPath := filepath.Join(store.Root, "base-001-"+hex.EncodeToString(digest[:])+".json")
+	if err := os.WriteFile(unknownPath, data, 0o600); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := store.Load(unknownPath); err == nil {
+		t.Fatal("unknown baseline field was accepted")
 	}
 }

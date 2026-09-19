@@ -8,6 +8,7 @@ import (
 
 type Exception struct {
 	SchemaVersion   string    `json:"schema_version"`
+	DocumentType    string    `json:"document_type"`
 	ID              string    `json:"id"`
 	FindingKey      string    `json:"finding_key"`
 	Scope           string    `json:"scope"`
@@ -19,7 +20,7 @@ type Exception struct {
 }
 
 func (e Exception) Validate() error {
-	if e.SchemaVersion != "v1alpha" || strings.TrimSpace(e.ID) == "" || strings.TrimSpace(e.FindingKey) == "" || strings.TrimSpace(e.Scope) == "" || strings.TrimSpace(e.Rationale) == "" || strings.TrimSpace(e.Approver) == "" || strings.TrimSpace(e.ReviewCondition) == "" {
+	if e.SchemaVersion != "v1alpha" || e.DocumentType != "exception" || strings.TrimSpace(e.ID) == "" || strings.TrimSpace(e.FindingKey) == "" || strings.TrimSpace(e.Scope) == "" || strings.TrimSpace(e.Rationale) == "" || strings.TrimSpace(e.Approver) == "" || strings.TrimSpace(e.ReviewCondition) == "" {
 		return errors.New("exception required fields are missing")
 	}
 	if e.CreatedAt.IsZero() || e.ExpiresAt.IsZero() || !e.ExpiresAt.After(e.CreatedAt) {
@@ -27,9 +28,8 @@ func (e Exception) Validate() error {
 	}
 	return nil
 }
-
 func (e Exception) ActiveAt(now time.Time) bool {
-	return e.Validate() == nil && now.Before(e.ExpiresAt)
+	return e.Validate() == nil && !now.Before(e.CreatedAt) && now.Before(e.ExpiresAt)
 }
 func (e Exception) Matches(findingKey, scope string, now time.Time) bool {
 	return e.ActiveAt(now) && e.FindingKey == findingKey && e.Scope == scope

@@ -2,6 +2,7 @@ package policy
 
 import (
 	"testing"
+	"time"
 
 	"github.com/geoffrey-xiao/deprail/internal/baseline"
 )
@@ -32,5 +33,14 @@ func TestEvaluateEnforcesSeverityAndCompleteness(t *testing.T) {
 func TestEvaluateRejectsUnknownSeverity(t *testing.T) {
 	if _, err := Evaluate(Policy{MinimumSeverity: "urgent"}, Input{Complete: true}); err == nil {
 		t.Fatal("invalid severity accepted")
+	}
+}
+func TestEvaluateHonorsActiveScopedException(t *testing.T) {
+	now := time.Date(2026, 1, 1, 1, 0, 0, 0, time.UTC)
+	comparison := baseline.Comparison{Changes: []baseline.Change{{Kind: baseline.Added, Key: "new-key", Head: &baseline.Finding{Severity: "critical"}}}}
+	exception := Exception{SchemaVersion: "v1alpha", DocumentType: "exception", ID: "ex-1", FindingKey: "new-key", Scope: "workspace-a", Rationale: "temporary", Approver: "reviewer", CreatedAt: now.Add(-time.Hour), ExpiresAt: now.Add(time.Hour), ReviewCondition: "review"}
+	got, err := Evaluate(Policy{BlockOnNew: true}, Input{Comparison: comparison, Complete: true, Scope: "workspace-a", Now: now, Exceptions: []Exception{exception}})
+	if err != nil || got.Outcome != Pass {
+		t.Fatalf("decision = %#v, err = %v", got, err)
 	}
 }

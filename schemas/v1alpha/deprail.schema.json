@@ -141,9 +141,10 @@
     },
     "exception": {
       "type": "object",
-      "required": ["schema_version", "id", "finding_key", "scope", "rationale", "approver", "created_at", "expires_at", "review_condition"],
+      "required": ["schema_version", "document_type", "id", "finding_key", "scope", "rationale", "approver", "created_at", "expires_at", "review_condition"],
       "properties": {
         "schema_version": { "const": "v1alpha" },
+        "document_type": { "const": "exception" },
         "id": { "$ref": "#/$defs/id" },
         "finding_key": { "$ref": "#/$defs/id" },
         "scope": { "$ref": "#/$defs/id" },

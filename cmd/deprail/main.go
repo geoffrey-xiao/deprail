@@ -6,12 +6,14 @@ import (
 	"encoding/json"
 	"flag"
 	"fmt"
-	"github.com/geoffrey-xiao/deprail/internal/app"
-	"github.com/geoffrey-xiao/deprail/internal/discovery"
-	"github.com/geoffrey-xiao/deprail/internal/presenter"
 	"io"
 	"os"
 	"path/filepath"
+
+	"github.com/geoffrey-xiao/deprail/internal/app"
+	"github.com/geoffrey-xiao/deprail/internal/baseline"
+	"github.com/geoffrey-xiao/deprail/internal/discovery"
+	"github.com/geoffrey-xiao/deprail/internal/presenter"
 )
 
 func main() {
@@ -28,6 +30,8 @@ func run(args []string, stdout, stderr io.Writer) int {
 		return runDiscover(args[1:], stdout, stderr)
 	case "scan":
 		return runScan(args[1:], stdout, stderr)
+	case "diff":
+		return runDiff(args[1:], stdout, stderr)
 	case "doctor":
 		return runDoctor(args[1:], stdout, stderr)
 	default:
@@ -209,6 +213,59 @@ func runDoctor(args []string, stdout, stderr io.Writer) int {
 	}
 	if !report.Scanner.Available || !report.Scanner.Compatible {
 		return 3
+	}
+	return 0
+}
+func runDiff(args []string, stdout, stderr io.Writer) int {
+	flags := flag.NewFlagSet("diff", flag.ContinueOnError)
+	flags.SetOutput(io.Discard)
+	basePath := flags.String("base", "", "base baseline path")
+	headPath := flags.String("head", "", "head baseline path")
+	format := flags.String("format", "terminal", "output format: terminal or json")
+	if err := flags.Parse(args); err != nil || *basePath == "" || *headPath == "" || (*format != "terminal" && *format != "json") || len(flags.Args()) != 0 {
+		writeCLIError(stderr, "CONFIG_INVALID", "diff requires --base and --head and supports terminal or json output", "diff")
+		return 2
+	}
+	load := func(input string) (baseline.Document, error) {
+		info, err := os.Stat(input)
+		if err != nil {
+			return baseline.Document{}, fmt.Errorf("input %q is not a readable baseline path: %w", input, err)
+		}
+		if info.IsDir() {
+			return baseline.Document{}, fmt.Errorf("input %q is a directory, not a baseline", input)
+		}
+		return (baseline.Store{Root: filepath.Dir(input)}).Load(input)
+	}
+	base, err := load(*basePath)
+	if err != nil {
+		writeCLIError(stderr, "BASELINE_INVALID", err.Error(), "base")
+		return 3
+	}
+	head, err := load(*headPath)
+	if err != nil {
+		writeCLIError(stderr, "BASELINE_INVALID", err.Error(), "head")
+		return 3
+	}
+	comparison, err := baseline.Compare(base, head)
+	if err != nil {
+		writeCLIError(stderr, "BASELINE_INVALID", err.Error(), "comparison")
+		return 3
+	}
+	if *format == "json" {
+		document := struct {
+			SchemaVersion string `json:"schema_version"`
+			DocumentType  string `json:"document_type"`
+			baseline.Comparison
+		}{SchemaVersion: baseline.SchemaVersion, DocumentType: "diff", Comparison: comparison}
+		if err := json.NewEncoder(stdout).Encode(document); err != nil {
+			writeCLIError(stderr, "OUTPUT_WRITE_FAILED", err.Error(), "output")
+			return 3
+		}
+		return 0
+	}
+	fmt.Fprintf(stdout, "Diff %s -> %s\n", comparison.BaseScanID, comparison.HeadScanID)
+	for _, change := range comparison.Changes {
+		fmt.Fprintf(stdout, "%s %s\n", change.Kind, change.Key)
 	}
 	return 0
 }

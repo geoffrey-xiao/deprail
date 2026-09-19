@@ -1,8 +1,8 @@
 # DepRail v0.2 Release Evidence Record
 
-**Status:** Evidence collection pending; this record is not release approval.
-**Release mode:** Preview / RC / Stable (select one before completing)
-**Target version:** `0.2.0`
+**Status:** Preview evidence collected; owner decision pending.
+**Release mode:** Preview
+**Target version:** `0.2.0-preview.1`
 **Release owner:** `[not recorded]`
 **Reviewer:** `[not recorded]`
 **Decision:** `[not recorded]`
@@ -13,12 +13,12 @@ Missing or inconsistent evidence blocks the applicable release mode. Do not repl
 
 | Field | Evidence |
 | --- | --- |
-| Source commit | `[not recorded]` |
-| Release tag | `[not recorded]` |
-| DepRail version | `[not recorded]` |
-| CLI identity output | Link to `deprail doctor --format json` output |
-| Build command and Go version | `[not recorded]` |
-| Release workflow run | Link to GitHub Actions run |
+| Source commit | `28f4e3ea192d9d2c75f66a079e27ec54d29f28b1` |
+| Release tag | `v0.2.0-preview.1` |
+| DepRail version | `v0.2.0-preview.1` |
+| CLI identity output | macOS Intel and Apple Silicon `doctor` smoke |
+| Build command and Go version | Release workflow build; Go version recorded in workflow |
+| Release workflow run | https://github.com/geoffrey-xiao/deprail/actions/runs/35433949073 |
 
 ## Pre-release gate
 
@@ -26,10 +26,10 @@ Record each gate from a clean detached checkout of the reviewed source commit. A
 
 | Gate | Result | Exit code | Evidence |
 | --- | --- | ---: | --- |
-| Clean detached checkout at reviewed commit | `[not recorded]` | `[not recorded]` | `[not recorded]` |
-| `go version` | `[not recorded]` | `[not recorded]` | `[not recorded]` |
-| `make verify` | `[not recorded]` | `[not recorded]` | `[not recorded]` |
-| `git diff --check` | `[not recorded]` | `[not recorded]` | `[not recorded]` |
+| Clean detached checkout at reviewed commit | Passed in release workflow | 0 | Release workflow |
+| `go version` | Passed in release workflow | 0 | Release workflow |
+| `make verify` | Passed | 0 | Release workflow |
+| `git diff --check` | Passed locally | 0 | Local validation |
 
 Attach command output or a CI run link for each row. The record is incomplete until every gate has an explicit result and exit code.
 
@@ -39,12 +39,11 @@ Every artifact requires a recorded SHA-256 checksum and a smoke result from the 
 
 | Artifact | Platform | Size | SHA-256 | Smoke result | Evidence |
 | --- | --- | ---: | --- | --- | --- |
-| `deprail-linux-amd64` | Linux amd64 | `[not recorded]` | `[not recorded]` | `[not recorded]` | `[not recorded]` |
-| `deprail-darwin-amd64` | macOS amd64 | `[not recorded]` | `[not recorded]` | `[not recorded]` | `[not recorded]` |
-| `deprail-darwin-arm64` | macOS arm64 | `[not recorded]` | `[not recorded]` | `[not recorded]` | `[not recorded]` |
-| `deprail-windows-amd64.exe` | Windows amd64 | `[not recorded]` | `[not recorded]` | `[not recorded]` | `[not recorded]` |
-
-Checksum manifest: `[not recorded]`
+| `deprail-linux-amd64` | Linux amd64 | 3,760,288 | `ec3da498e07a2b1bac63e5d5682beb753478822bffde6d8a1e0552a0e226f72e` | Release smoke passed | Release workflow |
+| `deprail-darwin-amd64` | macOS amd64 | 3,761,376 | `ed86ff1891db59ffce20ef98fab72d44386706f791f2fc065d3efe79647b143c` | Manual doctor passed | Release workflow / local |
+| `deprail-darwin-arm64` | macOS arm64 | 3,514,258 | `54fb08db4e7a5bb3ecdcc8610290dd61bf7514368e10d0b46994b8b69fd17a82` | Manual smoke passed | Release workflow / owner report |
+| `deprail-windows-amd64.exe` | Windows amd64 | 3,904,512 | `28d3f9b44717c9f423cc98a06821b11c8b1cba9a3b0aeb0d8626ac4555ed6625` | Release smoke passed | Release workflow |
+| Checksum manifest | All artifacts | — | — | `shasum -a 256 -c SHA256SUMS`: all OK | Preview release |
 
 ## Platform and CLI smoke evidence
 
@@ -57,19 +56,19 @@ For every supported artifact, attach command output and the CI or manual-run lin
 
 | Platform | CI or run link | Doctor | Discover | Scan failure behavior | Identity match |
 | --- | --- | --- | --- | --- | --- |
-| Linux | `[not recorded]` | `[not recorded]` | `[not recorded]` | `[not recorded]` | `[not recorded]` |
-| macOS | `[not recorded]` | `[not recorded]` | `[not recorded]` | `[not recorded]` | `[not recorded]` |
-| Windows | `[not recorded]` | `[not recorded]` | `[not recorded]` | `[not recorded]` | `[not recorded]` |
+| Linux | https://github.com/geoffrey-xiao/deprail/actions/runs/35433949073 | Release smoke passed | Workflow | Workflow | Tag/commit injected |
+| macOS | Local smoke plus release workflow | Passed | Passed | Passed | `darwin/amd64` and `darwin/arm64` verified |
+| Windows | https://github.com/geoffrey-xiao/deprail/actions/runs/35433949073 | Release smoke passed | Workflow | Workflow | Tag/commit injected |
 
 ## Scanner and representative repositories
 
 | Evidence | Result | Link or output |
 | --- | --- | --- |
-| OSV-Scanner version | `[not recorded]` | `[not recorded]` |
-| JavaScript repository scan | `[not recorded]` | `[not recorded]` |
-| Python repository scan | `[not recorded]` | `[not recorded]` |
-| Java repository scan | `[not recorded]` | `[not recorded]` |
-| Mixed repository scan | `[not recorded]` | `[not recorded]` |
+| OSV-Scanner version | `2.6.0` / `0.5.2` | Local macOS and release environment |
+| JavaScript repository scan | Complete fixture workspace | PR #182 / local smoke |
+| Python repository scan | Complete fixture workspace | PR #182 / local smoke |
+| Java repository scan | Complete fixture workspace | PR #182 / local smoke |
+| Mixed repository scan | Exit `0`, complete, 9 findings, no errors | PR #182 |
 
 Every release-gating scan must complete successfully. Partial or failed scans block the relevant release mode.
 ## V02-025 pull-request validation evidence

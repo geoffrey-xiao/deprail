@@ -30,22 +30,30 @@ Evaluate baseline comparison, policy gates, SARIF, additional scanner ecosystems
 
 ## Decision
 
-All candidates are deferred from v0.2:
+The required v0.2 CI-guardrail capabilities remain in scope and proceed through their existing implementation issues:
 
-| Candidate | Decision | Rationale |
+| Capability | Decision | Implementation path |
 | --- | --- | --- |
-| Baseline comparison | Deferred | Requires a versioned baseline contract, trusted storage, and additional diff acceptance evidence. |
-| Policy gates | Deferred | Requires explicit policy semantics, exception handling, and stable exit behavior. |
-| SARIF | Deferred | Requires a versioned output contract and consumer-validation evidence. |
+| Baseline representation, storage, and compatibility | Retained for v0.2 | V02-015 |
+| Base/head comparison and deterministic diff | Retained for v0.2 | V02-016, V02-018 |
+| New/resolved/unchanged classification | Retained for v0.2 | V02-017 |
+| Typed policy gates, completeness, and exit behavior | Retained for v0.2 | V02-019, V02-021 |
+| Expiring exceptions | Retained for v0.2 | V02-020 |
+| SARIF output | Retained for v0.2 | V02-022 |
+
+The following capabilities remain deferred because they require separate contracts, compatibility analysis, security review, and explicit inclusion approval:
+
+| Capability | Decision | Rationale |
+| --- | --- | --- |
 | Additional scanner ecosystems | Deferred | The v0.2 scope remains limited to the currently supported JavaScript, Python, and Java flows. |
-| SBOM/signing | Deferred | No reviewed implementation, platform process, or supply-chain evidence exists yet. |
+| SBOM/signing implementation | Deferred | No reviewed implementation, platform process, or supply-chain evidence exists yet. |
 | Remote publishing/history | Deferred | Requires network, storage, authentication, permissions, and retention decisions outside the current release boundary. |
 
-No PRD or requirements updates are required because this decision preserves the existing v0.2 exclusions. No candidate issue becomes implementation-ready from this decision.
+V02-015 through V02-022 remain implementation-ready according to their individual contracts; this decision does not remove or defer those issues. No PRD or requirements update is required because this decision reconciles the issue package with the existing v0.2 plan.
 
 ### Consequences and remaining risk
 
-V0.2 remains focused on deterministic discovery, scanning, normalization, evidence retention, and release readiness. Baseline comparison, policy enforcement, SARIF, expanded scanners, supply-chain controls, and remote history remain explicit future work. Users do not receive those capabilities in v0.2; implementing them later requires new contracts, owners, dependencies, acceptance evidence, and human review.
+V0.2 retains its CI-guardrail outcome: deterministic baselines and diffs, policy evaluation, and SARIF output remain required before the v0.2 boundary is complete. Additional scanner ecosystems, SBOM/signing implementation, and remote history remain explicit future work. Each deferred capability requires a new or updated issue contract before implementation.
 
 ## Out of Scope
 

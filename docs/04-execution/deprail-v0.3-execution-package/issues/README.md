@@ -1,6 +1,6 @@
 # v0.3 Issue Contracts
 
-These issue contracts are implementation-ready only after issue #198 approves the v0.3 context and Definition of Ready. They map to the v0.3 requirements and traceability matrix.
+These issue contracts are draft local contracts, not GitHub issues. They become implementation-ready only after issue #198 approves the v0.3 context and Definition of Ready. Coverage is verified in `CONTRACT-CROSSWALK.md`.
 
 | Issue | Epic | Outcome |
 | --- | --- | --- |

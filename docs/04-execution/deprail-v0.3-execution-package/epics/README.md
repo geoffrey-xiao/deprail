@@ -1,6 +1,6 @@
 # v0.3 Epics
 
-These epics decompose the approved v0.3 plan. They are local execution contracts; GitHub epics and issues are created only after issue #198 completes Definition of Ready.
+These epics are a proposed decomposition of the v0.3 development plan. They are local execution contracts; GitHub epics and issues are created only after issue #198 completes Definition of Ready.
 
 | Epic | Outcome | Issues |
 | --- | --- | --- |

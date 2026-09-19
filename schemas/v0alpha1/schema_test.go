@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"testing"
 
+	"github.com/geoffrey-xiao/deprail/internal/remediation"
 	"github.com/santhosh-tekuri/jsonschema/v6"
 )
 
@@ -51,6 +52,13 @@ func TestExamplesValidateAgainstSchema(t *testing.T) {
 		if err := compiled.Validate(document); err != nil {
 			t.Errorf("%s: schema validation failed: %v", name, err)
 		}
+		var plan remediation.Plan
+		if err := json.Unmarshal(bytes, &plan); err != nil {
+			t.Fatalf("%s: domain decode failed: %v", name, err)
+		}
+		if err := plan.Validate(); err != nil {
+			t.Errorf("%s: domain validation failed: %v", name, err)
+		}
 	}
 }
 
@@ -76,6 +84,51 @@ func TestSchemaRejectsMissingProvenanceAndUnsafeCommandPath(t *testing.T) {
 	commands[0].(map[string]any)["working_directory"] = "/outside"
 	if err := compiled.Validate(document); err == nil {
 		t.Fatal("absolute command working directory unexpectedly validated")
+	}
+}
+
+func TestSchemaRejectsTraversalUnsafeRecommendationAndBadDigest(t *testing.T) {
+	compiled := compiledSchema(t)
+	bytes, err := schemaFiles.ReadFile("examples/recommended.json")
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, directory := range []string{"../outside", "foo/../../outside", "./service"} {
+		var document map[string]any
+		if err := json.Unmarshal(bytes, &document); err != nil {
+			t.Fatal(err)
+		}
+		document["commands"].([]any)[0].(map[string]any)["working_directory"] = directory
+		if err := compiled.Validate(document); err == nil {
+			t.Fatalf("traversal path %q unexpectedly validated", directory)
+		}
+	}
+
+	var document map[string]any
+	if err := json.Unmarshal(bytes, &document); err != nil {
+		t.Fatal(err)
+	}
+	candidate := document["candidates"].([]any)[0].(map[string]any)
+	candidate["evidence"].(map[string]any)["peer_compatible"] = false
+	if err := compiled.Validate(document); err == nil {
+		t.Fatal("unsafe recommended candidate unexpectedly validated")
+	}
+
+	if err := json.Unmarshal(bytes, &document); err != nil {
+		t.Fatal(err)
+	}
+	document["provenance"].(map[string]any)["artifact_digests"] = []any{"not-a-digest"}
+	if err := compiled.Validate(document); err == nil {
+		t.Fatal("invalid artifact digest unexpectedly validated")
+	}
+
+	if err := json.Unmarshal(bytes, &document); err != nil {
+		t.Fatal(err)
+	}
+	digest := document["provenance"].(map[string]any)["artifact_digests"].([]any)[0]
+	document["provenance"].(map[string]any)["artifact_digests"] = []any{digest, digest}
+	if err := compiled.Validate(document); err == nil {
+		t.Fatal("duplicate artifact digest unexpectedly validated")
 	}
 }
 

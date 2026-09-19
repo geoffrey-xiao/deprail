@@ -1,1 +1,63 @@
-{"schema_version":"v0alpha1","plan_id":"dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd","created_from":{"report_digest":"report-4","source_scan_id":"scan-4","scanner":"osv-scanner","repository_state":"tree-4"},"repository_identity":{"root":".","repository":"example"},"workspace_identity":{"id":"worker","path":"."},"finding_identity":{"stable_key":"finding-4","current_version":"4.0.0"},"component":{"purl":"pkg:npm/example@4.0.0","name":"example","version":"4.0.0"},"current_state":{"direct":true,"vulnerable":true},"candidates":[{"id":"candidate-unknown","version":"4.1.0","state":"unknown","evidence":{"constraint_satisfied":true,"lockfile_resolution":false,"peer_compatible":true,"runtime_compatible":true,"engine_compatible":true,"unknown":["lockfile metadata"]},"direct":true,"major_change":false}],"recommendation":null,"affected_files":[],"commands":[],"risks":[],"assumptions":[],"verification":[],"rollback":{},"provenance":{"artifact_digests":[],"sources":["scan.json"]}}
+{
+  "schema_version": "v0alpha1",
+  "plan_id": "255d9221a87364592beb9352f4adfb73eda279e7b594990beb23d61f0a574b75",
+  "created_from": {
+    "report_digest": "report-4",
+    "source_scan_id": "scan-4",
+    "scanner": "osv-scanner",
+    "repository_state": "tree-4"
+  },
+  "repository_identity": {
+    "root": ".",
+    "repository": "example"
+  },
+  "workspace_identity": {
+    "id": "worker",
+    "path": "."
+  },
+  "finding_identity": {
+    "stable_key": "finding-4",
+    "current_version": "4.0.0"
+  },
+  "component": {
+    "purl": "pkg:npm/example@4.0.0",
+    "name": "example",
+    "version": "4.0.0"
+  },
+  "current_state": {
+    "direct": true,
+    "vulnerable": true
+  },
+  "candidates": [
+    {
+      "id": "candidate-unknown",
+      "version": "4.1.0",
+      "state": "unknown",
+      "evidence": {
+        "constraint_satisfied": true,
+        "lockfile_resolution": false,
+        "peer_compatible": true,
+        "runtime_compatible": true,
+        "engine_compatible": true,
+        "unknown": [
+          "lockfile metadata"
+        ]
+      },
+      "direct": true,
+      "major_change": false
+    }
+  ],
+  "recommendation": null,
+  "affected_files": [],
+  "commands": [],
+  "risks": [],
+  "assumptions": [],
+  "verification": [],
+  "rollback": {},
+  "provenance": {
+    "artifact_digests": [],
+    "sources": [
+      "scan.json"
+    ]
+  }
+}

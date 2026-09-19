@@ -1,1 +1,79 @@
-{"schema_version":"v0alpha1","plan_id":"bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb","created_from":{"report_digest":"report-2","source_scan_id":"scan-2","scanner":"osv-scanner","repository_state":"tree-2"},"repository_identity":{"root":".","repository":"example","revision":"rev-2"},"workspace_identity":{"id":"api","path":"services/api"},"finding_identity":{"stable_key":"finding-2","current_version":"2.0.0"},"component":{"purl":"pkg:pypi/example@2.0.0","name":"example","version":"2.0.0"},"current_state":{"direct":true,"manifest":"requirements.txt","vulnerable":true},"candidates":[{"id":"candidate-2","version":"2.2.0","state":"viable","evidence":{"constraint_satisfied":true,"lockfile_resolution":true,"peer_compatible":true,"runtime_compatible":true,"engine_compatible":true},"direct":true,"major_change":false},{"id":"candidate-1","version":"2.1.0","state":"recommended","evidence":{"constraint_satisfied":true,"lockfile_resolution":true,"peer_compatible":true,"runtime_compatible":true,"engine_compatible":true},"direct":true,"major_change":false}],"recommendation":{"candidate_id":"candidate-1","state":"recommended"},"affected_files":[],"commands":[],"risks":[],"assumptions":[],"verification":[],"rollback":{},"provenance":{"artifact_digests":[],"sources":["scan.json"]}}
+{
+  "schema_version": "v0alpha1",
+  "plan_id": "1ef1d180b18b289d9726b12382c4c23e7be90a7bb9c46d64217b8b3e58304abd",
+  "created_from": {
+    "report_digest": "report-2",
+    "source_scan_id": "scan-2",
+    "scanner": "osv-scanner",
+    "repository_state": "tree-2"
+  },
+  "repository_identity": {
+    "root": ".",
+    "repository": "example",
+    "revision": "rev-2"
+  },
+  "workspace_identity": {
+    "id": "api",
+    "path": "services/api"
+  },
+  "finding_identity": {
+    "stable_key": "finding-2",
+    "current_version": "2.0.0"
+  },
+  "component": {
+    "purl": "pkg:pypi/example@2.0.0",
+    "name": "example",
+    "version": "2.0.0"
+  },
+  "current_state": {
+    "direct": true,
+    "manifest": "requirements.txt",
+    "vulnerable": true
+  },
+  "candidates": [
+    {
+      "id": "candidate-1",
+      "version": "2.1.0",
+      "state": "recommended",
+      "evidence": {
+        "constraint_satisfied": true,
+        "lockfile_resolution": true,
+        "peer_compatible": true,
+        "runtime_compatible": true,
+        "engine_compatible": true
+      },
+      "direct": true,
+      "major_change": false
+    },
+    {
+      "id": "candidate-2",
+      "version": "2.2.0",
+      "state": "viable",
+      "evidence": {
+        "constraint_satisfied": true,
+        "lockfile_resolution": true,
+        "peer_compatible": true,
+        "runtime_compatible": true,
+        "engine_compatible": true
+      },
+      "direct": true,
+      "major_change": false
+    }
+  ],
+  "recommendation": {
+    "candidate_id": "candidate-1",
+    "state": "recommended"
+  },
+  "affected_files": [],
+  "commands": [],
+  "risks": [],
+  "assumptions": [],
+  "verification": [],
+  "rollback": {},
+  "provenance": {
+    "artifact_digests": [],
+    "sources": [
+      "scan.json"
+    ]
+  }
+}

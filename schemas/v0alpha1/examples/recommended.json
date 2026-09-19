@@ -1,1 +1,114 @@
-{"schema_version":"v0alpha1","plan_id":"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa","created_from":{"report_digest":"report-1","source_scan_id":"scan-1","scanner":"osv-scanner","repository_state":"tree-1"},"repository_identity":{"root":".","repository":"example","revision":"rev-1"},"workspace_identity":{"id":"web","path":"."},"finding_identity":{"stable_key":"finding-1","aliases":["OSV-1"],"dependency_path":["web","example"],"current_version":"1.0.0","fixed_versions":["1.1.0"]},"component":{"purl":"pkg:npm/example@1.0.0","name":"example","version":"1.0.0"},"current_state":{"direct":true,"constraint":"^1.0.0","manifest":"package.json","lockfile":"package-lock.json","vulnerable":true},"candidates":[{"id":"candidate-1","version":"1.1.0","state":"recommended","evidence":{"constraint_satisfied":true,"lockfile_resolution":true,"peer_compatible":true,"runtime_compatible":true,"engine_compatible":true},"direct":true,"major_change":false}],"recommendation":{"candidate_id":"candidate-1","state":"recommended","reason":"minimum compatible fixed version"},"affected_files":[{"path":"package.json","kind":"manifest"},{"path":"package-lock.json","kind":"lockfile"}],"commands":[{"executable":"npm","arguments":["install","example@1.1.0"],"working_directory":"."}],"risks":[],"assumptions":[],"verification":[{"id":"tests","command":{"executable":"npm","arguments":["test"],"working_directory":"."}}],"rollback":{"steps":["restore package and lockfile"],"limits":"application is deferred"},"provenance":{"artifact_digests":["artifact-1"],"sources":["scan.json"]}}
+{
+  "schema_version": "v0alpha1",
+  "plan_id": "82b856fe20cc681057e7086b09be13f82ae7c152ee4d6e21d0993f203c808666",
+  "created_from": {
+    "report_digest": "report-1",
+    "source_scan_id": "scan-1",
+    "scanner": "osv-scanner",
+    "repository_state": "tree-1"
+  },
+  "repository_identity": {
+    "root": ".",
+    "repository": "example",
+    "revision": "rev-1"
+  },
+  "workspace_identity": {
+    "id": "web",
+    "path": "."
+  },
+  "finding_identity": {
+    "stable_key": "finding-1",
+    "aliases": [
+      "OSV-1"
+    ],
+    "dependency_path": [
+      "web",
+      "example"
+    ],
+    "current_version": "1.0.0",
+    "fixed_versions": [
+      "1.1.0"
+    ]
+  },
+  "component": {
+    "purl": "pkg:npm/example@1.0.0",
+    "name": "example",
+    "version": "1.0.0"
+  },
+  "current_state": {
+    "direct": true,
+    "constraint": "^1.0.0",
+    "lockfile": "package-lock.json",
+    "manifest": "package.json",
+    "vulnerable": true
+  },
+  "candidates": [
+    {
+      "id": "candidate-1",
+      "version": "1.1.0",
+      "state": "recommended",
+      "evidence": {
+        "constraint_satisfied": true,
+        "lockfile_resolution": true,
+        "peer_compatible": true,
+        "runtime_compatible": true,
+        "engine_compatible": true
+      },
+      "direct": true,
+      "major_change": false
+    }
+  ],
+  "recommendation": {
+    "candidate_id": "candidate-1",
+    "state": "recommended",
+    "reason": "minimum compatible fixed version"
+  },
+  "affected_files": [
+    {
+      "path": "package-lock.json",
+      "kind": "lockfile"
+    },
+    {
+      "path": "package.json",
+      "kind": "manifest"
+    }
+  ],
+  "commands": [
+    {
+      "executable": "npm",
+      "arguments": [
+        "install",
+        "example@1.1.0"
+      ],
+      "working_directory": "."
+    }
+  ],
+  "risks": [],
+  "assumptions": [],
+  "verification": [
+    {
+      "id": "tests",
+      "command": {
+        "executable": "npm",
+        "arguments": [
+          "test"
+        ],
+        "working_directory": "."
+      }
+    }
+  ],
+  "rollback": {
+    "steps": [
+      "restore package and lockfile"
+    ],
+    "limits": "application is deferred"
+  },
+  "provenance": {
+    "artifact_digests": [
+      "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef"
+    ],
+    "sources": [
+      "scan.json"
+    ]
+  }
+}

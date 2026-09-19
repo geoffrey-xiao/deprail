@@ -33,8 +33,18 @@
   "$defs": {
     "non_empty": { "type": "string", "minLength": 1 },
     "relative_path": {
-      "type": "string",
-      "pattern": "^(\\.|[^/\\\\:]+(?:/[^/\\\\:]+)*)$"
+      "anyOf": [
+        { "const": "." },
+        {
+          "allOf": [
+            { "type": "string", "pattern": "^[^/\\\\:]+(?:/[^/\\\\:]+)*$" },
+            { "not": { "pattern": "\\.\\." } },
+            { "not": { "pattern": "^\\./" } },
+            { "not": { "pattern": "/\\./" } },
+            { "not": { "pattern": "/\\.$" } }
+          ]
+        }
+      ]
     },
     "created_from": {
       "type": "object",
@@ -114,7 +124,26 @@
         "major_change": { "type": "boolean" },
         "rejection_code": { "type": "string" },
         "reason": { "type": "string" }
-      }
+      },
+      "allOf": [
+        {
+          "if": { "properties": { "state": { "const": "recommended" } } },
+          "then": {
+            "properties": {
+              "evidence": {
+                "properties": {
+                  "constraint_satisfied": { "const": true },
+                  "lockfile_resolution": { "const": true },
+                  "peer_compatible": { "const": true },
+                  "runtime_compatible": { "const": true },
+                  "engine_compatible": { "const": true },
+                  "unknown": { "maxItems": 0 }
+                }
+              }
+            }
+          }
+        }
+      ]
     },
     "compatibility_evidence": {
       "type": "object",
@@ -202,7 +231,11 @@
       "additionalProperties": false,
       "required": ["artifact_digests", "sources"],
       "properties": {
-        "artifact_digests": { "type": "array", "items": { "$ref": "#/$defs/non_empty" } },
+        "artifact_digests": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": { "type": "string", "pattern": "^[a-f0-9]{64}$" }
+        },
         "sources": { "type": "array", "items": { "$ref": "#/$defs/non_empty" } }
       }
     }

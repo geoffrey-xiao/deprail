@@ -20,3 +20,7 @@ Users can generate, inspect, validate, and safely store remediation plans throug
 ## Acceptance
 
 The command generates a valid plan from an explicit report, never mutates the repository, remains deterministic across supported platforms, and publishes complete evidence for the v0.3 decision.
+## GitHub tracking
+
+- Parent issue: [#205](https://github.com/geoffrey-xiao/deprail/issues/205)
+- Child issues: [#213](https://github.com/geoffrey-xiao/deprail/issues/213), [#214](https://github.com/geoffrey-xiao/deprail/issues/214), [#215](https://github.com/geoffrey-xiao/deprail/issues/215)

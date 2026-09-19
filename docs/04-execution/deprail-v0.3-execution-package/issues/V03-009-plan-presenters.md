@@ -23,3 +23,7 @@ Render concise human plans and stable machine JSON, with safe external plan pers
 
 ## Exclusions
 No web presenter, database history, source upload, or mutation.
+## GitHub tracking
+
+- Issue: [#214](https://github.com/geoffrey-xiao/deprail/issues/214)
+- Parent epic: [#205](https://github.com/geoffrey-xiao/deprail/issues/205)

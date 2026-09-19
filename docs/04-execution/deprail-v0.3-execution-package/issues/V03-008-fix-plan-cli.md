@@ -23,3 +23,7 @@ Expose deterministic remediation planning through `deprail fix plan` without mut
 
 ## Exclusions
 No `fix apply`, worktree, verification execution, PR creation, or publication.
+## GitHub tracking
+
+- Issue: [#213](https://github.com/geoffrey-xiao/deprail/issues/213)
+- Parent epic: [#205](https://github.com/geoffrey-xiao/deprail/issues/205)

@@ -1,6 +1,6 @@
 # v0.3 Issue Contracts
 
-These issue contracts are draft local contracts, not GitHub issues. They become implementation-ready only after issue #198 approves the v0.3 context and Definition of Ready. Coverage is verified in `CONTRACT-CROSSWALK.md`.
+These issue contracts are the local source contracts for GitHub issues #206–#215. They remain subject to issue #198 Definition of Ready and owner/reviewer approval. Coverage is verified in `CONTRACT-CROSSWALK.md`.
 
 | Local issue | GitHub issue | Epic | Outcome |
 | --- | --- | --- | --- |

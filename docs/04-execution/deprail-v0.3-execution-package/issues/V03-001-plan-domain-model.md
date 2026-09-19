@@ -27,3 +27,7 @@ Domain tests, serialized examples, and a review of dependency direction.
 
 ## Exclusions
 No CLI, filesystem mutation, package-manager execution, network metadata, or schema migration.
+## GitHub tracking
+
+- Issue: [#206](https://github.com/geoffrey-xiao/deprail/issues/206)
+- Parent epic: [#202](https://github.com/geoffrey-xiao/deprail/issues/202)

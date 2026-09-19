@@ -1,6 +1,6 @@
 # v0.3 Epics
 
-These epics are a proposed decomposition of the v0.3 development plan. They are local execution contracts; GitHub epics and issues are created only after issue #198 completes Definition of Ready.
+These epics are the local source contracts for the GitHub parent issues. They remain subject to issue #198 Definition of Ready and owner/reviewer approval.
 
 | Epic | GitHub issue | Outcome | Child issues |
 | --- | --- | --- | --- |

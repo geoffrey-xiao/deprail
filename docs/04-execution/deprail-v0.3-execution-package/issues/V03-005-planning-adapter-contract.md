@@ -23,3 +23,7 @@ Define one adapter port for dependency ownership, constraints, candidates, risks
 
 ## Exclusions
 No ecosystem implementation, network service, or package installation.
+## GitHub tracking
+
+- Issue: [#210](https://github.com/geoffrey-xiao/deprail/issues/210)
+- Parent epic: [#204](https://github.com/geoffrey-xiao/deprail/issues/204)

@@ -26,3 +26,7 @@ Schema validation output, examples, golden tests, and compatibility review.
 
 ## Exclusions
 No breaking changes to v0.2 schemas and no executor implementation.
+## GitHub tracking
+
+- Issue: [#207](https://github.com/geoffrey-xiao/deprail/issues/207)
+- Parent epic: [#202](https://github.com/geoffrey-xiao/deprail/issues/202)

@@ -23,3 +23,7 @@ Resolve one finding only from an explicit normalized scan report while preservin
 
 ## Exclusions
 No report index, implicit discovery, network fetch, or repository mutation.
+## GitHub tracking
+
+- Issue: [#208](https://github.com/geoffrey-xiao/deprail/issues/208)
+- Parent epic: [#203](https://github.com/geoffrey-xiao/deprail/issues/203)

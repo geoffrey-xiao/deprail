@@ -24,3 +24,7 @@ Prove v0.3 plan accuracy, read-only safety, schema compatibility, and cross-plat
 
 ## Exclusions
 No stable release approval without complete evidence and explicit owner decision.
+## GitHub tracking
+
+- Issue: [#215](https://github.com/geoffrey-xiao/deprail/issues/215)
+- Parent epic: [#205](https://github.com/geoffrey-xiao/deprail/issues/205)

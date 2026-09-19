@@ -106,27 +106,18 @@ gh project item-list <project-number> \
 Verify the item reports `In Progress` before creating the branch. After the PR opens, the required next transition is `Review`; the issue is not closed until the reviewed PR merges and evidence is complete.
 
 
-## 5. Run the OMP pre-PR review
+## 5. Verify and prepare the PR
 
-Before invoking the reviewer, run the applicable focused verification and record its command and output. The reviewer must read the linked issue, applicable requirements, changed files, tests, and current verification evidence.
+Before creating the PR, run the applicable focused verification and record its command and output. Review the linked issue, applicable requirements, changed files, tests, and current verification evidence.
 
-The reviewer checks:
+The review must cover:
 
 - scope, dependencies, acceptance criteria, and contract compatibility;
 - failure, incomplete, boundary, security, and deterministic behavior;
 - path containment, subprocess, file-write, credential, and permission risks;
 - focused tests, cross-platform evidence, documentation, issue link, labels, and rollback.
 
-Present the findings to the owner without editing the branch. Use these classifications:
-
-```text
-BLOCKER  Blocks PR creation unless the owner explicitly changes the plan.
-MAJOR    Requires an owner decision before PR creation.
-MINOR    Owner decides whether to fix now or record for later.
-NOTE     Context only; no action required.
-```
-
-Stop after reporting the findings. Do not automatically fix, suppress, accept, or reject any finding. The owner chooses the next action. If the owner requests fixes, apply only those requested changes, rerun focused verification, and rerun the OMP review. If the owner accepts remaining risk, record that decision and its rationale before proceeding. Human review remains required after the PR opens.
+Human review remains required after the PR opens. Schema, external-process, file-write, permission, credential, migration, compatibility, and publishing changes require the named human reviewer from the execution package.
 
 ## 6. Prepare and create the PR
 

@@ -62,15 +62,22 @@ When an issue is finished, prepare a completion report for the owner covering ev
 
 ## Change workflow
 
-1. Link the issue and identify scope, exclusions, risk, contracts, and acceptance evidence.
-2. Present a short implementation plan before editing.
-3. Add or update focused tests, fixtures, and documentation with the behavior change.
-4. Run the narrow checks first, then `make verify` when the Sprint 0 toolchain is available.
-5. Run the OMP reviewer role against the branch using the current verification evidence. Present its findings to the owner without editing the branch.
-6. Apply only changes the owner requests. Then rerun focused verification and OMP review as directed; record any accepted remaining risk and rationale before creating the PR.
-7. Attach command results, reviewer findings and owner decisions, sample output, remaining risk, and required human review to the pull request.
+1. State the goal, linked contract or issue, intended files and symbols, out-of-scope changes, risk level, and verification commands or scenarios.
+2. Confirm the issue is assigned to the correct milestone and Project fields.
+3. Synchronize `main` with `origin` before branching:
 
-Use the repository templates under `docs/04-execution/deprail-v0.1-execution-package/templates/` for issues, pull requests, and ADRs. Schema, external-process, file-write, permission, credential, migration, and publishing changes require human review.
+   ```bash
+   git fetch origin
+   git switch main
+   git pull --ff-only origin main
+   git switch -c <issue-branch>
+   ```
+
+4. Run the narrow checks first, then `make verify` when the Sprint 0 toolchain is available.
+5. Review the changed files, acceptance evidence, failure behavior, security impact, cross-platform behavior, and rollback before opening the PR.
+6. Attach command results, review decisions, sample output, remaining risk, and required human review to the pull request.
+
+Schema, external-process, file-write, permission, credential, compatibility, migration, and publishing changes require human review.
 
 ## Code of conduct and licensing
 

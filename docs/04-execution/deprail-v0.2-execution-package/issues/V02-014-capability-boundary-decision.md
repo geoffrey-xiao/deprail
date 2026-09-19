@@ -28,6 +28,25 @@ Decide which candidate capabilities, if any, may enter v0.2 implementation witho
 
 Evaluate baseline comparison, policy gates, SARIF, additional scanner ecosystems, SBOM/signing, and remote publishing/history. Select, defer, or reject each candidate.
 
+## Decision
+
+All candidates are deferred from v0.2:
+
+| Candidate | Decision | Rationale |
+| --- | --- | --- |
+| Baseline comparison | Deferred | Requires a versioned baseline contract, trusted storage, and additional diff acceptance evidence. |
+| Policy gates | Deferred | Requires explicit policy semantics, exception handling, and stable exit behavior. |
+| SARIF | Deferred | Requires a versioned output contract and consumer-validation evidence. |
+| Additional scanner ecosystems | Deferred | The v0.2 scope remains limited to the currently supported JavaScript, Python, and Java flows. |
+| SBOM/signing | Deferred | No reviewed implementation, platform process, or supply-chain evidence exists yet. |
+| Remote publishing/history | Deferred | Requires network, storage, authentication, permissions, and retention decisions outside the current release boundary. |
+
+No PRD or requirements updates are required because this decision preserves the existing v0.2 exclusions. No candidate issue becomes implementation-ready from this decision.
+
+### Consequences and remaining risk
+
+V0.2 remains focused on deterministic discovery, scanning, normalization, evidence retention, and release readiness. Baseline comparison, policy enforcement, SARIF, expanded scanners, supply-chain controls, and remote history remain explicit future work. Users do not receive those capabilities in v0.2; implementing them later requires new contracts, owners, dependencies, acceptance evidence, and human review.
+
 ## Out of Scope
 
 Implementing any candidate capability before the decision and contract updates are approved.

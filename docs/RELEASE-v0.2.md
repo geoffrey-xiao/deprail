@@ -38,6 +38,26 @@ Requires complete Master Checklist evidence, reviewed artifacts, platform smoke 
 
 ## 3. Pre-release gate
 
+Run the following from a clean checkout of the reviewed commit:
+
+```bash
+git fetch origin main --tags
+git checkout --detach <reviewed-commit>
+go version
+make verify
+git diff --check
+```
+
+Record the commit, Go version, commands, exit codes, and CI run URLs in the release evidence record. Any failure blocks the release mode.
+
+The release mode determines the required decision:
+
+| Mode | Required decision |
+| --- | --- |
+| Preview | Continue only with explicit owner acceptance of documented gaps. |
+| RC | Proceed only after preview defects are dispositioned and artifact identity/checksums are verified. |
+| Stable | Proceed only with complete evidence and explicit owner go/no-go approval. |
+
 - [ ] v0.2 Master Checklist is current.
 - [ ] Target version is consistent across manifest, tag plan, CLI identity, and release record.
 - [ ] Required PRs are merged with owner review recorded.

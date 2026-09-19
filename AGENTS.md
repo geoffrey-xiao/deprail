@@ -176,9 +176,11 @@ Every implementation item should deliver code, tests, documentation, and evidenc
   ```
   If switching or fast-forwarding fails, preserve local work and report the blocker; never reset or overwrite changes to force synchronization.
 - Create one short-lived branch per issue or bounded task from the synchronized local `main`.
+- Never push new commits to a branch after its pull request has merged. Create a new branch and pull request for every follow-up change.
 - Push the branch and open a pull request linked to the issue; do not push implementation commits directly to `main`.
 - Keep one primary outcome per pull request. Include scope, risk, contract impact, verification results, evidence, and rollback notes.
 - Merge only after required CI and human review pass. Use a squash merge tied to the issue ID, then delete the branch.
+- Agents MUST NOT merge or auto-merge pull requests on the owner's behalf. Merge requires explicit owner authorization in the current conversation.
 - Emergency security changes may use an expedited path, but still require a linked issue, review, verification, and a follow-up record.
 
 ### Commit and pull request traceability

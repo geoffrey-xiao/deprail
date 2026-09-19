@@ -20,6 +20,19 @@ Missing or inconsistent evidence blocks the applicable release mode. Do not repl
 | Build command and Go version | `[not recorded]` |
 | Release workflow run | Link to GitHub Actions run |
 
+## Pre-release gate
+
+Record each gate from a clean detached checkout of the reviewed source commit. A missing result or non-zero exit code blocks the applicable release mode.
+
+| Gate | Result | Exit code | Evidence |
+| --- | --- | ---: | --- |
+| Clean detached checkout at reviewed commit | `[not recorded]` | `[not recorded]` | `[not recorded]` |
+| `go version` | `[not recorded]` | `[not recorded]` | `[not recorded]` |
+| `make verify` | `[not recorded]` | `[not recorded]` | `[not recorded]` |
+| `git diff --check` | `[not recorded]` | `[not recorded]` | `[not recorded]` |
+
+Attach command output or a CI run link for each row. The record is incomplete until every gate has an explicit result and exit code.
+
 ## Artifact inventory and checksums
 
 Every artifact requires a recorded SHA-256 checksum and a smoke result from the same reviewed source commit.
@@ -68,7 +81,7 @@ Every release-gating scan must complete successfully. Partial or failed scans bl
 | Signing | Not implemented unless linked evidence is supplied | `[not recorded]` |
 | Provenance | Not implemented unless linked evidence is supplied | `[not recorded]` |
 
-A preview may carry explicitly approved gaps. A stable release must satisfy the release policy or record an owner-approved rejection/exception.
+A preview may carry explicitly approved gaps. An RC with missing SBOM, signing, or provenance evidence is not stable-ready. A stable release must have evidence for each control; otherwise the stable release is explicitly rejected and the missing control is recorded as a release blocker.
 
 ## Risks, rollback, and decision
 

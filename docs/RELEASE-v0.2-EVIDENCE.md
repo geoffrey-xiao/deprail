@@ -3,9 +3,9 @@
 **Status:** Preview evidence collected; owner decision pending.
 **Release mode:** Preview
 **Target version:** `0.2.0-preview.1`
-**Release owner:** `[not recorded]`
-**Reviewer:** `[not recorded]`
-**Decision:** `[not recorded]`
+**Release owner:** `[owner to confirm]`
+**Reviewer:** `[security/release reviewer to confirm]`
+**Decision:** `[GO / GO WITH APPROVED GAPS / NO-GO — owner to confirm]`
 
 Missing or inconsistent evidence blocks the applicable release mode. Do not replace missing evidence with an unchecked claim.
 
@@ -87,22 +87,25 @@ The fixture intentionally retains vulnerable dependencies so findings and policy
 
 | Control | Status | Evidence or gap rationale |
 | --- | --- | --- |
-| SBOM | Not implemented unless linked evidence is supplied | `[not recorded]` |
-| Signing | Not implemented unless linked evidence is supplied | `[not recorded]` |
-| Provenance | Not implemented unless linked evidence is supplied | `[not recorded]` |
+| SBOM | Not implemented for preview | Stable release requires linked SBOM evidence |
+| Signing | Not implemented for preview | No signed-artifact claim is made |
+| Provenance | Workflow evidence available; formal attestation not published | Stable release requires a provenance decision |
 
-A preview may carry explicitly approved gaps. An RC with missing SBOM, signing, or provenance evidence is not stable-ready. A stable release must have evidence for each control; otherwise the stable release is explicitly rejected and the missing control is recorded as a release blocker.
-
+A preview may carry explicitly approved gaps. These gaps are not approval for stable `v0.2.0`.
 ## Risks, rollback, and decision
 
-- Known limitations: `[not recorded]`
-- Remaining release risks: `[not recorded]`
-- Last known-good tag: `[not recorded]`
-- Rollback owner: `[not recorded]`
-- Rollback procedure: stop publication, preserve evidence, create a new immutable corrective tag, and rerun the applicable mode checklist.
-- Owner go/no-go decision: `[not recorded]`
-- Decision date: `[not recorded]`
-
+- Known limitations:
+  - Preview release only.
+  - OSV-Scanner must be installed by the caller.
+  - No remote baseline history or hosted publishing.
+  - No automatic remediation or source mutation.
+  - GitHub Action requires a preinstalled version-matching CLI.
+- Remaining release risks: supply-chain controls and final owner/security decision remain open.
+- Last known-good tag: `[owner to confirm]`
+- Rollback owner: `[owner to confirm]`
+- Rollback procedure: withdraw the preview reference, preserve artifacts and logs, restore the last known-good tag, create a new immutable preview tag, and rerun the applicable checklist.
+- Owner go/no-go decision: `[owner to confirm]`
+- Decision date: `[owner to confirm]`
 ## Evidence review checklist
 
 - [ ] Source commit and tag are recorded and match the build.

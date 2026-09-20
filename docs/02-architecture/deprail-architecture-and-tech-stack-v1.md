@@ -113,7 +113,7 @@ Dependencies point inward. The domain package imports neither Cobra nor SQL nor 
 | `normalize` | PURL, aliases, severity sources, fixed versions, stable keys |
 | `policy` | Baseline comparison, exceptions, decisions, and exit status |
 | `remediation` | Candidate plans, isolated changes, verification, rollback |
-| `presenter` | Terminal, JSON, SARIF, CycloneDX, and JUnit output |
+| `presenter` | Terminal, JSON, SARIF, CycloneDX, and JUnit output; v0.3.1 adds the structured human-rendering boundary. |
 | `store` | SQLite/PostgreSQL repositories and migrations |
 | `api` | OpenAPI transport with authentication and request limits |
 
@@ -244,6 +244,7 @@ Local mode is one binary, an optional browser window, SQLite, and a private arti
 | v0.1 | Discovery, OSV adapter, artifact storage, normalization, CLI output | Mixed repository scan is stable and complete failures are explicit |
 | v0.2 | Baselines, diff, policy, SARIF, GitHub Action | New-risk gates work on real PRs |
 | v0.3 | Remediation model and planners | Plans are accurate without mutating the repository |
+| v0.3.1 | Structured presentation events, TTY-aware terminal rendering, safe human summaries | JSON/stdout/stderr, status, security, and three-OS terminal evidence pass |
 | v0.4 | Isolated executor and verification | Failed changes are contained and evidence is retained |
 | v0.5 | SQLite history, local REST API, embedded React | Local history solves a repeated user need |
 | v0.6 | PostgreSQL, identity, RBAC, team workflows | Multi-user collaboration is reliable and auditable |

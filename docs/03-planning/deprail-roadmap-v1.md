@@ -68,9 +68,11 @@ Every release preserves these boundaries unless an approved compatibility decisi
 - MCP and agent write capabilities require explicit scopes, approval, and audit.
 - New scanner families and broad security domains require separate compatibility and security decisions.
 
-## Future CLI UX refinement
+## v0.3.1 CLI UX refinement
 
-After the v0.3 remediation-planning gate, DepRail may undertake a bounded CLI UX refactor for interactive progress, TTY-aware loaders, complete zero-finding summaries, and clearer partial/failed scan messages. Machine-readable output, stdout/stderr separation, deterministic JSON, and cross-platform behavior remain invariants. The planning contract and deferred delivery gate are documented in [`deprail-cli-ux-refactor-plan.md`](deprail-cli-ux-refactor-plan.md).
+The v0.3.1 preview line is the bounded follow-up to the v0.3 remediation-planning gate. It refines human-facing CLI presentation through structured application events, shared terminal rendering, TTY-aware progress, truthful complete/partial/failed summaries, safe hostile-label rendering, and cross-platform terminal evidence. It does not change scanner semantics, machine-readable schemas, repository mutation boundaries, or v0.4 verification scope.
+
+The release-specific planning baseline is [`deprail-development-plan-v0.3.1.md`](deprail-development-plan-v0.3.1.md). Its execution package is [`deprail-v0.3.1-execution-package`](../04-execution/deprail-v0.3.1-execution-package/README.md). Both remain planning documents until owner and architecture/security review approve the Definition of Ready.
 
 ## Release planning rule
 

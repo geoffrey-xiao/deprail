@@ -2,6 +2,7 @@ package app
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"path/filepath"
 	"time"
@@ -78,14 +79,25 @@ func Scan(ctx context.Context, root string, options ScanOptions) (ScanReport, er
 	if err := options.Events.Emit(Event{Type: EventScanPlanBuilt, WorkspaceCount: len(units)}); err != nil {
 		return ScanReport{}, err
 	}
+	normalizationStarted := false
 	for _, unit := range units {
 		if err := options.Events.Emit(Event{Type: EventWorkspaceScanStarted, WorkspaceID: unit.Target.WorkspaceID, WorkspacePath: unit.Target.RelativePath}); err != nil {
 			return ScanReport{}, err
 		}
+		completeWorkspace := func(status string) error {
+			return options.Events.Emit(Event{Type: EventWorkspaceScanCompleted, WorkspaceID: unit.Target.WorkspaceID, WorkspacePath: unit.Target.RelativePath, Status: status})
+		}
 		plan, planErr := options.Scanner.Plan(ctx, []adapter.Target{unit.Target})
 		if planErr != nil {
+			if errors.Is(planErr, context.Canceled) {
+				_ = options.Events.Emit(Event{Type: EventOperationCancelled, ErrorCode: "CANCELLED"})
+				return report, planErr
+			}
 			report.Errors = append(report.Errors, planErr.Error())
 			report.Status = discovery.Partial
+			if err := completeWorkspace("failed"); err != nil {
+				return report, err
+			}
 			continue
 		}
 		raw, execErr := options.Scanner.Execute(ctx, plan)
@@ -102,20 +114,47 @@ func Scan(ctx context.Context, root string, options ScanOptions) (ScanReport, er
 			}
 		}
 		if execErr != nil {
+			if errors.Is(execErr, context.Canceled) {
+				_ = options.Events.Emit(Event{Type: EventOperationCancelled, ErrorCode: "CANCELLED"})
+				return report, execErr
+			}
 			report.Errors = append(report.Errors, execErr.Error())
 			report.Status = discovery.Partial
+			if err := completeWorkspace("failed"); err != nil {
+				return report, err
+			}
 			continue
 		}
 		records, parseErr := options.Scanner.Parse(ctx, raw)
 		if parseErr != nil {
+			if errors.Is(parseErr, context.Canceled) {
+				_ = options.Events.Emit(Event{Type: EventOperationCancelled, ErrorCode: "CANCELLED"})
+				return report, parseErr
+			}
 			report.Errors = append(report.Errors, parseErr.Error())
 			report.Status = discovery.Partial
+			if err := completeWorkspace("failed"); err != nil {
+				return report, err
+			}
 			continue
+		}
+		if !normalizationStarted {
+			if err := options.Events.Emit(Event{Type: EventNormalizationStarted}); err != nil {
+				return report, err
+			}
+			normalizationStarted = true
 		}
 		findings, normErr := options.Scanner.Normalize(ctx, records)
 		if normErr != nil {
+			if errors.Is(normErr, context.Canceled) {
+				_ = options.Events.Emit(Event{Type: EventOperationCancelled, ErrorCode: "CANCELLED"})
+				return report, normErr
+			}
 			report.Errors = append(report.Errors, normErr.Error())
 			report.Status = discovery.Partial
+			if err := completeWorkspace("failed"); err != nil {
+				return report, err
+			}
 			continue
 		}
 		validFindings := make([]adapter.Finding, 0, len(findings))
@@ -140,8 +179,10 @@ func Scan(ctx context.Context, root string, options ScanOptions) (ScanReport, er
 			return ScanReport{}, err
 		}
 	}
-	if err := options.Events.Emit(Event{Type: EventNormalizationStarted}); err != nil {
-		return ScanReport{}, err
+	if !normalizationStarted {
+		if err := options.Events.Emit(Event{Type: EventNormalizationStarted}); err != nil {
+			return ScanReport{}, err
+		}
 	}
 	if len(report.Findings) == 0 && len(report.Errors) > 0 {
 		report.Status = discovery.Failed

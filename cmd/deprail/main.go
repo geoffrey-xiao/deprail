@@ -10,6 +10,7 @@ import (
 	"io"
 	"os"
 	"path/filepath"
+	"strings"
 
 	"github.com/geoffrey-xiao/deprail/internal/app"
 	"github.com/geoffrey-xiao/deprail/internal/baseline"
@@ -144,12 +145,41 @@ func normalizeDiscoverArgs(args []string) ([]string, error) {
 	return append(flags, positionals...), nil
 }
 
+func normalizeScanArgs(args []string) ([]string, error) {
+	flags := make([]string, 0, len(args))
+	positionals := make([]string, 0, 1)
+	for i := 0; i < len(args); i++ {
+		arg := args[i]
+		if arg == "--" {
+			positionals = append(positionals, args[i:]...)
+			break
+		}
+		switch arg {
+		case "--format", "--output":
+			if i+1 >= len(args) {
+				return nil, fmt.Errorf("%s requires a value", arg)
+			}
+			flags = append(flags, arg, args[i+1])
+			i++
+		case "--verbose":
+			flags = append(flags, arg)
+		default:
+			if strings.HasPrefix(arg, "--format=") || strings.HasPrefix(arg, "--output=") {
+				flags = append(flags, arg)
+				continue
+			}
+			positionals = append(positionals, arg)
+		}
+	}
+	return append(flags, positionals...), nil
+}
+
 func writeCLIError(w io.Writer, code, message, scope string) {
 	_, _ = fmt.Fprintf(w, "error[%s] %s (%s)\n", code, message, scope)
 }
 
 func runScan(args []string, stdout, stderr io.Writer) int {
-	normalized, err := normalizeDiscoverArgs(args)
+	normalized, err := normalizeScanArgs(args)
 	if err != nil {
 		writeCLIError(stderr, "CONFIG_INVALID", err.Error(), "arguments")
 		return 2

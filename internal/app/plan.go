@@ -4,6 +4,7 @@ import (
 	"context"
 	"crypto/sha256"
 	"encoding/hex"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"os"
@@ -19,6 +20,8 @@ import (
 var (
 	ErrPlanUnsupported = errors.New("no planning adapter supports the finding component")
 	ErrPlanIncomplete  = errors.New("planning requires a complete report")
+	ErrPlanRejected    = errors.New("planning input was rejected by the adapter")
+	ErrPlanUnknown     = errors.New("planning result is unknown")
 )
 
 type PlanOptions struct {
@@ -30,17 +33,24 @@ func Plan(ctx context.Context, reportPath, findingKey, repositoryRoot string, op
 	if reportPath == "" {
 		return remediation.Plan{}, &remediation.ReportError{Code: remediation.ReportRequired, Message: "an explicit normalized scan report is required"}
 	}
-	report, err := remediation.LoadReport(reportPath)
+	report, err := loadPlanningReport(reportPath)
 	if err != nil {
 		return remediation.Plan{}, err
 	}
-	data, err := os.ReadFile(reportPath)
+	root := repositoryRoot
+	if root == "" {
+		root = report.RepositoryIdentity.Root
+	}
+	root, err = filepath.Abs(root)
 	if err != nil {
-		return remediation.Plan{}, &remediation.ReportError{Code: remediation.ReportInvalid, Message: "normalized scan report is unreadable"}
+		return remediation.Plan{}, fmt.Errorf("resolve repository root: %w", err)
 	}
 	currentState := options.CurrentRepositoryState
 	if currentState == "" {
-		currentState = report.RepositoryState
+		currentState, err = CurrentRepositoryState(root)
+		if err != nil {
+			return remediation.Plan{}, &remediation.ReportError{Code: remediation.ReportInputStale, Message: "current repository state is unavailable"}
+		}
 	}
 	resolved, err := remediation.ResolveFinding(report, findingKey, currentState)
 	if err != nil {
@@ -48,14 +58,6 @@ func Plan(ctx context.Context, reportPath, findingKey, repositoryRoot string, op
 	}
 	if resolved.Report.Status != remediation.ReportComplete {
 		return remediation.Plan{}, ErrPlanIncomplete
-	}
-	root := repositoryRoot
-	if root == "" {
-		root = resolved.Report.RepositoryIdentity.Root
-	}
-	root, err = filepath.Abs(root)
-	if err != nil {
-		return remediation.Plan{}, fmt.Errorf("resolve repository root: %w", err)
 	}
 	adapters := options.Adapters
 	if len(adapters) == 0 {
@@ -83,6 +85,12 @@ func Plan(ctx context.Context, reportPath, findingKey, repositoryRoot string, op
 	if err != nil {
 		return remediation.Plan{}, err
 	}
+	if assessment.State == remediation.AdapterRejected {
+		return remediation.Plan{}, fmt.Errorf("%w: %s", ErrPlanRejected, assessment.Reason)
+	}
+	if assessment.State == remediation.AdapterUnknown {
+		return remediation.Plan{}, fmt.Errorf("%w: %s", ErrPlanUnknown, assessment.Reason)
+	}
 	if assessment.State == remediation.AdapterUnsupported || assessment.State == remediation.AdapterUnavailable {
 		return remediation.Plan{}, fmt.Errorf("%w: %s", ErrPlanUnsupported, assessment.Reason)
 	}
@@ -93,7 +101,13 @@ func Plan(ctx context.Context, reportPath, findingKey, repositoryRoot string, op
 	if err := remediation.ValidatePlanningEvidence(evidence); err != nil {
 		return remediation.Plan{}, err
 	}
-	reportDigest := sha256.Sum256(data)
+	canonicalReport := report
+	remediation.CanonicalizeReport(&canonicalReport)
+	canonicalData, err := json.Marshal(canonicalReport)
+	if err != nil {
+		return remediation.Plan{}, fmt.Errorf("canonicalize normalized scan report: %w", err)
+	}
+	reportDigest := sha256.Sum256(canonicalData)
 	plan := remediation.Plan{SchemaVersion: remediation.SchemaVersion, CreatedFrom: remediation.CreatedFrom{ReportDigest: hex.EncodeToString(reportDigest[:]), SourceScanID: resolved.Report.SourceScanID, Scanner: "osv-scanner", RepositoryState: resolved.Report.RepositoryState}, RepositoryIdentity: request.Repository, WorkspaceIdentity: request.Workspace, FindingIdentity: request.Finding, Component: request.Component, CurrentState: remediation.CurrentState{Direct: directCandidate(evidence), Manifest: firstFile(evidence, "manifest"), Lockfile: firstFile(evidence, "lockfile"), Vulnerable: true}, Candidates: evidence.Candidates, AffectedFiles: evidence.AffectedFiles, Commands: evidence.Commands, Risks: evidence.Risks, Assumptions: evidence.Assumptions, Verification: evidence.Verification, Rollback: remediation.Rollback{Steps: []string{"restore manifest and lockfile changes"}}, Provenance: remediation.Provenance{ArtifactDigests: resolved.Report.ArtifactDigests, Sources: []string{"normalized-scan-report", adapter.Name()}}}
 	plan.Canonicalize()
 	plan.PlanID = remediation.StablePlanID(plan)
@@ -119,4 +133,65 @@ func directCandidate(e remediation.PlanningEvidence) bool {
 		return candidate.Direct
 	}
 	return false
+}
+func loadPlanningReport(path string) (remediation.Report, error) {
+	report, err := remediation.LoadReport(path)
+	if err == nil {
+		return report, nil
+	}
+	data, readErr := os.ReadFile(path)
+	if readErr != nil {
+		return remediation.Report{}, err
+	}
+	var scan ScanReport
+	if json.Unmarshal(data, &scan) != nil || scan.SchemaVersion == "" || scan.DocumentType == "" {
+		return remediation.Report{}, err
+	}
+	report = remediation.Report{
+		SchemaVersion:      remediation.ReportSchemaVersion,
+		DocumentType:       remediation.ReportDocumentType,
+		ReportID:           scan.ScanID,
+		SourceScanID:       scan.ScanID,
+		RepositoryIdentity: scan.RepositoryIdentity,
+		ArtifactDigests:    append([]string(nil), scan.ArtifactDigests...),
+		RepositoryState:    scan.RepositoryState,
+		Status:             string(scan.Status),
+		Findings:           make([]remediation.ReportFinding, 0, len(scan.Findings)),
+	}
+	for _, finding := range scan.Findings {
+		key := finding.TargetID
+		if key == "" {
+			key = finding.Component + "@" + finding.Version
+		}
+		report.Findings = append(report.Findings, remediation.ReportFinding{
+			StableKey: key,
+			Workspace: remediation.WorkspaceIdentity{ID: "root", Path: "."},
+			Component: remediation.Component{PURL: finding.Component, Name: componentName(finding.Component), Version: finding.Version},
+			Aliases:   finding.Aliases, CurrentVersion: finding.Version,
+			FixedVersions: nonEmptyFixed(finding.Fixed),
+			Provenance:    remediation.Provenance{ArtifactDigests: scan.ArtifactDigests, Sources: []string{"scan-json"}},
+		})
+	}
+	if err := remediation.ValidateReport(report); err != nil {
+		return remediation.Report{}, err
+	}
+	return report, nil
+}
+
+func componentName(purl string) string {
+	if i := strings.LastIndex(purl, "/"); i >= 0 {
+		value := purl[i+1:]
+		if j := strings.Index(value, "@"); j >= 0 {
+			return value[:j]
+		}
+		return value
+	}
+	return purl
+}
+
+func nonEmptyFixed(value string) []string {
+	if value == "" {
+		return []string{}
+	}
+	return []string{value}
 }

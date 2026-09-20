@@ -220,10 +220,17 @@ func runFixPlan(args []string, stdout, stderr io.Writer) int {
 		var reportErr *remediation.ReportError
 		if errors.As(err, &reportErr) {
 			writeCLIError(stderr, string(reportErr.Code), reportErr.Message, "fix plan")
+			if reportErr.Code == remediation.FindingNotFound || reportErr.Code == remediation.FindingAmbiguous {
+				return 2
+			}
 		} else if errors.Is(err, app.ErrPlanIncomplete) {
 			writeCLIError(stderr, "PLAN_INCOMPLETE", err.Error(), "report")
 		} else if errors.Is(err, app.ErrPlanUnsupported) {
 			writeCLIError(stderr, "PLAN_UNSUPPORTED", err.Error(), "finding")
+		} else if errors.Is(err, app.ErrPlanRejected) {
+			writeCLIError(stderr, "PLAN_REJECTED", err.Error(), "repository")
+		} else if errors.Is(err, app.ErrPlanUnknown) {
+			writeCLIError(stderr, "PLAN_UNKNOWN", err.Error(), "repository")
 		} else {
 			writeCLIError(stderr, "PLAN_FAILED", err.Error(), "fix plan")
 		}

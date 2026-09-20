@@ -161,7 +161,7 @@ func normalizeScanArgs(args []string) ([]string, error) {
 			}
 			flags = append(flags, arg, args[i+1])
 			i++
-		case "--verbose":
+		case "--verbose", "--quiet":
 			flags = append(flags, arg)
 		default:
 			if strings.HasPrefix(arg, "--format=") || strings.HasPrefix(arg, "--output=") {
@@ -189,6 +189,7 @@ func runScan(args []string, stdout, stderr io.Writer) int {
 	format := flags.String("format", "terminal", "output format: terminal or json")
 	output := flags.String("output", "", "write output atomically to a file")
 	verbose := flags.Bool("verbose", false, "include diagnostics in terminal output")
+	quiet := flags.Bool("quiet", false, "suppress successful terminal summaries and progress")
 	if err := flags.Parse(normalized); err != nil {
 		writeCLIError(stderr, "CONFIG_INVALID", err.Error(), "arguments")
 		return 2
@@ -215,7 +216,7 @@ func runScan(args []string, stdout, stderr io.Writer) int {
 		Stdout: stdout,
 		Stderr: stderr,
 	})
-	if capabilities.Interactive {
+	if capabilities.Interactive && !*quiet {
 		scanOptions.Events = presenter.ProgressSink{Writer: stderr}
 	}
 	report, scanErr := app.Scan(context.Background(), root, scanOptions)
@@ -223,7 +224,7 @@ func runScan(args []string, stdout, stderr io.Writer) int {
 	var renderErr error
 	if *format == "json" {
 		renderErr = presenter.WriteScanJSON(&rendered, report)
-	} else {
+	} else if !*quiet || report.Status != discovery.Complete || len(report.Errors) > 0 {
 		renderErr = presenter.WriteScanTerminal(&rendered, report, *verbose)
 	}
 	err = renderErr

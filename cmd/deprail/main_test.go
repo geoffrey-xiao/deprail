@@ -45,6 +45,16 @@ func TestNormalizeScanArgsPreservesOutputFlag(t *testing.T) {
 		t.Fatalf("normalized args = %#v, want %#v", got, want)
 	}
 }
+func TestNormalizeScanArgsAcceptsQuietFlag(t *testing.T) {
+	got, err := normalizeScanArgs([]string{"--quiet", "--verbose"})
+	if err != nil {
+		t.Fatal(err)
+	}
+	want := []string{"--quiet", "--verbose"}
+	if strings.Join(got, "\x00") != strings.Join(want, "\x00") {
+		t.Fatalf("normalized args = %#v, want %#v", got, want)
+	}
+}
 
 func TestNormalizeScanArgsPreservesOperandsAfterEndOfOptions(t *testing.T) {
 	got, err := normalizeScanArgs([]string{"--", "--output=repo"})

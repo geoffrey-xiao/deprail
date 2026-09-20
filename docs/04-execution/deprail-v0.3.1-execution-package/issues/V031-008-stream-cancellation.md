@@ -27,6 +27,5 @@ Contract tests, controlled process tests, redirected captures, JSON parsing, and
 No new error codes, scanner behavior, or repository mutation.
 
 ## GitHub tracking
-
-- Issue: Pending creation
-- Parent epic: Pending creation
+- Issue: [#247](https://github.com/geoffrey-xiao/deprail/issues/247)
+- Parent epic: [#243](https://github.com/geoffrey-xiao/deprail/issues/243)

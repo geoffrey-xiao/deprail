@@ -26,6 +26,5 @@ Progress never invents work, contaminates machine streams, or survives cancellat
 No artificial delays, scanner changes, package-manager execution, repository mutation, or telemetry.
 
 ## GitHub tracking
-
-- Parent issue: Pending creation
-- Child issues: Pending creation
+- Parent issue: [#243](https://github.com/geoffrey-xiao/deprail/issues/243)
+- Child issues: [#252](https://github.com/geoffrey-xiao/deprail/issues/252), [#257](https://github.com/geoffrey-xiao/deprail/issues/257), [#250](https://github.com/geoffrey-xiao/deprail/issues/250), [#247](https://github.com/geoffrey-xiao/deprail/issues/247)

@@ -26,8 +26,8 @@ Capability unit tests, stream contract tests, and cross-platform smoke captures.
 
 ## Exclusions
 No full-screen TUI, scanner behavior, or machine-schema change.
-
 ## GitHub tracking
 
-- Issue: Pending creation
-- Parent epic: Pending creation
+- Issue: [#246](https://github.com/geoffrey-xiao/deprail/issues/246)
+- Parent epic: [#244](https://github.com/geoffrey-xiao/deprail/issues/244)
+

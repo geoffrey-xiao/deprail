@@ -25,5 +25,5 @@ No v0.4 mutation, verification, rescan, patch creation, publication, or stable-r
 
 ## GitHub tracking
 
-- Parent issue: Pending creation
-- Child issues: Pending creation
+- Parent issue: [#241](https://github.com/geoffrey-xiao/deprail/issues/241)
+- Child issues: [#254](https://github.com/geoffrey-xiao/deprail/issues/254), [#253](https://github.com/geoffrey-xiao/deprail/issues/253)

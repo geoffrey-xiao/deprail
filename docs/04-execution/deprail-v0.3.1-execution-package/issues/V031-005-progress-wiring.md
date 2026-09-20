@@ -27,6 +27,5 @@ Controlled scanner integration tests, interactive TTY captures, redirected-strea
 No scanner invocation changes, full-screen TUI, telemetry, or network behavior.
 
 ## GitHub tracking
-
-- Issue: Pending creation
-- Parent epic: Pending creation
+- Issue: [#252](https://github.com/geoffrey-xiao/deprail/issues/252)
+- Parent epic: [#243](https://github.com/geoffrey-xiao/deprail/issues/243)

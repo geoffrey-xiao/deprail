@@ -27,6 +27,5 @@ Event contract documentation, unit/contract tests, and architecture review of de
 No visual styling, scanner changes, JSON schema changes, or repository mutation.
 
 ## GitHub tracking
-
-- Issue: Pending creation
-- Parent epic: Pending creation
+- Issue: [#255](https://github.com/geoffrey-xiao/deprail/issues/255)
+- Parent epic: [#244](https://github.com/geoffrey-xiao/deprail/issues/244)

@@ -28,5 +28,5 @@ No JSON schema changes, scanner changes, mutation, or full-screen TUI.
 
 ## GitHub tracking
 
-- Issue: Pending creation
-- Parent epic: Pending creation
+- Issue: [#245](https://github.com/geoffrey-xiao/deprail/issues/245)
+- Parent epic: [#242](https://github.com/geoffrey-xiao/deprail/issues/242)

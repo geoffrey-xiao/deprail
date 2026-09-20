@@ -27,6 +27,5 @@ Platform smoke captures, compatibility matrix updates, repository-state checks, 
 No stable-release claim, v0.4 mutation, verification, or publication.
 
 ## GitHub tracking
-
-- Issue: Pending creation
-- Parent epic: Pending creation
+- Issue: [#254](https://github.com/geoffrey-xiao/deprail/issues/254)
+- Parent epic: [#241](https://github.com/geoffrey-xiao/deprail/issues/241)

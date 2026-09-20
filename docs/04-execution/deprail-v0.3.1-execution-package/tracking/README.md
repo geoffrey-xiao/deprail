@@ -1,6 +1,6 @@
 # v0.3.1 Tracking Baseline
 
-This directory records release readiness without creating epics or implementation issues.
+This directory records release readiness after the v0.3.1 epic and issue contracts were created.
 
 ## Current status
 
@@ -17,6 +17,6 @@ This directory records release readiness without creating epics or implementatio
 2. Architecture/security review confirms event, renderer, dependency, and hostile-input boundaries.
 3. Acceptance and evidence scenarios are confirmed.
 4. Definition of Ready is recorded.
-5. Only then may implementation issues be created.
+5. Runtime implementation begins only after the Definition of Ready is approved.
 
-No epics, issue files, milestone changes, or Project changes are part of this document update.
+The local epics and issue contracts are mapped to GitHub milestone `v0.3.1` and the DepRail release project view. No implementation work is authorized by backlog creation alone.

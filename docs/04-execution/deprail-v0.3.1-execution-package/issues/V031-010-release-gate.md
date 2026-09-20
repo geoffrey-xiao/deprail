@@ -27,8 +27,7 @@ Release evidence document, checklist, CI links, manual captures, reviewer decisi
 
 ## Exclusions
 No automatic issue closure, repository mutation, publication, or v0.4 execution.
-
 ## GitHub tracking
 
-- Issue: Pending creation
-- Parent epic: Pending creation
+- Issue: [#253](https://github.com/geoffrey-xiao/deprail/issues/253)
+- Parent epic: [#241](https://github.com/geoffrey-xiao/deprail/issues/241)

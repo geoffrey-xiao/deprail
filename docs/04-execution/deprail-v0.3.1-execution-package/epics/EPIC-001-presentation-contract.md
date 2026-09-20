@@ -25,5 +25,5 @@ No visual styling, scanner changes, repository mutation, full-screen TUI, or mac
 
 ## GitHub tracking
 
-- Parent issue: Pending creation
-- Child issues: Pending creation
+- Parent issue: [#244](https://github.com/geoffrey-xiao/deprail/issues/244)
+- Child issues: [#255](https://github.com/geoffrey-xiao/deprail/issues/255), [#246](https://github.com/geoffrey-xiao/deprail/issues/246)

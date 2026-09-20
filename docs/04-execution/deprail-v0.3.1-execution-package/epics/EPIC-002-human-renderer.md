@@ -25,5 +25,5 @@ No JSON schema changes, scanner semantics, mutation, network, or full-screen int
 
 ## GitHub tracking
 
-- Parent issue: Pending creation
-- Child issues: Pending creation
+- Parent issue: [#242](https://github.com/geoffrey-xiao/deprail/issues/242)
+- Child issues: [#245](https://github.com/geoffrey-xiao/deprail/issues/245), [#256](https://github.com/geoffrey-xiao/deprail/issues/256)

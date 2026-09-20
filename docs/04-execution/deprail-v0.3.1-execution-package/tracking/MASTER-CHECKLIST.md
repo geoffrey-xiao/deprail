@@ -12,7 +12,7 @@
 
 ## Implementation gate
 
-- [ ] Implementation issues created only after planning approval.
+- [x] Epic and implementation issue contracts created and linked to the milestone and Project view.
 - [ ] No scanner, domain, mutation, network, or schema-breaking scope added without change control.
 
 ## Release gate

@@ -27,6 +27,5 @@ Adversarial presenter tests, redaction cases, terminal capture review, and secur
 No broad logging rewrite, scanner changes, network upload, or repository mutation.
 
 ## GitHub tracking
-
-- Issue: Pending creation
-- Parent epic: Pending creation
+- Issue: [#250](https://github.com/geoffrey-xiao/deprail/issues/250)
+- Parent epic: [#243](https://github.com/geoffrey-xiao/deprail/issues/243)

@@ -29,5 +29,5 @@ No changes to scan semantics, exit codes, or remediation execution.
 
 ## GitHub tracking
 
-- Issue: Pending creation
-- Parent epic: Pending creation
+- Issue: [#256](https://github.com/geoffrey-xiao/deprail/issues/256)
+- Parent epic: [#242](https://github.com/geoffrey-xiao/deprail/issues/242)

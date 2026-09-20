@@ -26,8 +26,8 @@ CLI contract update, parser tests, stream captures, and quiet/verbose smoke matr
 
 ## Exclusions
 No unrelated flag redesign, scanner changes, or machine-schema break.
-
 ## GitHub tracking
 
-- Issue: Pending creation
-- Parent epic: Pending creation
+
+- Issue: [#257](https://github.com/geoffrey-xiao/deprail/issues/257)
+- Parent epic: [#243](https://github.com/geoffrey-xiao/deprail/issues/243)

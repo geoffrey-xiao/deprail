@@ -26,6 +26,12 @@ func main() {
 }
 
 func run(args []string, stdout, stderr io.Writer) int {
+	if len(args) == 1 && (args[0] == "--help" || args[0] == "-h") {
+		if err := writeRootHelp(stdout); err != nil {
+			return 3
+		}
+		return 0
+	}
 	if len(args) == 1 && (args[0] == "--version" || args[0] == "version") {
 		identity := buildinfo.Current()
 		_, _ = fmt.Fprintf(stdout, "deprail %s (tag=%s commit=%s)\n", identity.Version, identity.Tag, identity.Commit)
@@ -34,6 +40,19 @@ func run(args []string, stdout, stderr io.Writer) int {
 	if len(args) == 0 {
 		writeCLIError(stderr, "CONFIG_INVALID", "a command is required", "command")
 		return 2
+	}
+	if hasHelp(args[1:]) {
+		command := args[0]
+		if command == "fix" && len(args) > 1 && args[1] == "plan" {
+			command = "fix plan"
+		}
+		if command == "policy" && len(args) > 1 && args[1] == "check" {
+			command = "policy check"
+		}
+		if err := writeCommandHelp(stdout, command); err != nil {
+			return 3
+		}
+		return 0
 	}
 	switch args[0] {
 	case "discover":

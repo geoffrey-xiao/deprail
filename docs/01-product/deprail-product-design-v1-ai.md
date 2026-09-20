@@ -200,7 +200,7 @@ The v0.3.1 preview line refines the primary CLI interface after the v0.3 remedia
 - Redirected and CI output is stable, line-oriented, and non-animated.
 - `--format json` emits only machine data on stdout.
 - Complete zero findings, partial results, failures, and cancellation remain visibly distinct.
-- `--quiet` and `--verbose` retain their documented behavior.
+- `--quiet` is a v0.3.1 implementation requirement because the current scan parser rejects it; v0.3.1 must add the documented suppression behavior and coverage.
 - Repository-derived labels are escaped before terminal rendering.
 - Styling, width, and color are presentation details; meaning cannot depend on color.
 

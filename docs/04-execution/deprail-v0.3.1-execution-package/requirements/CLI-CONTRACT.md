@@ -8,6 +8,7 @@ The existing command set is unchanged:
 deprail doctor [path]
 deprail discover [path]
 deprail scan [path]
+deprail diff --base <ref> --head <ref>
 deprail fix plan --report <scan-report> --finding <finding-key>
 ```
 
@@ -18,6 +19,7 @@ deprail fix plan --report <scan-report> --finding <finding-key>
 - Diagnostics and progress use stderr.
 - TTY progress is enabled only when stderr is interactive and the mode is not quiet.
 - Redirected and CI output contains no animation or ANSI control sequences.
+- The current scan parser rejects `--quiet`; v0.3.1 must implement the documented quiet mode rather than treat that rejection as compatibility.
 - `--quiet` suppresses successful progress and summaries while retaining required errors.
 - `--verbose` adds safe diagnostics without exposing secrets or changing result meaning.
 

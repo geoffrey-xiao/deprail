@@ -130,6 +130,7 @@ func runDiscover(args []string, stdout, stderr io.Writer) int {
 		writeCLIError(stderr, "CONFIG_INVALID", "path must be an existing directory", filepath.Clean(root))
 		return 2
 	}
+	writeStartNotice(*format, stderr, "Discovering workspaces...")
 	graph, err := app.Discover(context.Background(), root, app.DiscoverOptions{NoIgnore: *noIgnore})
 	if err != nil {
 		writeCLIError(stderr, "CONFIG_INVALID", "discovery failed", filepath.Clean(root))
@@ -208,6 +209,11 @@ func normalizeScanArgs(args []string) ([]string, error) {
 func writeCLIError(w io.Writer, code, message, scope string) {
 	_ = presenter.WriteError(w, code, scope+": "+message)
 }
+func writeStartNotice(format string, w io.Writer, message string) {
+	if format == "terminal" && presenter.IsTerminal(w) {
+		_ = presenter.WriteHeader(w, message)
+	}
+}
 
 func runScan(args []string, stdout, stderr io.Writer) int {
 	normalized, err := normalizeScanArgs(args)
@@ -247,6 +253,7 @@ func runScan(args []string, stdout, stderr io.Writer) int {
 		Stdout: stdout,
 		Stderr: stderr,
 	})
+	writeStartNotice(*format, stderr, "Scanning...")
 	if capabilities.Interactive && !*quiet {
 		scanOptions.Events = presenter.ProgressSink{Writer: stderr}
 	}
@@ -293,6 +300,7 @@ func runFixPlan(args []string, stdout, stderr io.Writer) int {
 			return 2
 		}
 	}
+	writeStartNotice(*format, stderr, "Planning remediation...")
 	plan, err := app.Plan(context.Background(), *report, *finding, *root, app.PlanOptions{CurrentRepositoryState: *repositoryState})
 	if err != nil {
 		var reportErr *remediation.ReportError
@@ -394,6 +402,7 @@ func runDiff(args []string, stdout, stderr io.Writer) int {
 		writeCLIError(stderr, "CONFIG_INVALID", "diff requires --base and --head and supports terminal or json output", "diff")
 		return 2
 	}
+	writeStartNotice(*format, stderr, "Comparing baselines...")
 	load := func(input string) (baseline.Document, error) {
 		info, err := os.Stat(input)
 		if err != nil {

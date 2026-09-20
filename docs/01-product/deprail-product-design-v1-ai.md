@@ -191,6 +191,21 @@ An exception is a structured, expiring record rather than a permanent ignore. It
 
 Machine output is versioned. JSON and other structured formats go to stdout, diagnostics go to stderr, and ANSI color is disabled when output is redirected. Exit codes distinguish policy failure, configuration error, incomplete scanning, remediation failure, and required approval.
 
+### v0.3.1 CLI experience contract
+
+The v0.3.1 preview line refines the primary CLI interface after the v0.3 remediation-planning release. The CLI may show structured progress and clearer human summaries, but machine-readable output remains the product contract for automation.
+
+- Application lifecycle events are structured and renderer-independent.
+- Interactive progress is TTY-only and belongs on stderr.
+- Redirected and CI output is stable, line-oriented, and non-animated.
+- `--format json` emits only machine data on stdout.
+- Complete zero findings, partial results, failures, and cancellation remain visibly distinct.
+- `--quiet` and `--verbose` retain their documented behavior.
+- Repository-derived labels are escaped before terminal rendering.
+- Styling, width, and color are presentation details; meaning cannot depend on color.
+
+This release does not add repository mutation, scanner families, telemetry, source upload, or a full-screen TUI. The v0.4 product boundary remains isolated remediation, verification, rescan, and patch evidence.
+
 ```yaml
 version: 1
 project:

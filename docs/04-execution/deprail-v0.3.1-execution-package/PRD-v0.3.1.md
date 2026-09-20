@@ -25,11 +25,11 @@ Make the DepRail CLI explain ongoing work and final outcomes clearly for humans 
 ## Scope
 
 - DepRail-owned structured presentation events and renderer boundary.
-- Shared human presentation primitives across `doctor`, `discover`, `scan`, `diff`, and `fix plan`.
+- Shared human presentation primitives across `doctor`, `discover`, `scan`, and `fix plan`.
 - TTY capability detection, color policy, width handling, and non-TTY behavior.
 - Progress driven only by real application lifecycle events.
 - Explicit complete, partial, failed, and cancelled summaries.
-- Implementing and verifying `--quiet`; preserving and verifying `--verbose`, JSON, stdout/stderr, and exit contracts.
+- Preservation and verification of `--quiet`, `--verbose`, JSON, stdout/stderr, and exit contracts.
 - Safe rendering of hostile repository, scanner, and error labels.
 - Cross-platform terminal and redirected-output evidence.
 
@@ -50,4 +50,4 @@ Scanner changes, new ecosystems, repository mutation, package installation, netw
 
 ## Acceptance
 
-Representative evidence demonstrates useful TTY progress, consistent summaries, truthful complete/partial/failed states, implemented quiet mode, preserved verbose behavior, JSON purity, safe hostile-label rendering, narrow and monochrome readability, cancellation cleanup, and equivalent Linux/macOS/Windows semantics without repository mutation.
+Representative evidence demonstrates useful TTY progress, consistent summaries, truthful complete/partial/failed states, preserved quiet/verbose behavior, JSON purity, safe hostile-label rendering, narrow and monochrome readability, cancellation cleanup, and equivalent Linux/macOS/Windows semantics without repository mutation.

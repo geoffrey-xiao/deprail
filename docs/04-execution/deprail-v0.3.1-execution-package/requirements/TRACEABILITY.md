@@ -5,7 +5,7 @@
 | UX-001/UX-002 shared presentation boundary | Event and renderer contract tests | Architecture review |
 | UX-003/UX-004 TTY and non-TTY behavior | Stream capture and manual terminal evidence | CLI review |
 | UX-005 truthful outcomes | Complete/partial/failed/cancelled fixtures | Safety review |
-| UX-006 | Implement `--quiet` and preserve `--verbose` semantics | Parser, stream, and CLI cases |
+| UX-006 flag compatibility | Quiet/verbose CLI cases | Compatibility review |
 | UX-007 JSON purity | Parse and stream-separation tests | Contract review |
 | UX-008 hostile-label safety | ANSI/control-character adversarial cases | Security review |
 | UX-009 narrow/monochrome behavior | Width- and color-controlled captures | UX review |

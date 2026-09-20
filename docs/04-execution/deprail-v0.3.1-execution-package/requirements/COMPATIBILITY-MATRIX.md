@@ -5,8 +5,8 @@
 | Interactive macOS/Linux/Windows TTY | Useful progress, safe styling, final summary | Manual smoke capture |
 | Non-TTY redirect | Stable lines, no animation or ANSI | stdout/stderr capture |
 | JSON stdout | Parseable machine data only | Contract test |
-| `--quiet` | Implement quiet mode; suppress successful progress/summary while retaining required errors | Parser, stream, and CLI smoke |
-| `--verbose` | Preserve existing behavior and add only safe diagnostics | CLI smoke |
+| `--quiet` | No successful progress/summary; required errors remain | CLI smoke |
+| `--verbose` | Additional safe diagnostics only | CLI smoke |
 | Complete zero findings | Explicit successful empty summary | Golden/contract test |
 | Partial scan | Explicit incomplete summary | Failure fixture |
 | Failed scan | Explicit failure and stable code | Failure fixture |

@@ -247,6 +247,9 @@ func runScan(args []string, stdout, stderr io.Writer) int {
 		Stdout: stdout,
 		Stderr: stderr,
 	})
+	if *format == "json" && !*quiet && presenter.IsTerminal(stderr) {
+		_ = presenter.WriteHeader(stderr, "Scanning...")
+	}
 	if capabilities.Interactive && !*quiet {
 		scanOptions.Events = presenter.ProgressSink{Writer: stderr}
 	}

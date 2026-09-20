@@ -26,6 +26,12 @@ func main() {
 }
 
 func run(args []string, stdout, stderr io.Writer) int {
+	if len(args) == 1 && (args[0] == "--help" || args[0] == "-h") {
+		if err := writeRootHelp(stdout); err != nil {
+			return 3
+		}
+		return 0
+	}
 	if len(args) == 1 && (args[0] == "--version" || args[0] == "version") {
 		identity := buildinfo.Current()
 		_, _ = fmt.Fprintf(stdout, "deprail %s (tag=%s commit=%s)\n", identity.Version, identity.Tag, identity.Commit)
@@ -34,6 +40,31 @@ func run(args []string, stdout, stderr io.Writer) int {
 	if len(args) == 0 {
 		writeCLIError(stderr, "CONFIG_INVALID", "a command is required", "command")
 		return 2
+	}
+	if hasHelp(args[1:]) {
+		command := args[0]
+		switch command {
+		case "discover", "scan", "doctor", "diff":
+		case "fix":
+			if len(args) < 2 || args[1] != "plan" {
+				writeCLIError(stderr, "CONFIG_INVALID", "fix requires the plan subcommand", "fix")
+				return 2
+			}
+			command = "fix plan"
+		case "policy":
+			if len(args) < 2 || args[1] != "check" {
+				writeCLIError(stderr, "CONFIG_INVALID", "policy requires the check subcommand", "policy")
+				return 2
+			}
+			command = "policy check"
+		default:
+			writeCLIError(stderr, "CONFIG_INVALID", fmt.Sprintf("unknown command %q", command), "command")
+			return 2
+		}
+		if err := writeCommandHelp(stdout, command); err != nil {
+			return 3
+		}
+		return 0
 	}
 	switch args[0] {
 	case "discover":

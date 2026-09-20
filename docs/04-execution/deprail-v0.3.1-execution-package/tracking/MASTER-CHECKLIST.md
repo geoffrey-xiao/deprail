@@ -12,7 +12,8 @@
 
 ## Implementation gate
 
-- [x] Epic and implementation issue contracts created and linked to the milestone and Project view.
+- [ ] Definition of Ready approved before runtime implementation begins.
+- [x] Epic and implementation issue contracts created and linked to the milestone and Project view per owner planning direction.
 - [ ] No scanner, domain, mutation, network, or schema-breaking scope added without change control.
 
 ## Release gate

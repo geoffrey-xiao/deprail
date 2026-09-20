@@ -29,3 +29,29 @@ No visual styling, scanner changes, JSON schema changes, or repository mutation.
 ## GitHub tracking
 - Issue: [#255](https://github.com/geoffrey-xiao/deprail/issues/255)
 - Parent epic: [#244](https://github.com/geoffrey-xiao/deprail/issues/244)
+
+## Definition of Ready
+
+- [ ] Owner and named reviewer are assigned.
+- [ ] v0.3.1 target, sprint, dependencies, and contract mapping are confirmed.
+- [ ] Inputs, outputs, failure behavior, and required evidence are reviewed.
+- [ ] Implementation remains blocked until release-level Definition of Ready approval.
+
+## Contract mapping
+
+- Requirements: `FUNCTIONAL-REQUIREMENTS.md` UX-002.
+- Architecture: `ARCHITECTURE-v0.3.1.md` event contract and dependency direction.
+- Evidence: event ordering, cancellation, and dependency-boundary tests.
+
+## Inputs, outputs, and failure behavior
+
+- Inputs: application lifecycle transitions and structured domain results.
+- Outputs: renderer-independent presentation events.
+- Failure: invalid lifecycle ordering or cancellation state remains explicit and never renders false completion.
+
+## Final acceptance
+
+- [ ] Owner reviewed every criterion.
+- [ ] Architecture/security review completed.
+- [ ] CI and required evidence links are recorded.
+- [ ] Remaining risk and follow-up are documented.

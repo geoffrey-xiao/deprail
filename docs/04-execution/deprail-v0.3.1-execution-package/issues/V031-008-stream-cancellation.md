@@ -29,3 +29,28 @@ No new error codes, scanner behavior, or repository mutation.
 ## GitHub tracking
 - Issue: [#247](https://github.com/geoffrey-xiao/deprail/issues/247)
 - Parent epic: [#243](https://github.com/geoffrey-xiao/deprail/issues/243)
+## Definition of Ready
+
+- [ ] Owner and named reviewer are assigned.
+- [ ] v0.3.1 target, sprint, dependencies, and contract mapping are confirmed.
+- [ ] Inputs, outputs, failure behavior, and required evidence are reviewed.
+- [ ] Implementation remains blocked until release-level Definition of Ready approval.
+
+## Contract mapping
+
+- Requirements: `FUNCTIONAL-REQUIREMENTS.md` UX-004, UX-007, UX-012.
+- Error model: `ERROR-MODEL.md` failure and cancellation semantics.
+- Evidence: stream contract, JSON parsing, timeout, and cancellation tests.
+
+## Inputs, outputs, and failure behavior
+
+- Inputs: controlled CLI processes, stream handles, JSON reports, and cancellation signals.
+- Outputs: separated stdout/stderr with truthful exit and cancellation behavior.
+- Failure: timeout, malformed output, missing tools, and partial failures remain explicit errors.
+
+## Final acceptance
+
+- [ ] Owner reviewed every criterion.
+- [ ] Architecture/security review completed.
+- [ ] CI and required evidence links are recorded.
+- [ ] Remaining risk and follow-up are documented.

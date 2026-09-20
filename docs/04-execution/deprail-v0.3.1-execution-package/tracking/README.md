@@ -31,3 +31,5 @@ Native sub-issue relationships are established:
 - EPIC-004 `#241`: `#254`, `#253`
 
 Project #1 now has a `Backlogs` option in the existing `Status` field (`d9e5dfde`, gray, “Queued backlog work”). Release view #4 (`Release · v0.3.1`) exposes that field and remains filtered to `milestone:v0.3.1`. Use `Backlogs` for approved future work that is intentionally not yet scheduled for implementation.
+
+The project-global order is: `#238`, `#244`, `#255`, `#246`, `#242`, `#245`, `#256`, `#243`, `#252`, `#257`, `#250`, `#247`, `#241`, `#254`, `#253`, `#239`. The board view exposes this sequence after applying its `milestone:v0.3.1` filter; the retrospective remains the final release follow-up item.

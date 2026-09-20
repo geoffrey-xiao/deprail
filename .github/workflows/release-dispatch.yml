@@ -1,0 +1,117 @@
+name: Release Dispatch
+
+on:
+  workflow_dispatch:
+    inputs:
+      bump:
+        description: "Base version increment"
+        required: true
+        type: choice
+        options:
+          - major
+          - minor
+          - patch
+          - prerelease
+        default: patch
+      mode:
+        description: "Release channel"
+        required: true
+        type: choice
+        options:
+          - preview
+          - candidate
+          - stable
+        default: preview
+      evidence_issue:
+        description: "Release evidence issue number"
+        required: true
+        type: string
+      confirm:
+        description: "Type RELEASE to confirm the computed version"
+        required: true
+        type: string
+
+permissions:
+  contents: write
+  issues: read
+
+jobs:
+  validate-and-publish:
+    runs-on: ubuntu-latest
+    environment:
+      name: release-approval
+      url: https://github.com/${{ github.repository }}/issues/${{ inputs.evidence_issue }}
+    steps:
+      - name: Check out reviewed main
+        uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 0
+
+      - name: Resolve and validate release version
+        id: release
+        env:
+          BUMP: ${{ inputs.bump }}
+          MODE: ${{ inputs.mode }}
+          EVIDENCE_ISSUE: ${{ inputs.evidence_issue }}
+          CONFIRM: ${{ inputs.confirm }}
+        run: |
+          set -euo pipefail
+          [[ "$CONFIRM" == RELEASE ]] || { echo "Confirmation must be RELEASE" >&2; exit 2; }
+          [[ "$EVIDENCE_ISSUE" =~ ^[0-9]+$ ]] || { echo "Invalid evidence issue" >&2; exit 2; }
+
+          latest_tag="$(git tag --list 'v[0-9]*.[0-9]*.[0-9]*' | sort -V | tail -n 1)"
+          latest="${latest_tag#v}"
+          latest="${latest%%-*}"
+          [[ -n "$latest" ]] || latest=0.0.0
+          IFS=. read -r major minor patch <<< "$latest"
+          case "$BUMP" in
+            major) base="$((major + 1)).0.0" ;;
+            minor) base="$major.$((minor + 1)).0" ;;
+            patch) base="$major.$minor.$((patch + 1))" ;;
+            prerelease) base="$latest" ;;
+            *) echo "Unknown bump: $BUMP" >&2; exit 2 ;;
+          esac
+
+          case "$MODE" in
+            stable)
+              [[ "$BUMP" != prerelease ]] || { echo "prerelease bump requires preview or candidate mode" >&2; exit 2; }
+              version="$base"
+              ;;
+            preview|candidate)
+              identifier=preview
+              [[ "$MODE" == candidate ]] && identifier=rc
+              highest="$(git tag --list "v$base-$identifier.*" | sed -nE "s#^v$base-$identifier\.([0-9]+)$#\1#p" | sort -n | tail -n 1)"
+              [[ -n "$highest" ]] || highest=0
+              version="$base-$identifier.$((highest + 1))"
+              ;;
+            *) echo "Unknown release mode: $MODE" >&2; exit 2 ;;
+          esac
+
+          tag="v$version"
+          if git rev-parse "refs/tags/$tag" >/dev/null 2>&1; then
+            echo "Release tag already exists: $tag" >&2
+            exit 2
+          fi
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+          echo "Resolved release: $version"
+
+      - name: Verify reviewed source
+        run: make verify
+
+      - name: Create immutable release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          VERSION: ${{ steps.release.outputs.version }}
+          MODE: ${{ inputs.mode }}
+          EVIDENCE_ISSUE: ${{ inputs.evidence_issue }}
+        run: |
+          set -euo pipefail
+          prerelease_flag=()
+          if [[ "$MODE" != stable ]]; then prerelease_flag+=(--prerelease); fi
+          gh release create "v$VERSION" \
+            --target main \
+            "${prerelease_flag[@]}" \
+            --generate-notes \
+            --title "DepRail $VERSION" \
+            --notes "Release evidence: https://github.com/${{ github.repository }}/issues/$EVIDENCE_ISSUE"

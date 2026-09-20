@@ -135,6 +135,15 @@ Visual meaning must not depend on color alone. Human output must remain useful w
 
 The CLI also provides deterministic root and subcommand help through `deprail --help` and `--help`/`-h` on every supported command. Help is plain, successful, and side-effect free.
 
+Human message lifecycle contract:
+
+```text
+start notice -> real-work progress -> trustworthy finding summary
+             -> one truthful outcome -> bounded next action
+```
+
+The contract applies consistently to discover, scan, doctor, diff, and fix plan. Policy check retains its independent pass/warn/block decision output; execution completeness vocabulary must not replace that decision.
+
 ### 4.3 Interactive progress
 
 Provide concise progress messages on stderr only for interactive TTY runs. Progress must correspond to real boundaries:

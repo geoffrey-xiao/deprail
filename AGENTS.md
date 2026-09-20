@@ -259,8 +259,8 @@ Respect the execution controls:
 
 ### Release evidence
 
-Release approval MUST include evidence from the actual reviewed binary and a real representative repository workflow, not unit tests alone. Record exact commands, exit codes, artifact paths, platform, binary identity, repository-tree comparison, and remaining risks in the applicable release-evidence record. Use the release-specific manual procedure rather than duplicating command details in this guide; for v0.3, see [`docs/04-execution/deprail-v0.3-execution-package/MANUAL-TEST-GUIDE.md`](docs/04-execution/deprail-v0.3-execution-package/MANUAL-TEST-GUIDE.md).
-Version-specific release records MUST be stored under `docs/release-evidence/` using the naming pattern `RELEASE-v<version>-EVIDENCE.md` (for example, `RELEASE-v0.3-preview.1-EVIDENCE.md`). Preserve superseded preview and release records unchanged; keep raw command output, generated artifacts, and checksums in the ignored `local_test/` directory or attach them to the linked release issue/PR, and link those artifacts from the tracked record.
+Release approval MUST include evidence from the actual reviewed binary and a real representative repository workflow, not unit tests alone. Record exact commands, exit codes, artifact paths, platform, binary identity, repository-tree comparison, and remaining risks in the applicable release-evidence record. Use the reusable [`docs/RELEASE-CHECKLIST.md`](docs/RELEASE-CHECKLIST.md) together with the release-specific manual procedure; for v0.3, see [`docs/04-execution/deprail-v0.3-execution-package/MANUAL-TEST-GUIDE.md`](docs/04-execution/deprail-v0.3-execution-package/MANUAL-TEST-GUIDE.md).
+Every release MUST complete or explicitly disposition the applicable rows in [`docs/RELEASE-CHECKLIST.md`](docs/RELEASE-CHECKLIST.md) before publication. The completed version-specific evidence record is the durable record of those decisions.
 ### Post-release retrospective
 
 After every preview, release candidate, or stable release:

@@ -210,6 +210,7 @@ func runFixPlan(args []string, stdout, stderr io.Writer) int {
 	finding := flags.String("finding", "", "finding stable key")
 	root := flags.String("root", "", "repository root")
 	repositoryState := flags.String("repository-state", "", "current repository state")
+	output := flags.String("output", "", "write JSON plan atomically to an external file")
 	format := flags.String("format", "terminal", "output format: terminal or json")
 	if err := flags.Parse(args); err != nil || *report == "" || *finding == "" || (*format != "terminal" && *format != "json") || len(flags.Args()) != 0 {
 		writeCLIError(stderr, "CONFIG_INVALID", "fix plan requires --report and --finding and supports terminal or json output", "fix plan")
@@ -235,6 +236,13 @@ func runFixPlan(args []string, stdout, stderr io.Writer) int {
 			writeCLIError(stderr, "PLAN_FAILED", err.Error(), "fix plan")
 		}
 		return 3
+	}
+	if *output != "" {
+		if err := presenter.WritePlanAtomic(*output, plan); err != nil {
+			writeCLIError(stderr, "OUTPUT_WRITE_FAILED", err.Error(), "output")
+			return 3
+		}
+		return 0
 	}
 	var outputErr error
 	if *format == "json" {

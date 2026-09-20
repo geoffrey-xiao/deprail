@@ -3,9 +3,12 @@ package presenter
 import (
 	"fmt"
 	"io"
+	"regexp"
 	"strings"
 	"unicode"
 )
+
+var credentialURLPattern = regexp.MustCompile(`(?i)(https?://)[^/@\s]+:[^/@\s]+@`)
 
 func WriteHeader(w io.Writer, title string) error {
 	_, err := fmt.Fprintf(w, "%s\n", SanitizeLabel(title))
@@ -36,8 +39,8 @@ func WriteError(w io.Writer, code, message string) error {
 	return err
 }
 
-// SanitizeLabel keeps repository-derived text on one safe terminal line.
 func SanitizeLabel(value string) string {
+	value = credentialURLPattern.ReplaceAllString(value, `${1}[REDACTED]@`)
 	var builder strings.Builder
 	for _, character := range value {
 		switch {

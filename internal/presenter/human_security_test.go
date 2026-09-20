@@ -17,6 +17,15 @@ func TestSanitizeLabelEscapesTerminalControlsAndLineBreaks(t *testing.T) {
 	}
 }
 
+func TestSanitizeLabelRedactsURLCredentials(t *testing.T) {
+	got := SanitizeLabel("fetch failed: https://alice:token@example.com/pkg")
+	if strings.Contains(got, "alice") || strings.Contains(got, "token") {
+		t.Fatalf("credentials were not redacted: %q", got)
+	}
+	if !strings.Contains(got, "https://[REDACTED]@example.com/pkg") {
+		t.Fatalf("redacted URL = %q", got)
+	}
+}
 func TestHumanPrimitiveSanitizesRenderedLabels(t *testing.T) {
 	var output strings.Builder
 	if err := WriteError(&output, "SCANNER\nTIMEOUT", "bad\x1b[2J\nvalue"); err != nil {

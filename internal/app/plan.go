@@ -194,3 +194,15 @@ func nonEmptyFixed(value string) []string {
 	}
 	return []string{value}
 }
+func ValidatePlanOutput(reportPath, output, repositoryRoot string) error {
+	report, err := loadPlanningReport(reportPath)
+	if err != nil {
+		return err
+	}
+	root := repositoryRoot
+	if root == "" {
+		root = report.RepositoryIdentity.Root
+	}
+	_, err = remediation.ValidateExternalOutput(root, output)
+	return err
+}

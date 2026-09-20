@@ -10,6 +10,7 @@ import (
 	"io"
 	"os"
 	"path/filepath"
+	"strings"
 
 	"github.com/geoffrey-xiao/deprail/internal/app"
 	"github.com/geoffrey-xiao/deprail/internal/baseline"
@@ -144,12 +145,41 @@ func normalizeDiscoverArgs(args []string) ([]string, error) {
 	return append(flags, positionals...), nil
 }
 
+func normalizeScanArgs(args []string) ([]string, error) {
+	flags := make([]string, 0, len(args))
+	positionals := make([]string, 0, 1)
+	for i := 0; i < len(args); i++ {
+		arg := args[i]
+		if arg == "--" {
+			positionals = append(positionals, args[i:]...)
+			break
+		}
+		switch arg {
+		case "--format", "--output":
+			if i+1 >= len(args) {
+				return nil, fmt.Errorf("%s requires a value", arg)
+			}
+			flags = append(flags, arg, args[i+1])
+			i++
+		case "--verbose":
+			flags = append(flags, arg)
+		default:
+			if strings.HasPrefix(arg, "--format=") || strings.HasPrefix(arg, "--output=") {
+				flags = append(flags, arg)
+				continue
+			}
+			positionals = append(positionals, arg)
+		}
+	}
+	return append(flags, positionals...), nil
+}
+
 func writeCLIError(w io.Writer, code, message, scope string) {
 	_, _ = fmt.Fprintf(w, "error[%s] %s (%s)\n", code, message, scope)
 }
 
 func runScan(args []string, stdout, stderr io.Writer) int {
-	normalized, err := normalizeDiscoverArgs(args)
+	normalized, err := normalizeScanArgs(args)
 	if err != nil {
 		writeCLIError(stderr, "CONFIG_INVALID", err.Error(), "arguments")
 		return 2
@@ -210,10 +240,17 @@ func runFixPlan(args []string, stdout, stderr io.Writer) int {
 	finding := flags.String("finding", "", "finding stable key")
 	root := flags.String("root", "", "repository root")
 	repositoryState := flags.String("repository-state", "", "current repository state")
+	output := flags.String("output", "", "write JSON plan atomically to an external file")
 	format := flags.String("format", "terminal", "output format: terminal or json")
 	if err := flags.Parse(args); err != nil || *report == "" || *finding == "" || (*format != "terminal" && *format != "json") || len(flags.Args()) != 0 {
 		writeCLIError(stderr, "CONFIG_INVALID", "fix plan requires --report and --finding and supports terminal or json output", "fix plan")
 		return 2
+	}
+	if *output != "" {
+		if err := app.ValidatePlanOutput(*report, *output, *root); err != nil && errors.Is(err, remediation.ErrUnsafePath) {
+			writeCLIError(stderr, "PLAN_OUTPUT_OUTSIDE_ROOT_REQUIRED", err.Error(), "output")
+			return 2
+		}
 	}
 	plan, err := app.Plan(context.Background(), *report, *finding, *root, app.PlanOptions{CurrentRepositoryState: *repositoryState})
 	if err != nil {
@@ -235,6 +272,20 @@ func runFixPlan(args []string, stdout, stderr io.Writer) int {
 			writeCLIError(stderr, "PLAN_FAILED", err.Error(), "fix plan")
 		}
 		return 3
+	}
+	if *output != "" {
+		if err := presenter.WritePlanAtomic(*output, plan); err != nil {
+			switch {
+			case errors.Is(err, presenter.ErrPlanOutputOutsideRoot):
+				writeCLIError(stderr, "PLAN_OUTPUT_OUTSIDE_ROOT_REQUIRED", err.Error(), "output")
+			case errors.Is(err, presenter.ErrPlanSchemaInvalid):
+				writeCLIError(stderr, "PLAN_SCHEMA_INVALID", err.Error(), "plan")
+			default:
+				writeCLIError(stderr, "PLAN_WRITE_FAILED", err.Error(), "output")
+			}
+			return 3
+		}
+		return 0
 	}
 	var outputErr error
 	if *format == "json" {

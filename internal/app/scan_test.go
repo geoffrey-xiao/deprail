@@ -41,6 +41,33 @@ func (fakeScanner) Normalize(context.Context, []adapter.Record) ([]adapter.Findi
 	return []adapter.Finding{{Component: "demo", Version: "1", TargetID: "OSV-1"}}, nil
 }
 
+type mixedNormalizationScanner struct {
+	fakeScanner
+}
+
+func (mixedNormalizationScanner) Normalize(context.Context, []adapter.Record) ([]adapter.Finding, error) {
+	return []adapter.Finding{
+		{Component: "", Version: "1", TargetID: "invalid"},
+		{Component: "demo", Version: "1", TargetID: "valid"},
+	}, nil
+}
+
+func TestScanExcludesFindingsThatFailNormalization(t *testing.T) {
+	report, err := Scan(context.Background(), fixturePath(t, "npm-basic"), ScanOptions{
+		Scanner:   mixedNormalizationScanner{},
+		Artifacts: artifact.Store{Root: t.TempDir(), MaxBytes: 1024},
+	})
+	if err != nil {
+		t.Fatalf("scan: %v", err)
+	}
+	if len(report.Findings) != 1 || report.Findings[0].TargetID != "valid" {
+		t.Fatalf("findings = %#v", report.Findings)
+	}
+	if len(report.Errors) != 1 || report.Status != "partial" {
+		t.Fatalf("status/errors = %s/%v", report.Status, report.Errors)
+	}
+}
+
 func TestScanRetainsArtifactAndFindings(t *testing.T) {
 	report, err := Scan(context.Background(), fixturePath(t, "npm-basic"), ScanOptions{Scanner: fakeScanner{}, Artifacts: artifact.Store{Root: t.TempDir(), MaxBytes: 1024}})
 	if err != nil {
@@ -48,6 +75,9 @@ func TestScanRetainsArtifactAndFindings(t *testing.T) {
 	}
 	if len(report.Findings) != 1 || len(report.ArtifactDigests) != 1 {
 		t.Fatalf("report = %#v", report)
+	}
+	if report.Findings[0].PURL != "pkg:npm/demo@1" || report.Findings[0].WorkspaceID == "" || report.Findings[0].WorkspacePath == "" {
+		t.Fatalf("finding identity = %#v", report.Findings[0])
 	}
 }
 

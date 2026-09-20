@@ -76,12 +76,16 @@ type Record struct {
 
 // Finding is the normalized adapter boundary; downstream normalization owns identity and ordering.
 type Finding struct {
-	Component string
-	Version   string
-	Aliases   []string
-	Severity  string
-	Fixed     string
-	TargetID  string
+	Component     string
+	Version       string
+	Aliases       []string
+	Severity      string
+	Fixed         string
+	TargetID      string
+	PURL          string `json:"purl,omitempty"`
+	WorkspaceID   string `json:"workspace_id,omitempty"`
+	WorkspacePath string `json:"workspace_path,omitempty"`
+	Ecosystem     string `json:"ecosystem,omitempty"`
 }
 
 // ScannerAdapter separates metadata, planning, execution, parsing, and normalization.

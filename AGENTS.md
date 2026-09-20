@@ -257,6 +257,12 @@ Respect the execution controls:
 - Do not alter `tracking/MASTER-CHECKLIST.md` until acceptance has linked evidence.
 - Human review is mandatory for schemas, permissions, compatibility, external-process behavior, network/file writes, migrations, credentials, publishing, and broad golden updates.
 
+### Release evidence
+
+Release approval MUST include evidence from the actual reviewed binary and a real representative repository workflow, not unit tests alone. Record exact commands, exit codes, artifact paths, platform, binary identity, repository-tree comparison, and remaining risks in the applicable release-evidence record. Use the release-specific manual procedure rather than duplicating command details in this guide; for v0.3, see [`docs/04-execution/deprail-v0.3-execution-package/MANUAL-TEST-GUIDE.md`](docs/04-execution/deprail-v0.3-execution-package/MANUAL-TEST-GUIDE.md).
+
+The release workflow MUST run from a baseline containing all prerequisite fixes. A passing isolated feature branch is not sufficient when the workflow depends on an earlier CLI or contract fix.
+
 The repository's intended verification entry points are:
 
 ```text

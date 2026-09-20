@@ -34,4 +34,4 @@ No v0.3.1 command may edit manifests or lockfiles, install packages, execute pac
 
 ## Package status
 
-This package intentionally contains no epics or implementation issue files. The release remains in planning until the owner and architecture/security reviewer approve the contract, evidence matrix, dependencies, and Definition of Ready.
+The local epic and issue contracts are now mapped to GitHub parent issues [#241](https://github.com/geoffrey-xiao/deprail/issues/241)–[#244](https://github.com/geoffrey-xiao/deprail/issues/244) and child issues [#245](https://github.com/geoffrey-xiao/deprail/issues/245)–[#257](https://github.com/geoffrey-xiao/deprail/issues/257). They are assigned to milestone `v0.3.1` and the DepRail project view. Runtime implementation remains unauthorized until the owner and architecture/security reviewer approve the Definition of Ready.

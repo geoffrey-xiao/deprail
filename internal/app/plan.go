@@ -7,14 +7,13 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"os"
-	"path/filepath"
-	"strings"
-
 	"github.com/geoffrey-xiao/deprail/internal/remediation"
 	"github.com/geoffrey-xiao/deprail/internal/remediation/java"
 	"github.com/geoffrey-xiao/deprail/internal/remediation/javascript"
 	"github.com/geoffrey-xiao/deprail/internal/remediation/python"
+	"os"
+	"path/filepath"
+	"strings"
 )
 
 var (
@@ -163,10 +162,21 @@ func loadPlanningReport(path string) (remediation.Report, error) {
 		if key == "" {
 			key = finding.Component + "@" + finding.Version
 		}
+		workspace := remediation.WorkspaceIdentity{ID: finding.WorkspaceID, Path: finding.WorkspacePath}
+		if workspace.ID == "" {
+			workspace.ID = "root"
+		}
+		if workspace.Path == "" {
+			workspace.Path = "."
+		}
+		purl := finding.PURL
+		if purl == "" {
+			purl = finding.Component
+		}
 		report.Findings = append(report.Findings, remediation.ReportFinding{
 			StableKey: key,
-			Workspace: remediation.WorkspaceIdentity{ID: "root", Path: "."},
-			Component: remediation.Component{PURL: finding.Component, Name: componentName(finding.Component), Version: finding.Version},
+			Workspace: workspace,
+			Component: remediation.Component{PURL: purl, Name: finding.Component, Version: finding.Version},
 			Aliases:   finding.Aliases, CurrentVersion: finding.Version,
 			FixedVersions: nonEmptyFixed(finding.Fixed),
 			Provenance:    remediation.Provenance{ArtifactDigests: scan.ArtifactDigests, Sources: []string{"scan-json"}},
@@ -178,20 +188,21 @@ func loadPlanningReport(path string) (remediation.Report, error) {
 	return report, nil
 }
 
-func componentName(purl string) string {
-	if i := strings.LastIndex(purl, "/"); i >= 0 {
-		value := purl[i+1:]
-		if j := strings.Index(value, "@"); j >= 0 {
-			return value[:j]
-		}
-		return value
-	}
-	return purl
-}
-
 func nonEmptyFixed(value string) []string {
 	if value == "" {
 		return []string{}
 	}
 	return []string{value}
+}
+func ValidatePlanOutput(reportPath, output, repositoryRoot string) error {
+	report, err := loadPlanningReport(reportPath)
+	if err != nil {
+		return err
+	}
+	root := repositoryRoot
+	if root == "" {
+		root = report.RepositoryIdentity.Root
+	}
+	_, err = remediation.ValidateExternalOutput(root, output)
+	return err
 }

@@ -98,3 +98,39 @@ func TestPlanAcceptsScanJSONOutput(t *testing.T) {
 		t.Fatalf("plan = %#v", plan)
 	}
 }
+func TestLoadPlanningReportPreservesScanComponentName(t *testing.T) {
+	root, err := filepath.Abs(filepath.Join("..", "..", "testdata", "fixtures", "npm-basic"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	state, err := CurrentRepositoryState(root)
+	if err != nil {
+		t.Fatal(err)
+	}
+	scan := ScanReport{
+		SchemaVersion: remediation.ReportSchemaVersion, DocumentType: remediation.ReportDocumentType, ScanID: "scan-scoped",
+		RepositoryIdentity: remediation.RepositoryIdentity{Root: root, Repository: "npm-basic"}, RepositoryState: state,
+		Status: "complete", Findings: []adapter.Finding{{
+			Component: "@scope/pkg", PURL: "pkg:npm/%40scope%2Fpkg@1.2.3", Version: "1.2.3", TargetID: "finding-scoped", Aliases: []string{},
+		}},
+		Errors: []string{}, ArtifactDigests: []string{"0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef"},
+	}
+	path := filepath.Join(t.TempDir(), "scan.json")
+	data, err := json.Marshal(scan)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(path, data, 0o600); err != nil {
+		t.Fatal(err)
+	}
+	report, err := loadPlanningReport(path)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if got := report.Findings[0].Component.Name; got != "@scope/pkg" {
+		t.Fatalf("component name = %q, want %q", got, "@scope/pkg")
+	}
+	if got := report.Findings[0].Component.PURL; got != "pkg:npm/%40scope%2Fpkg@1.2.3" {
+		t.Fatalf("component PURL = %q", got)
+	}
+}

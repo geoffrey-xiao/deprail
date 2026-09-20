@@ -150,6 +150,10 @@ func normalizeScanArgs(args []string) ([]string, error) {
 	positionals := make([]string, 0, 1)
 	for i := 0; i < len(args); i++ {
 		arg := args[i]
+		if arg == "--" {
+			positionals = append(positionals, args[i:]...)
+			break
+		}
 		switch arg {
 		case "--format", "--output":
 			if i+1 >= len(args) {

@@ -46,6 +46,16 @@ func TestNormalizeScanArgsPreservesOutputFlag(t *testing.T) {
 	}
 }
 
+func TestNormalizeScanArgsPreservesOperandsAfterEndOfOptions(t *testing.T) {
+	got, err := normalizeScanArgs([]string{"--", "--output=repo"})
+	if err != nil {
+		t.Fatal(err)
+	}
+	want := []string{"--", "--output=repo"}
+	if strings.Join(got, "\x00") != strings.Join(want, "\x00") {
+		t.Fatalf("normalized args = %#v, want %#v", got, want)
+	}
+}
 func TestDiscoverIncompleteProjectReturnsCodeThreeAndJSON(t *testing.T) {
 	fixture := fixturePath(t, "npm-basic")
 	var stdout, stderr bytes.Buffer

@@ -49,6 +49,9 @@ func TestScanRetainsArtifactAndFindings(t *testing.T) {
 	if len(report.Findings) != 1 || len(report.ArtifactDigests) != 1 {
 		t.Fatalf("report = %#v", report)
 	}
+	if report.Findings[0].PURL != "pkg:npm/demo@1" || report.Findings[0].WorkspaceID == "" || report.Findings[0].WorkspacePath == "" {
+		t.Fatalf("finding identity = %#v", report.Findings[0])
+	}
 }
 
 func TestScanEmptyCollectionsSerializeAsArrays(t *testing.T) {

@@ -10,6 +10,7 @@ import (
 	"github.com/geoffrey-xiao/deprail/internal/adapters/osv"
 	"github.com/geoffrey-xiao/deprail/internal/artifact"
 	"github.com/geoffrey-xiao/deprail/internal/discovery"
+	"github.com/geoffrey-xiao/deprail/internal/normalize"
 	"github.com/geoffrey-xiao/deprail/internal/remediation"
 	"github.com/geoffrey-xiao/deprail/internal/scanplan"
 )
@@ -93,6 +94,21 @@ func Scan(ctx context.Context, root string, options ScanOptions) (ScanReport, er
 			report.Status = discovery.Partial
 			continue
 		}
+		for i := range findings {
+			component, componentErr := normalize.NormalizeComponent(normalize.ComponentInput{
+				Name: findings[i].Component, Version: findings[i].Version,
+				Ecosystem: purlEcosystem(unit.Target.Ecosystem), WorkspaceID: unit.Target.WorkspaceID,
+			})
+			if componentErr != nil {
+				report.Errors = append(report.Errors, componentErr.Error())
+				report.Status = discovery.Partial
+				continue
+			}
+			findings[i].PURL = component.PURL
+			findings[i].WorkspaceID = unit.Target.WorkspaceID
+			findings[i].WorkspacePath = unit.Target.RelativePath
+			findings[i].Ecosystem = unit.Target.Ecosystem
+		}
 		report.Findings = append(report.Findings, findings...)
 	}
 	if len(report.Findings) == 0 && len(report.Errors) > 0 {
@@ -103,4 +119,17 @@ func Scan(ctx context.Context, root string, options ScanOptions) (ScanReport, er
 
 func ScanTerminal(report ScanReport) string {
 	return fmt.Sprintf("Status: %s\nFindings: %d\nErrors: %d\n", report.Status, len(report.Findings), len(report.Errors))
+}
+
+func purlEcosystem(ecosystem string) string {
+	switch ecosystem {
+	case "javascript":
+		return "npm"
+	case "python":
+		return "pip"
+	case "java":
+		return "maven"
+	default:
+		return ecosystem
+	}
 }

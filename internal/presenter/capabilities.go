@@ -48,6 +48,7 @@ func SelectCapabilities(options CapabilityOptions) Capabilities {
 		isTerminal = IsTerminal
 	}
 	interactive := mode == OutputTerminal && !options.CI && isTerminal(options.Stderr)
+	color := mode == OutputTerminal && !options.CI && options.Color && isTerminal(options.Stdout)
 	width := options.Width
 	if width <= 0 {
 		width = 80
@@ -56,7 +57,7 @@ func SelectCapabilities(options CapabilityOptions) Capabilities {
 	return Capabilities{
 		Mode:              mode,
 		Interactive:       interactive,
-		Color:             !machine && options.Color && interactive,
+		Color:             color,
 		Width:             width,
 		Animation:         interactive,
 		Cancellation:      options.CanCancel,

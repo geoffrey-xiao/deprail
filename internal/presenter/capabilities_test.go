@@ -6,10 +6,10 @@ import (
 	"testing"
 )
 
-func TestSelectCapabilitiesUsesStderrTTYOnlyForInteractiveProgress(t *testing.T) {
+func TestSelectCapabilitiesUsesSeparateOutputStreamCapabilities(t *testing.T) {
 	stdout := &bytes.Buffer{}
 	stderr := &bytes.Buffer{}
-	isTerminal := func(writer io.Writer) bool { return writer == stderr }
+	isTerminal := func(writer io.Writer) bool { return writer == stdout || writer == stderr }
 	caps := SelectCapabilities(CapabilityOptions{
 		Mode:       OutputTerminal,
 		Stdout:     stdout,
@@ -21,6 +21,17 @@ func TestSelectCapabilitiesUsesStderrTTYOnlyForInteractiveProgress(t *testing.T)
 	})
 	if !caps.Interactive || !caps.Color || !caps.Animation || !caps.RestoreOnExit {
 		t.Fatalf("interactive capabilities = %#v", caps)
+	}
+
+	redirected := SelectCapabilities(CapabilityOptions{
+		Mode:       OutputTerminal,
+		Stdout:     stdout,
+		Stderr:     stderr,
+		Color:      true,
+		IsTerminal: func(writer io.Writer) bool { return writer == stderr },
+	})
+	if !redirected.Interactive || redirected.Color {
+		t.Fatalf("redirected capabilities = %#v", redirected)
 	}
 }
 

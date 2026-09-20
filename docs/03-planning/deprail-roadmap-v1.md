@@ -68,6 +68,10 @@ Every release preserves these boundaries unless an approved compatibility decisi
 - MCP and agent write capabilities require explicit scopes, approval, and audit.
 - New scanner families and broad security domains require separate compatibility and security decisions.
 
+## Future CLI UX refinement
+
+After the v0.3 remediation-planning gate, DepRail may undertake a bounded CLI UX refactor for interactive progress, TTY-aware loaders, complete zero-finding summaries, and clearer partial/failed scan messages. Machine-readable output, stdout/stderr separation, deterministic JSON, and cross-platform behavior remain invariants. The planning contract and deferred delivery gate are documented in [`deprail-cli-ux-refactor-plan.md`](deprail-cli-ux-refactor-plan.md).
+
 ## Release planning rule
 
 Before creating a new release's epics or issues, the owner must:

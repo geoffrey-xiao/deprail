@@ -133,6 +133,8 @@ Visual meaning must not depend on color alone. Human output must remain useful w
 - `deprail diff`;
 - `deprail fix plan`.
 
+The CLI also provides deterministic root and subcommand help through `deprail --help` and `--help`/`-h` on every supported command. Help is plain, successful, and side-effect free.
+
 ### 4.3 Interactive progress
 
 Provide concise progress messages on stderr only for interactive TTY runs. Progress must correspond to real boundaries:

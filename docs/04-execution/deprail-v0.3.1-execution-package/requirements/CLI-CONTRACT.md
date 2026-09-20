@@ -12,6 +12,13 @@ deprail diff --base <ref> --head <ref>
 deprail fix plan --report <scan-report> --finding <finding-key>
 ```
 
+## Help behavior
+
+- `deprail --help` and `deprail -h` print deterministic root usage and exit `0`.
+- Every supported command and subcommand accepts `--help` and `-h`, prints usage to stdout, and exits `0`.
+- Help output is plain, readable in TTY and non-TTY contexts, and contains no progress or ANSI control sequences.
+- Help performs no discovery, scanner, package-manager, network, repository mutation, or artifact writes.
+
 ## Stream behavior
 
 - Human output may use stdout according to the existing command contract.

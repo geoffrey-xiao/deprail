@@ -10,6 +10,7 @@ import (
 	"github.com/geoffrey-xiao/deprail/internal/adapters/osv"
 	"github.com/geoffrey-xiao/deprail/internal/artifact"
 	"github.com/geoffrey-xiao/deprail/internal/discovery"
+	"github.com/geoffrey-xiao/deprail/internal/remediation"
 	"github.com/geoffrey-xiao/deprail/internal/scanplan"
 )
 
@@ -18,10 +19,15 @@ type ScanOptions struct {
 	Artifacts artifact.Store
 }
 type ScanReport struct {
-	Status          discovery.Completeness `json:"status"`
-	Findings        []adapter.Finding      `json:"findings"`
-	Errors          []string               `json:"errors"`
-	ArtifactDigests []string               `json:"artifact_digests"`
+	SchemaVersion      string                         `json:"schema_version"`
+	DocumentType       string                         `json:"document_type"`
+	ScanID             string                         `json:"scan_id"`
+	RepositoryIdentity remediation.RepositoryIdentity `json:"repository_identity"`
+	RepositoryState    string                         `json:"repository_state"`
+	Status             discovery.Completeness         `json:"status"`
+	Findings           []adapter.Finding              `json:"findings"`
+	Errors             []string                       `json:"errors"`
+	ArtifactDigests    []string                       `json:"artifact_digests"`
 }
 
 func Scan(ctx context.Context, root string, options ScanOptions) (ScanReport, error) {
@@ -37,6 +43,12 @@ func Scan(ctx context.Context, root string, options ScanOptions) (ScanReport, er
 	if err != nil {
 		return ScanReport{Status: discovery.Failed, Findings: []adapter.Finding{}, Errors: []string{"resolve scanner root"}, ArtifactDigests: []string{}}, err
 	}
+	repositoryState, stateErr := CurrentRepositoryState(scanRoot)
+	if stateErr != nil {
+		return ScanReport{Status: discovery.Failed, Findings: []adapter.Finding{}, Errors: []string{"resolve repository state"}, ArtifactDigests: []string{}}, stateErr
+	}
+	scanID := "scan-" + repositoryState[:16]
+	report := ScanReport{SchemaVersion: remediation.ReportSchemaVersion, DocumentType: remediation.ReportDocumentType, ScanID: scanID, RepositoryIdentity: remediation.RepositoryIdentity{Root: scanRoot, Repository: filepath.Base(scanRoot)}, RepositoryState: repositoryState, Status: graph.Completeness, Findings: []adapter.Finding{}, Errors: []string{}, ArtifactDigests: []string{}}
 	if options.Scanner == nil {
 		options.Scanner = osv.Scanner{Path: "osv-scanner", Dir: scanRoot, Timeout: 2 * time.Minute, OutputCap: 16 << 20}
 	}
@@ -47,7 +59,6 @@ func Scan(ctx context.Context, root string, options ScanOptions) (ScanReport, er
 	if err != nil {
 		return ScanReport{Status: discovery.Failed, Findings: []adapter.Finding{}, Errors: []string{err.Error()}, ArtifactDigests: []string{}}, err
 	}
-	report := ScanReport{Status: graph.Completeness, Findings: []adapter.Finding{}, Errors: []string{}, ArtifactDigests: []string{}}
 	for _, unit := range units {
 		plan, planErr := options.Scanner.Plan(ctx, []adapter.Target{unit.Target})
 		if planErr != nil {

@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
+	"errors"
 	"flag"
 	"fmt"
 	"io"
@@ -16,6 +17,7 @@ import (
 	"github.com/geoffrey-xiao/deprail/internal/discovery"
 	"github.com/geoffrey-xiao/deprail/internal/policy"
 	"github.com/geoffrey-xiao/deprail/internal/presenter"
+	"github.com/geoffrey-xiao/deprail/internal/remediation"
 )
 
 func main() {
@@ -37,6 +39,12 @@ func run(args []string, stdout, stderr io.Writer) int {
 		return runDiscover(args[1:], stdout, stderr)
 	case "scan":
 		return runScan(args[1:], stdout, stderr)
+	case "fix":
+		if len(args) < 2 || args[1] != "plan" {
+			writeCLIError(stderr, "CONFIG_INVALID", "fix requires the plan subcommand", "fix")
+			return 2
+		}
+		return runFixPlan(args[2:], stdout, stderr)
 	case "diff":
 		return runDiff(args[1:], stdout, stderr)
 	case "policy":
@@ -195,11 +203,58 @@ func runScan(args []string, stdout, stderr io.Writer) int {
 	return 0
 }
 
+func runFixPlan(args []string, stdout, stderr io.Writer) int {
+	flags := flag.NewFlagSet("fix plan", flag.ContinueOnError)
+	flags.SetOutput(io.Discard)
+	report := flags.String("report", "", "normalized scan report")
+	finding := flags.String("finding", "", "finding stable key")
+	root := flags.String("root", "", "repository root")
+	repositoryState := flags.String("repository-state", "", "current repository state")
+	format := flags.String("format", "terminal", "output format: terminal or json")
+	if err := flags.Parse(args); err != nil || *report == "" || *finding == "" || (*format != "terminal" && *format != "json") || len(flags.Args()) != 0 {
+		writeCLIError(stderr, "CONFIG_INVALID", "fix plan requires --report and --finding and supports terminal or json output", "fix plan")
+		return 2
+	}
+	plan, err := app.Plan(context.Background(), *report, *finding, *root, app.PlanOptions{CurrentRepositoryState: *repositoryState})
+	if err != nil {
+		var reportErr *remediation.ReportError
+		if errors.As(err, &reportErr) {
+			writeCLIError(stderr, string(reportErr.Code), reportErr.Message, "fix plan")
+			if reportErr.Code == remediation.FindingNotFound || reportErr.Code == remediation.FindingAmbiguous {
+				return 2
+			}
+		} else if errors.Is(err, app.ErrPlanIncomplete) {
+			writeCLIError(stderr, "PLAN_INCOMPLETE", err.Error(), "report")
+		} else if errors.Is(err, app.ErrPlanUnsupported) {
+			writeCLIError(stderr, "PLAN_UNSUPPORTED", err.Error(), "finding")
+		} else if errors.Is(err, app.ErrPlanRejected) {
+			writeCLIError(stderr, "PLAN_REJECTED", err.Error(), "repository")
+		} else if errors.Is(err, app.ErrPlanUnknown) {
+			writeCLIError(stderr, "PLAN_UNKNOWN", err.Error(), "repository")
+		} else {
+			writeCLIError(stderr, "PLAN_FAILED", err.Error(), "fix plan")
+		}
+		return 3
+	}
+	var outputErr error
+	if *format == "json" {
+		outputErr = presenter.WritePlanJSON(stdout, plan)
+	} else {
+		outputErr = presenter.WritePlanTerminal(stdout, plan)
+	}
+	if outputErr != nil {
+		writeCLIError(stderr, "OUTPUT_WRITE_FAILED", outputErr.Error(), "stdout")
+		return 3
+	}
+	return 0
+}
+
 func runDoctor(args []string, stdout, stderr io.Writer) int {
 	flags := flag.NewFlagSet("doctor", flag.ContinueOnError)
 	flags.SetOutput(io.Discard)
 	format := flags.String("format", "terminal", "output format: terminal or json")
 	if err := flags.Parse(args); err != nil {
+
 		writeCLIError(stderr, "CONFIG_INVALID", err.Error(), "arguments")
 		return 2
 	}

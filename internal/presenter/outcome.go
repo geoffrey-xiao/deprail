@@ -20,6 +20,9 @@ func WriteOutcomeSummary(w io.Writer, status string, findings int, errors []stri
 		if err := WriteHeader(w, "Scan incomplete: partial results."); err != nil {
 			return err
 		}
+		if err := WriteSummary(w, "Affected scope", "one or more workspaces"); err != nil {
+			return err
+		}
 		if err := WriteSummary(w, "Findings", findings); err != nil {
 			return err
 		}
@@ -48,13 +51,12 @@ func WriteOutcomeSummary(w io.Writer, status string, findings int, errors []stri
 }
 
 func diagnosticCode(diagnostic string) string {
-	if len(diagnostic) > 0 && diagnostic[0] == '[' {
-		if end := len(diagnostic) - 1; end > 1 {
-			for index := 1; index < len(diagnostic); index++ {
-				if diagnostic[index] == ']' {
-					return diagnostic[1:index]
-				}
+	for index := 0; index < len(diagnostic); index++ {
+		if diagnostic[index] == ':' {
+			if index > 0 {
+				return diagnostic[:index]
 			}
+			break
 		}
 	}
 	return ""

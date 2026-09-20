@@ -30,6 +30,19 @@ func TestWriteOutcomeSummaryDistinguishesStatuses(t *testing.T) {
 	}
 }
 
+func TestWriteOutcomeSummaryIncludesScopeAndStableErrorCode(t *testing.T) {
+	var output strings.Builder
+	if err := WriteOutcomeSummary(&output, "partial", 0, []string{"SCANNER_TIMEOUT: scanner timed out"}); err != nil {
+		t.Fatal(err)
+	}
+	if !strings.Contains(output.String(), "Affected scope: one or more workspaces") {
+		t.Fatalf("output lacks affected scope: %q", output.String())
+	}
+	if !strings.Contains(output.String(), "Error [SCANNER_TIMEOUT]:") {
+		t.Fatalf("output lacks stable error code: %q", output.String())
+	}
+}
+
 func TestWriteOutcomeSummaryDoesNotClaimNoVulnerabilitiesForFindings(t *testing.T) {
 	var output strings.Builder
 	if err := WriteOutcomeSummary(&output, "complete", 2, nil); err != nil {

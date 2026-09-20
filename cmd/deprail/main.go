@@ -240,10 +240,17 @@ func runFixPlan(args []string, stdout, stderr io.Writer) int {
 	finding := flags.String("finding", "", "finding stable key")
 	root := flags.String("root", "", "repository root")
 	repositoryState := flags.String("repository-state", "", "current repository state")
+	output := flags.String("output", "", "write JSON plan atomically to an external file")
 	format := flags.String("format", "terminal", "output format: terminal or json")
 	if err := flags.Parse(args); err != nil || *report == "" || *finding == "" || (*format != "terminal" && *format != "json") || len(flags.Args()) != 0 {
 		writeCLIError(stderr, "CONFIG_INVALID", "fix plan requires --report and --finding and supports terminal or json output", "fix plan")
 		return 2
+	}
+	if *output != "" {
+		if err := app.ValidatePlanOutput(*report, *output, *root); err != nil && errors.Is(err, remediation.ErrUnsafePath) {
+			writeCLIError(stderr, "PLAN_OUTPUT_OUTSIDE_ROOT_REQUIRED", err.Error(), "output")
+			return 2
+		}
 	}
 	plan, err := app.Plan(context.Background(), *report, *finding, *root, app.PlanOptions{CurrentRepositoryState: *repositoryState})
 	if err != nil {
@@ -265,6 +272,20 @@ func runFixPlan(args []string, stdout, stderr io.Writer) int {
 			writeCLIError(stderr, "PLAN_FAILED", err.Error(), "fix plan")
 		}
 		return 3
+	}
+	if *output != "" {
+		if err := presenter.WritePlanAtomic(*output, plan); err != nil {
+			switch {
+			case errors.Is(err, presenter.ErrPlanOutputOutsideRoot):
+				writeCLIError(stderr, "PLAN_OUTPUT_OUTSIDE_ROOT_REQUIRED", err.Error(), "output")
+			case errors.Is(err, presenter.ErrPlanSchemaInvalid):
+				writeCLIError(stderr, "PLAN_SCHEMA_INVALID", err.Error(), "plan")
+			default:
+				writeCLIError(stderr, "PLAN_WRITE_FAILED", err.Error(), "output")
+			}
+			return 3
+		}
+		return 0
 	}
 	var outputErr error
 	if *format == "json" {

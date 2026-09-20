@@ -142,7 +142,7 @@ start notice -> real-work progress -> trustworthy finding summary
              -> one truthful outcome -> bounded next action
 ```
 
-The contract applies consistently to discover, scan, doctor, diff, fix plan, and policy check. Messages must distinguish complete, partial, failed, and cancelled work without implying remediation or success that did not occur.
+The contract applies consistently to discover, scan, doctor, diff, and fix plan. Policy check retains its independent pass/warn/block decision output; execution completeness vocabulary must not replace that decision.
 
 ### 4.3 Interactive progress
 

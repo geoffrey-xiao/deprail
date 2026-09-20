@@ -18,6 +18,7 @@ import (
 type ScanOptions struct {
 	Scanner   adapter.ScannerAdapter
 	Artifacts artifact.Store
+	Events    EventSink
 }
 type ScanReport struct {
 	SchemaVersion      string                         `json:"schema_version"`
@@ -32,9 +33,23 @@ type ScanReport struct {
 }
 
 func Scan(ctx context.Context, root string, options ScanOptions) (ScanReport, error) {
+	if options.Events == nil {
+		options.Events = NopEventSink{}
+	}
+	if err := options.Events.Emit(Event{Type: EventInputValidated}); err != nil {
+		return ScanReport{}, err
+	}
+	if err := options.Events.Emit(Event{Type: EventWorkspaceDiscoveryStarted}); err != nil {
+		return ScanReport{}, err
+	}
 	graph, err := Discover(ctx, root, DiscoverOptions{})
 	if err != nil {
 		return ScanReport{Status: discovery.Failed, Findings: []adapter.Finding{}, Errors: []string{err.Error()}, ArtifactDigests: []string{}}, err
+	}
+	for _, workspace := range graph.Workspaces {
+		if err := options.Events.Emit(Event{Type: EventWorkspaceDiscovered, WorkspaceID: workspace.WorkspaceID, WorkspacePath: workspace.RelativePath}); err != nil {
+			return ScanReport{}, err
+		}
 	}
 	scanRoot, err := filepath.Abs(root)
 	if err != nil {
@@ -60,7 +75,13 @@ func Scan(ctx context.Context, root string, options ScanOptions) (ScanReport, er
 	if err != nil {
 		return ScanReport{Status: discovery.Failed, Findings: []adapter.Finding{}, Errors: []string{err.Error()}, ArtifactDigests: []string{}}, err
 	}
+	if err := options.Events.Emit(Event{Type: EventScanPlanBuilt, WorkspaceCount: len(units)}); err != nil {
+		return ScanReport{}, err
+	}
 	for _, unit := range units {
+		if err := options.Events.Emit(Event{Type: EventWorkspaceScanStarted, WorkspaceID: unit.Target.WorkspaceID, WorkspacePath: unit.Target.RelativePath}); err != nil {
+			return ScanReport{}, err
+		}
 		plan, planErr := options.Scanner.Plan(ctx, []adapter.Target{unit.Target})
 		if planErr != nil {
 			report.Errors = append(report.Errors, planErr.Error())
@@ -75,6 +96,9 @@ func Scan(ctx context.Context, root string, options ScanOptions) (ScanReport, er
 				report.Status = discovery.Partial
 			} else {
 				report.ArtifactDigests = append(report.ArtifactDigests, stored.Digest)
+				if err := options.Events.Emit(Event{Type: EventArtifactStored, WorkspaceID: unit.Target.WorkspaceID, WorkspacePath: unit.Target.RelativePath, Status: "stored"}); err != nil {
+					return ScanReport{}, err
+				}
 			}
 		}
 		if execErr != nil {
@@ -112,9 +136,18 @@ func Scan(ctx context.Context, root string, options ScanOptions) (ScanReport, er
 			validFindings = append(validFindings, findings[i])
 		}
 		report.Findings = append(report.Findings, validFindings...)
+		if err := options.Events.Emit(Event{Type: EventWorkspaceScanCompleted, WorkspaceID: unit.Target.WorkspaceID, WorkspacePath: unit.Target.RelativePath}); err != nil {
+			return ScanReport{}, err
+		}
+	}
+	if err := options.Events.Emit(Event{Type: EventNormalizationStarted}); err != nil {
+		return ScanReport{}, err
 	}
 	if len(report.Findings) == 0 && len(report.Errors) > 0 {
 		report.Status = discovery.Failed
+	}
+	if err := options.Events.Emit(Event{Type: EventReportReady, Status: string(report.Status), WorkspaceCount: len(units), CompletedWorkspaces: len(units)}); err != nil {
+		return ScanReport{}, err
 	}
 	return report, nil
 }

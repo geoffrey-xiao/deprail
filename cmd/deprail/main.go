@@ -209,7 +209,16 @@ func runScan(args []string, stdout, stderr io.Writer) int {
 		writeCLIError(stderr, "PATH_OUTSIDE_ROOT", err.Error(), root)
 		return 2
 	}
-	report, scanErr := app.Scan(context.Background(), root, app.ScanOptions{})
+	scanOptions := app.ScanOptions{}
+	capabilities := presenter.SelectCapabilities(presenter.CapabilityOptions{
+		Mode:   presenter.OutputMode(*format),
+		Stdout: stdout,
+		Stderr: stderr,
+	})
+	if capabilities.Interactive {
+		scanOptions.Events = presenter.ProgressSink{Writer: stderr}
+	}
+	report, scanErr := app.Scan(context.Background(), root, scanOptions)
 	var rendered bytes.Buffer
 	var renderErr error
 	if *format == "json" {

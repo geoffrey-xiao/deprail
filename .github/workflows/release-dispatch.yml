@@ -81,7 +81,7 @@ jobs:
             preview|candidate)
               identifier=preview
               [[ "$MODE" == candidate ]] && identifier=rc
-              highest="$(git tag --list "v$base-$identifier.*" | sed -nE "s#^v$base-$identifier\.([0-9]+)$#\1#p" | sort -n | tail -n 1)"
+              highest="$(git tag --list "v$base-$identifier.*" | sed -nE "s#^v$base-$identifier\.([0-9]+)\$#\1#p" | sort -n | tail -n 1)"
               [[ -n "$highest" ]] || highest=0
               version="$base-$identifier.$((highest + 1))"
               ;;

@@ -8,6 +8,7 @@
 **Decision:** `[GO / GO WITH APPROVED GAPS / NO-GO — owner to confirm]`
 
 Release workflow and artifact publication completed successfully. The owner decision and security/architecture review remain open.
+Reusable release gate: [`docs/RELEASE-CHECKLIST.md`](../RELEASE-CHECKLIST.md)
 
 Missing or inconsistent evidence blocks the applicable release mode. Do not replace missing evidence with an unchecked claim.
 

@@ -109,7 +109,7 @@ For each artifact:
 11. Create and review the version-specific retrospective.
 12. Link follow-up actions and remaining risks from the release issue.
 
-The retrospective is required after preview, release-candidate, and stable publication. It does not replace release evidence or owner/security approval.
+The retrospective is required after preview, release-candidate, and stable publication. It does not replace release evidence or owner/security approval. Use the reusable [`docs/RELEASE-CHECKLIST.md`](RELEASE-CHECKLIST.md) for the complete pre-publication and post-publication gate.
 
 ## 7. Rollback
 

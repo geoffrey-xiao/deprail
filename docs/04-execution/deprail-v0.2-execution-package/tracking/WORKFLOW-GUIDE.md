@@ -190,5 +190,9 @@ During PR review, the owner reviews acceptance criteria, evidence, compatibility
 1. Attach final evidence to the issue.
 2. Set the Project item to `Done`.
 3. `Closes #N` automatically closes the issue when the PR merges.
+4. For a release issue, create or update the version-specific retrospective after publication.
+5. Link the retrospective and follow-up actions from the release issue and release evidence record.
 
 A `Refs #N` relationship does not provide the same automatic closure behavior.
+
+Release retrospectives are required for preview, release-candidate, and stable releases. Keep owner acceptance and security/architecture review separate, and do not mark the retrospective complete until follow-up actions are tracked or explicitly accepted.

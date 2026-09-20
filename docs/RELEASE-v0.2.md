@@ -106,6 +106,10 @@ For each artifact:
 8. Run protected approval gates before artifact upload.
 9. Attach artifacts, checksums, evidence, and remaining risks.
 10. Record the final owner decision.
+11. Create and review the version-specific retrospective.
+12. Link follow-up actions and remaining risks from the release issue.
+
+The retrospective is required after preview, release-candidate, and stable publication. It does not replace release evidence or owner/security approval.
 
 ## 7. Rollback
 
@@ -132,3 +136,17 @@ The release record must link:
 - SBOM/signing status;
 - reviewer and owner decision;
 - remaining risks and rollback notes.
+## 9. Post-release retrospective
+
+Create `docs/retrospectives/RETROSPECTIVE-v<version>.md` after every published release. The record MUST include:
+
+- delivered capabilities and release outcomes;
+- what went well;
+- mistakes, impact, root cause, correction, and prevention;
+- security and supply-chain lessons;
+- process improvements;
+- remaining risks;
+- follow-up actions with owners and acceptance evidence;
+- separate owner and security/architecture review status.
+
+Link the retrospective from the release issue and version-specific release evidence. Follow-up actions MUST be tracked as issues or explicitly accepted before the retrospective is marked complete. Preserve historical retrospectives unchanged; corrections require an additive follow-up record.

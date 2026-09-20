@@ -35,6 +35,17 @@ func TestDiscoverJSONWritesDataToStdoutOnly(t *testing.T) {
 	}
 }
 
+func TestNormalizeScanArgsPreservesOutputFlag(t *testing.T) {
+	got, err := normalizeScanArgs([]string{"testdata/fixtures/mixed-repository", "--format", "json", "--output", "scan_result.json"})
+	if err != nil {
+		t.Fatal(err)
+	}
+	want := []string{"--format", "json", "--output", "scan_result.json", "testdata/fixtures/mixed-repository"}
+	if strings.Join(got, "\x00") != strings.Join(want, "\x00") {
+		t.Fatalf("normalized args = %#v, want %#v", got, want)
+	}
+}
+
 func TestDiscoverIncompleteProjectReturnsCodeThreeAndJSON(t *testing.T) {
 	fixture := fixturePath(t, "npm-basic")
 	var stdout, stderr bytes.Buffer

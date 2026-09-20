@@ -3,20 +3,25 @@ package presenter
 import (
 	"bytes"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
-	"os"
-	"path/filepath"
 	"strings"
 
 	"github.com/geoffrey-xiao/deprail/internal/remediation"
+)
+
+var (
+	ErrPlanOutputOutsideRoot = errors.New("plan output is outside the allowed boundary")
+	ErrPlanSchemaInvalid     = errors.New("generated plan schema is invalid")
+	ErrPlanWriteFailed       = errors.New("plan persistence failed")
 )
 
 func WritePlanJSON(w io.Writer, plan remediation.Plan) error {
 	canonical := plan
 	canonical.Canonicalize()
 	if err := canonical.Validate(); err != nil {
-		return err
+		return fmt.Errorf("%w: %v", ErrPlanSchemaInvalid, err)
 	}
 	encoder := json.NewEncoder(w)
 	encoder.SetIndent("", "  ")
@@ -70,41 +75,15 @@ func WritePlanTerminal(w io.Writer, plan remediation.Plan) error {
 }
 
 func WritePlanAtomic(path string, plan remediation.Plan) error {
-	if path == "" {
-		return fmt.Errorf("output path is required")
-	}
-	if err := rejectInsideRoot(path, plan.RepositoryIdentity.Root); err != nil {
-		return err
-	}
 	var data bytes.Buffer
 	if err := WritePlanJSON(&data, plan); err != nil {
 		return err
 	}
-	return WriteAtomic(path, data.Bytes())
-}
-
-func rejectInsideRoot(path, root string) error {
-	canonicalRoot, err := filepath.EvalSymlinks(root)
-	if err != nil {
-		return fmt.Errorf("resolve repository root: %w", err)
-	}
-	absolute, err := filepath.Abs(path)
-	if err != nil {
-		return err
-	}
-	cleanRoot, err := filepath.Abs(canonicalRoot)
-	if err != nil {
-		return err
-	}
-	rel, err := filepath.Rel(cleanRoot, absolute)
-	if err == nil && rel != ".." && !strings.HasPrefix(rel, ".."+string(os.PathSeparator)) {
-		return fmt.Errorf("output path is inside repository root")
-	}
-	parent, err := filepath.EvalSymlinks(filepath.Dir(absolute))
-	if err == nil {
-		if rel, e := filepath.Rel(cleanRoot, filepath.Join(parent, filepath.Base(absolute))); e == nil && rel != ".." && !strings.HasPrefix(rel, ".."+string(os.PathSeparator)) {
-			return fmt.Errorf("output path is inside repository root")
+	if _, err := remediation.WriteExternalOutput(plan.RepositoryIdentity.Root, path, data.Bytes()); err != nil {
+		if errors.Is(err, remediation.ErrUnsafePath) {
+			return fmt.Errorf("%w: %v", ErrPlanOutputOutsideRoot, err)
 		}
+		return fmt.Errorf("%w: %v", ErrPlanWriteFailed, err)
 	}
 	return nil
 }

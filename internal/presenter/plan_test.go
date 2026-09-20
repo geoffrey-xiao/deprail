@@ -70,3 +70,19 @@ func TestWritePlanAtomicRejectsRepositoryAndDoesNotOverwrite(t *testing.T) {
 		t.Fatal(err)
 	}
 }
+func TestWritePlanAtomicRejectsTraversalAndUnresolvedSymlinkParent(t *testing.T) {
+	plan := presenterPlan(t)
+	traversal := filepath.Join(t.TempDir(), "child") + string(os.PathSeparator) + ".." + string(os.PathSeparator) + "plan.json"
+	if err := WritePlanAtomic(traversal, plan); err == nil {
+		t.Fatal("expected traversal rejection")
+	}
+	external := t.TempDir()
+	link := filepath.Join(external, "link")
+	if err := os.Symlink(plan.RepositoryIdentity.Root, link); err != nil {
+		t.Fatal(err)
+	}
+	output := filepath.Join(external, "link", "new", "plan.json")
+	if err := WritePlanAtomic(output, plan); err == nil {
+		t.Fatal("expected unresolved symlink-parent rejection")
+	}
+}

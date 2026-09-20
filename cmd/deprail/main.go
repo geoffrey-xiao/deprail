@@ -216,6 +216,12 @@ func runFixPlan(args []string, stdout, stderr io.Writer) int {
 		writeCLIError(stderr, "CONFIG_INVALID", "fix plan requires --report and --finding and supports terminal or json output", "fix plan")
 		return 2
 	}
+	if *output != "" {
+		if err := app.ValidatePlanOutput(*report, *output, *root); err != nil && errors.Is(err, remediation.ErrUnsafePath) {
+			writeCLIError(stderr, "PLAN_OUTPUT_OUTSIDE_ROOT_REQUIRED", err.Error(), "output")
+			return 2
+		}
+	}
 	plan, err := app.Plan(context.Background(), *report, *finding, *root, app.PlanOptions{CurrentRepositoryState: *repositoryState})
 	if err != nil {
 		var reportErr *remediation.ReportError
@@ -239,7 +245,14 @@ func runFixPlan(args []string, stdout, stderr io.Writer) int {
 	}
 	if *output != "" {
 		if err := presenter.WritePlanAtomic(*output, plan); err != nil {
-			writeCLIError(stderr, "OUTPUT_WRITE_FAILED", err.Error(), "output")
+			switch {
+			case errors.Is(err, presenter.ErrPlanOutputOutsideRoot):
+				writeCLIError(stderr, "PLAN_OUTPUT_OUTSIDE_ROOT_REQUIRED", err.Error(), "output")
+			case errors.Is(err, presenter.ErrPlanSchemaInvalid):
+				writeCLIError(stderr, "PLAN_SCHEMA_INVALID", err.Error(), "plan")
+			default:
+				writeCLIError(stderr, "PLAN_WRITE_FAILED", err.Error(), "output")
+			}
 			return 3
 		}
 		return 0

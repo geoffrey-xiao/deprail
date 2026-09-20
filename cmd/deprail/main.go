@@ -175,7 +175,7 @@ func normalizeScanArgs(args []string) ([]string, error) {
 }
 
 func writeCLIError(w io.Writer, code, message, scope string) {
-	_, _ = fmt.Fprintf(w, "error[%s] %s (%s)\n", code, message, scope)
+	_ = presenter.WriteError(w, code, scope+": "+message)
 }
 
 func runScan(args []string, stdout, stderr io.Writer) int {
@@ -322,12 +322,20 @@ func runDoctor(args []string, stdout, stderr io.Writer) int {
 		_ = json.NewEncoder(stdout).Encode(report)
 	} else {
 		if report.Scanner.Compatible {
-			_, _ = fmt.Fprintf(stdout, "DepRail: %s\nTag: %s\nCommit: %s\nOS: %s/%s\nOSV-Scanner: %s\n", report.Version, report.Tag, report.Commit, report.OS, report.Arch, report.Scanner.Version)
+			_ = presenter.WriteHeader(stdout, "DepRail: "+report.Version)
+			_ = presenter.WriteSummary(stdout, "Tag", report.Tag)
+			_ = presenter.WriteSummary(stdout, "Commit", report.Commit)
+			_ = presenter.WriteSummary(stdout, "OS", report.OS+"/"+report.Arch)
+			_ = presenter.WriteSummary(stdout, "OSV-Scanner", report.Scanner.Version)
 		} else {
-			_, _ = fmt.Fprintf(stdout, "DepRail: %s\nTag: %s\nCommit: %s\nOS: %s/%s\nOSV-Scanner: %s\n", report.Version, report.Tag, report.Commit, report.OS, report.Arch, report.Scanner.Error)
+			_ = presenter.WriteHeader(stdout, "DepRail: "+report.Version)
+			_ = presenter.WriteSummary(stdout, "Tag", report.Tag)
+			_ = presenter.WriteSummary(stdout, "Commit", report.Commit)
+			_ = presenter.WriteSummary(stdout, "OS", report.OS+"/"+report.Arch)
+			_ = presenter.WriteSummary(stdout, "OSV-Scanner", report.Scanner.Error)
 		}
 		if report.Scanner.Error != "" {
-			_, _ = fmt.Fprintf(stderr, "Help: %s\n", report.Scanner.Help)
+			_ = presenter.WriteSummary(stderr, "Help", report.Scanner.Help)
 		}
 	}
 	if !report.Scanner.Available || !report.Scanner.Compatible {
@@ -382,9 +390,13 @@ func runDiff(args []string, stdout, stderr io.Writer) int {
 		}
 		return 0
 	}
-	fmt.Fprintf(stdout, "Diff %s -> %s\n", comparison.BaseScanID, comparison.HeadScanID)
+	if err := presenter.WriteHeader(stdout, fmt.Sprintf("Diff %s -> %s", comparison.BaseScanID, comparison.HeadScanID)); err != nil {
+		return 3
+	}
 	for _, change := range comparison.Changes {
-		fmt.Fprintf(stdout, "%s %s\n", change.Kind, change.Key)
+		if err := presenter.WriteSummary(stdout, string(change.Kind), change.Key); err != nil {
+			return 3
+		}
 	}
 	return 0
 }

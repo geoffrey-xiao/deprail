@@ -17,12 +17,18 @@ func WriteScanJSON(w io.Writer, report app.ScanReport) error {
 }
 
 func WriteScanTerminal(w io.Writer, report app.ScanReport, verbose bool) error {
-	if _, err := fmt.Fprintf(w, "Status: %s\nFindings: %d\n", report.Status, len(report.Findings)); err != nil {
+	if err := WriteStatus(w, string(report.Status)); err != nil {
+		return err
+	}
+	if err := WriteSummary(w, "Findings", len(report.Findings)); err != nil {
 		return err
 	}
 	if verbose || len(report.Errors) > 0 {
+		if err := WriteSection(w, "Diagnostics"); err != nil {
+			return err
+		}
 		for _, diagnostic := range report.Errors {
-			if _, err := fmt.Fprintf(w, "Error: %s\n", diagnostic); err != nil {
+			if err := WriteError(w, "", diagnostic); err != nil {
 				return err
 			}
 		}

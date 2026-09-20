@@ -33,10 +33,19 @@ func WritePlanTerminal(w io.Writer, plan remediation.Plan) error {
 	if plan.Recommendation != nil {
 		state = string(plan.Recommendation.State) + " " + plan.Recommendation.CandidateID
 	}
-	if _, err := fmt.Fprintf(w, "Plan: %s\nFinding: %s\nRecommendation: %s\nRead-only: yes\n\n", plan.PlanID, plan.FindingIdentity.StableKey, state); err != nil {
+	if err := WriteHeader(w, "Plan: "+plan.PlanID); err != nil {
 		return err
 	}
-	if _, err := fmt.Fprintln(w, "Risks:"); err != nil {
+	if err := WriteSummary(w, "Finding", plan.FindingIdentity.StableKey); err != nil {
+		return err
+	}
+	if err := WriteSummary(w, "Recommendation", state); err != nil {
+		return err
+	}
+	if err := WriteSummary(w, "Read-only", "yes"); err != nil {
+		return err
+	}
+	if err := WriteSection(w, "Risks"); err != nil {
 		return err
 	}
 	for _, risk := range plan.Risks {
@@ -44,7 +53,7 @@ func WritePlanTerminal(w io.Writer, plan remediation.Plan) error {
 			return err
 		}
 	}
-	if _, err := fmt.Fprintln(w, "Affected files:"); err != nil {
+	if err := WriteSection(w, "Affected files"); err != nil {
 		return err
 	}
 	for _, file := range plan.AffectedFiles {
@@ -52,7 +61,7 @@ func WritePlanTerminal(w io.Writer, plan remediation.Plan) error {
 			return err
 		}
 	}
-	if _, err := fmt.Fprintln(w, "Future commands:"); err != nil {
+	if err := WriteSection(w, "Future commands"); err != nil {
 		return err
 	}
 	for _, command := range plan.Commands {
@@ -60,7 +69,7 @@ func WritePlanTerminal(w io.Writer, plan remediation.Plan) error {
 			return err
 		}
 	}
-	if _, err := fmt.Fprintln(w, "Verification:"); err != nil {
+	if err := WriteSection(w, "Verification"); err != nil {
 		return err
 	}
 	for _, verification := range plan.Verification {
@@ -68,10 +77,16 @@ func WritePlanTerminal(w io.Writer, plan remediation.Plan) error {
 			return err
 		}
 	}
-	if _, err := fmt.Fprintf(w, "Provenance:\n- report: %s\n- scan: %s\n- repository state: %s\n", plan.CreatedFrom.ReportDigest, plan.CreatedFrom.SourceScanID, plan.CreatedFrom.RepositoryState); err != nil {
+	if err := WriteSection(w, "Provenance"); err != nil {
 		return err
 	}
-	return nil
+	if err := WriteSummary(w, "report", plan.CreatedFrom.ReportDigest); err != nil {
+		return err
+	}
+	if err := WriteSummary(w, "scan", plan.CreatedFrom.SourceScanID); err != nil {
+		return err
+	}
+	return WriteSummary(w, "repository state", plan.CreatedFrom.RepositoryState)
 }
 
 func WritePlanAtomic(path string, plan remediation.Plan) error {

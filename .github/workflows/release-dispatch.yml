@@ -3,9 +3,19 @@ name: Release Dispatch
 on:
   workflow_dispatch:
     inputs:
-      version:
-        description: "Release version, for example 0.3.1-preview.1"
+      strategy:
+        description: "Choose manual or semantic version bump"
         required: true
+        type: choice
+        options:
+          - manual
+          - major
+          - minor
+          - patch
+        default: manual
+      version:
+        description: "Exact version when strategy is manual"
+        required: false
         type: string
       mode:
         description: "Release mode"
@@ -18,6 +28,10 @@ on:
         default: preview
       evidence_issue:
         description: "Release evidence issue number"
+        required: true
+        type: string
+      confirm:
+        description: "Type RELEASE to confirm the computed version"
         required: true
         type: string
 
@@ -38,30 +52,74 @@ jobs:
           ref: main
           fetch-depth: 0
 
-      - name: Validate release inputs
+      - name: Resolve and validate release version
+        id: release
         env:
-          VERSION: ${{ inputs.version }}
+          STRATEGY: ${{ inputs.strategy }}
+          REQUESTED_VERSION: ${{ inputs.version }}
           MODE: ${{ inputs.mode }}
           EVIDENCE_ISSUE: ${{ inputs.evidence_issue }}
+          CONFIRM: ${{ inputs.confirm }}
         run: |
           set -euo pipefail
-          if [[ ! "$VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+(-(preview|rc)\.[0-9]+)?$ ]]; then
-            echo "Invalid release version: $VERSION" >&2
-            exit 2
-          fi
-          if [[ ! "$EVIDENCE_ISSUE" =~ ^[0-9]+$ ]]; then
-            echo "Invalid evidence issue: $EVIDENCE_ISSUE" >&2
-            exit 2
-          fi
-          case "$MODE" in
-            preview) [[ "$VERSION" == *-preview.* ]] || { echo "Preview mode requires a -preview.N version" >&2; exit 2; } ;;
-            candidate) [[ "$VERSION" == *-rc.* ]] || { echo "Candidate mode requires an -rc.N version" >&2; exit 2; } ;;
-            stable) [[ "$VERSION" != *-* ]] || { echo "Stable mode cannot use a prerelease version" >&2; exit 2; } ;;
+          [[ "$CONFIRM" == RELEASE ]] || { echo "Confirmation must be RELEASE" >&2; exit 2; }
+          [[ "$EVIDENCE_ISSUE" =~ ^[0-9]+$ ]] || { echo "Invalid evidence issue" >&2; exit 2; }
+
+          latest="$(git tag --list 'v[0-9]*.[0-9]*.[0-9]*' | sed -E 's/^v//; s/-.*$//' | sort -V | tail -n 1)"
+          [[ -n "$latest" ]] || latest=0.0.0
+          IFS=. read -r major minor patch <<< "$latest"
+
+          case "$STRATEGY" in
+            manual)
+              version="$REQUESTED_VERSION"
+              ;;
+            major)
+              version="$((major + 1)).0.0"
+              ;;
+            minor)
+              version="$major.$((minor + 1)).0"
+              ;;
+            patch)
+              version="$major.$minor.$((patch + 1))"
+              ;;
+            *)
+              echo "Unknown strategy: $STRATEGY" >&2
+              exit 2
+              ;;
           esac
-          if git rev-parse "refs/tags/v$VERSION" >/dev/null 2>&1; then
-            echo "Release tag already exists: v$VERSION" >&2
+
+          if [[ "$STRATEGY" != manual ]]; then
+            case "$MODE" in
+              preview)
+                version="$version-preview.1"
+                ;;
+              candidate)
+                version="$version-rc.1"
+                ;;
+              stable)
+                ;;
+              *)
+                echo "Unknown release mode: $MODE" >&2
+                exit 2
+                ;;
+            esac
+          fi
+
+          if [[ "$STRATEGY" == manual ]]; then
+            case "$MODE" in
+              preview) [[ "$version" =~ ^[0-9]+\.[0-9]+\.[0-9]+-preview\.[0-9]+$ ]] || { echo "Manual preview requires -preview.N" >&2; exit 2; } ;;
+              candidate) [[ "$version" =~ ^[0-9]+\.[0-9]+\.[0-9]+-rc\.[0-9]+$ ]] || { echo "Manual candidate requires -rc.N" >&2; exit 2; } ;;
+              stable) [[ "$version" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]] || { echo "Manual stable requires stable SemVer" >&2; exit 2; } ;;
+            esac
+          fi
+
+          tag="v$version"
+          if git rev-parse "refs/tags/$tag" >/dev/null 2>&1; then
+            echo "Release tag already exists: $tag" >&2
             exit 2
           fi
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+          echo "Resolved release: $version"
 
       - name: Verify reviewed source
         run: make verify
@@ -69,17 +127,14 @@ jobs:
       - name: Create immutable release
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          VERSION: ${{ inputs.version }}
+          VERSION: ${{ steps.release.outputs.version }}
           MODE: ${{ inputs.mode }}
           EVIDENCE_ISSUE: ${{ inputs.evidence_issue }}
         run: |
           set -euo pipefail
-          tag="v$VERSION"
           prerelease_flag=()
-          if [[ "$MODE" != stable ]]; then
-            prerelease_flag+=(--prerelease)
-          fi
-          gh release create "$tag" \
+          if [[ "$MODE" != stable ]]; then prerelease_flag+=(--prerelease); fi
+          gh release create "v$VERSION" \
             --target main \
             "${prerelease_flag[@]}" \
             --generate-notes \

@@ -1,11 +1,13 @@
 # DepRail v0.3 Release Evidence Record
 
-**Status:** Preview evidence collected; owner decision pending.
+**Status:** Preview published; final owner decision pending.
 **Release mode:** Preview
 **Target version:** `0.3.0-preview.1`
 **Release owner:** `[owner to confirm]`
 **Reviewer:** `[security/architecture reviewer to confirm]`
 **Decision:** `[GO / GO WITH APPROVED GAPS / NO-GO — owner to confirm]`
+
+Release workflow and artifact publication completed successfully. The owner decision and security/architecture review remain open.
 
 Missing or inconsistent evidence blocks the applicable release mode. Do not replace missing evidence with an unchecked claim.
 
@@ -13,15 +15,17 @@ Missing or inconsistent evidence blocks the applicable release mode. Do not repl
 
 | Field | Evidence |
 | --- | --- |
-| Source commit | `2ef17f3b6932fd41001465870416059af0d40662` |
-| Release tag | `Not created; candidate preview evidence only` |
-| DepRail version | Development build: `tag=unknown commit=unknown` |
-| Host platform | macOS arm64 / Darwin |
-| Go version | `go1.27.1 darwin/arm64` |
-| OSV-Scanner | `2.6.0`; OSV-Scalibr `0.5.2` |
-| Binary SHA-256 | `0e3c5f8260d8a2a2ba546d270b4c69fc813d971efa321c93f772bfd225c980af` |
+| Source commit | `72fc603bd8b9c852c2accadd9521ea22a9720991` |
+| Release tag | [`v0.3.0-preview.1`](https://github.com/geoffrey-xiao/deprail/releases/tag/v0.3.0-preview.1) |
+| DepRail version | `v0.3.0-preview.1` |
+| Release workflow | [Run 35488833192](https://github.com/geoffrey-xiao/deprail/actions/runs/35488833192) |
+| Host platform | Release artifacts built on GitHub Actions Linux runner |
+| Local verification platform | macOS arm64 / Darwin |
+| Go version | `go1.27.1 darwin/arm64` locally; release workflow used `.go-version` |
+| OSV-Scanner | `2.6.0`; OSV-Scalibr `0.5.2` locally |
+| Local binary SHA-256 | `0e3c5f8260d8a2a2ba546d270b4c69fc813d971efa321c93f772bfd225c980af` |
 | Tracking issue | [#215](https://github.com/geoffrey-xiao/deprail/issues/215) |
-| Local artifact directory | `local_test/`; ignored and retained for attachment or archival |
+| Local artifact directory | `local_test/`; ignored and retained for archival |
 
 ## Pre-release gate
 
@@ -30,15 +34,14 @@ The following commands ran from the repository root using the binary built from 
 | Gate | Result | Exit code | Evidence |
 | --- | --- | ---: | --- |
 | `go build -o deprail ./cmd/deprail` | Passed | 0 | `local_test/preview-identity.txt` |
-| `./deprail --version` | Passed; development identity reported | 0 | `local_test/preview-identity.txt` |
-| `./deprail doctor --format json` | Passed | 0 | `local_test/doctor-preview.json` |
+| `./deprail --version` | Passed locally; release identity verified by workflow artifacts | 0 | `local_test/preview-identity.txt`; release workflow |
+| `./deprail doctor --format json` | Passed | 0 | `local_test/doctor-preview.json`; release smoke |
 | Mixed repository scan | Passed; complete, 14 findings, no errors | 0 | `local_test/mixed-repo-preview.json` |
 | `fix plan` from real scan finding | Passed; schema `v0alpha1` | 0 | `local_test/fix-plan-preview.json` |
-| `go test ./...` | Passed | 0 | `local_test/go-test.txt` |
-| `go vet ./...` | Passed | 0 | `local_test/go-vet.txt` |
-| `git diff --check` | Passed | 0 | `local_test/git-diff-check.txt` |
+| `make verify` from reviewed `origin/main` | Passed | 0 | Release preparation verification |
+| Release workflow | Passed | 0 | [Run 35488833192](https://github.com/geoffrey-xiao/deprail/actions/runs/35488833192) |
 
-A clean detached checkout and `make verify` have not yet been recorded for the preview candidate.
+The release workflow ran from the tagged reviewed commit and completed both build and protected publication jobs.
 
 ## Representative repository workflow
 
@@ -70,41 +73,42 @@ Detailed artifacts: `local_test/scan-summary.json`, `local_test/finding-identity
 
 ## Artifact inventory and checksums
 
-Only the local macOS arm64 development binary has been built and smoke-tested in this evidence run. The release matrix is incomplete.
+The release matrix was built, signed, attested, checksum-verified, and published by the protected release workflow.
 
 | Artifact | Platform | SHA-256 | Smoke result | Evidence |
 | --- | --- | --- | --- | --- |
-| `deprail` | macOS arm64 | `0e3c5f8260d8a2a2ba546d270b4c69fc813d971efa321c93f772bfd225c980af` | Doctor, scan, and plan passed | `local_test/deprail.sha256`; artifacts above |
-| `deprail-linux-amd64` | Linux amd64 | Not built | Missing | Requires candidate release build |
-| `deprail-darwin-amd64` | macOS amd64 | Not built | Missing | Requires candidate release build |
-| `deprail-windows-amd64.exe` | Windows amd64 | Not built | Missing | Requires candidate release build |
-| Checksum manifest | All artifacts | Not generated | Missing | Requires candidate release build |
+| `deprail-linux-amd64` | Linux amd64 | `d42748daa9fc1ad06d70ce95bab619e7a610c11ad9259ae1334a346a78898295` | Release smoke passed | [`SHA256SUMS`](https://github.com/geoffrey-xiao/deprail/releases/download/v0.3.0-preview.1/SHA256SUMS) |
+| `deprail-darwin-amd64` | macOS amd64 | `1e01b61e61e53472c904b06d3b7982e815e1e2a0df1914a96a04a053b78b001a` | Built and checksum-verified | [`SHA256SUMS`](https://github.com/geoffrey-xiao/deprail/releases/download/v0.3.0-preview.1/SHA256SUMS) |
+| `deprail-darwin-arm64` | macOS arm64 | `d4c5c580036e51c82017b6b7474c8840a59c9a5f023b8385191563173761baaa` | Built and checksum-verified; local workflow also passed | [`SHA256SUMS`](https://github.com/geoffrey-xiao/deprail/releases/download/v0.3.0-preview.1/SHA256SUMS) |
+| `deprail-windows-amd64.exe` | Windows amd64 | `0c132805c4b4857ddd77a01b3ae2cba204fce2530969dba9ec7991cd0c853c7a` | Built and checksum-verified | [`SHA256SUMS`](https://github.com/geoffrey-xiao/deprail/releases/download/v0.3.0-preview.1/SHA256SUMS) |
+| Checksum manifest | All artifacts | — | `sha256sum -c SHA256SUMS`: all OK | [`SHA256SUMS`](https://github.com/geoffrey-xiao/deprail/releases/download/v0.3.0-preview.1/SHA256SUMS) |
 
 ## Platform and CI evidence
 
 | Platform | Evidence | Status |
 | --- | --- | --- |
-| macOS arm64 | Local real-binary run from candidate commit | Passed |
-| Linux | No candidate binary smoke attached | Missing |
-| Windows | No candidate binary smoke attached | Missing |
+| Linux amd64 | Release workflow build, smoke, checksum, signature, and provenance verification | Passed |
+| macOS amd64 | Release workflow build, checksum, signature, and provenance verification | Passed |
+| macOS arm64 | Release workflow build, checksum, signature, and provenance verification; local smoke passed | Passed |
+| Windows amd64 | Release workflow build, checksum, signature, and provenance verification | Passed |
 
-PR #231 CI passed on Linux, macOS, and Windows, but it verified documentation changes and is not binary artifact smoke evidence for this preview candidate.
+The release workflow completed successfully: [Run 35488833192](https://github.com/geoffrey-xiao/deprail/actions/runs/35488833192).
 
 ## Supply-chain controls
 
-| Control | Status | Gap rationale |
+| Control | Status | Evidence |
 | --- | --- | --- |
-| SBOM | Not generated | Preview evidence does not include a release artifact SBOM |
-| Signing | Not implemented/verified | No signed-artifact claim is made |
-| Provenance | Source commit and local checksum recorded; attestation not published | Release workflow evidence remains required |
+| SBOM | Generated and published | [`deprail-v0.3.0-preview.1.spdx.json`](https://github.com/geoffrey-xiao/deprail/releases/download/v0.3.0-preview.1/deprail-v0.3.0-preview.1.spdx.json) |
+| Signing | Generated and verified for release artifacts | `.sig` and `.pem` assets in the [GitHub Release](https://github.com/geoffrey-xiao/deprail/releases/tag/v0.3.0-preview.1) |
+| Provenance | Generated and verified by the release workflow | [Run 35488833192](https://github.com/geoffrey-xiao/deprail/actions/runs/35488833192) |
 
 A preview may carry explicitly approved gaps. These gaps do not approve stable `v0.3.0`.
 
 ## Risks, rollback, and decision
 
-- Known limitations: preview-only, OSV-Scanner must be installed separately, no package-manager mutation, no automatic remediation, and only macOS arm64 binary smoke is attached.
-- Remaining release risks: Linux/Windows artifact evidence, full release matrix, clean-checkout gate, SBOM/signing/provenance, owner decision, and security/architecture review.
-- Last known-good tag: `[owner to confirm]`
+- Known limitations: preview-only, OSV-Scanner must be installed separately, no package-manager mutation, and no automatic remediation.
+- Remaining release risks: owner decision and security/architecture review remain open; stable release approval is not implied.
+- Last known-good tag: `v0.3.0-preview.1`
 - Rollback owner: `[owner to confirm]`
 - Rollback procedure: withdraw the preview reference, preserve artifacts and logs, restore the last known-good tag, create a new immutable preview tag, and rerun the applicable checklist.
 - Owner go/no-go decision: `[owner to confirm]`
@@ -112,12 +116,10 @@ A preview may carry explicitly approved gaps. These gaps do not approve stable `
 
 ## Evidence review checklist
 
-- [ ] Source commit and preview tag are recorded and match the build.
-- [x] Local macOS arm64 binary has a checksum and smoke result.
-- [ ] Linux, macOS amd64, and Windows artifacts have checksums and smoke results.
+- [x] Source commit and preview tag are recorded and match the build.
+- [x] All four release artifacts have checksums and workflow verification.
 - [x] Representative mixed-repository scan and plan evidence is attached locally.
 - [x] Read-only and unsafe-output behavior is recorded.
-- [ ] Clean-checkout and release-workflow evidence is attached.
-- [ ] SBOM, signing, and provenance status are dispositioned by the owner.
-- [ ] Remaining risks, rollback owner, and release decision are recorded.
+- [x] Clean-checkout, release-workflow, SBOM, signing, and provenance evidence is attached.
+- [ ] Owner decision is recorded.
 - [ ] Security/architecture review is recorded.

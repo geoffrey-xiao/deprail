@@ -260,6 +260,7 @@ Respect the execution controls:
 ### Release evidence
 
 Release approval MUST include evidence from the actual reviewed binary and a real representative repository workflow, not unit tests alone. Record exact commands, exit codes, artifact paths, platform, binary identity, repository-tree comparison, and remaining risks in the applicable release-evidence record. Use the release-specific manual procedure rather than duplicating command details in this guide; for v0.3, see [`docs/04-execution/deprail-v0.3-execution-package/MANUAL-TEST-GUIDE.md`](docs/04-execution/deprail-v0.3-execution-package/MANUAL-TEST-GUIDE.md).
+Version-specific release records MUST be stored under `docs/release-evidence/` using the naming pattern `RELEASE-v<version>-EVIDENCE.md` (for example, `RELEASE-v0.3-preview.1-EVIDENCE.md`). Preserve superseded preview and release records unchanged; keep raw command output, generated artifacts, and checksums in the ignored `local_test/` directory or attach them to the linked release issue/PR, and link those artifacts from the tracked record.
 
 The release workflow MUST run from a baseline containing all prerequisite fixes. A passing isolated feature branch is not sufficient when the workflow depends on an earlier CLI or contract fix.
 

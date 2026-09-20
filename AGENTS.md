@@ -261,6 +261,17 @@ Respect the execution controls:
 
 Release approval MUST include evidence from the actual reviewed binary and a real representative repository workflow, not unit tests alone. Record exact commands, exit codes, artifact paths, platform, binary identity, repository-tree comparison, and remaining risks in the applicable release-evidence record. Use the release-specific manual procedure rather than duplicating command details in this guide; for v0.3, see [`docs/04-execution/deprail-v0.3-execution-package/MANUAL-TEST-GUIDE.md`](docs/04-execution/deprail-v0.3-execution-package/MANUAL-TEST-GUIDE.md).
 Version-specific release records MUST be stored under `docs/release-evidence/` using the naming pattern `RELEASE-v<version>-EVIDENCE.md` (for example, `RELEASE-v0.3-preview.1-EVIDENCE.md`). Preserve superseded preview and release records unchanged; keep raw command output, generated artifacts, and checksums in the ignored `local_test/` directory or attach them to the linked release issue/PR, and link those artifacts from the tracked record.
+### Post-release retrospective
+
+After every preview, release candidate, or stable release:
+
+1. Create a version-specific retrospective under `docs/retrospectives/` using the naming pattern `RETROSPECTIVE-v<version>.md`.
+2. Record delivered capabilities, release and evidence outcomes, what went well, mistakes with impact/root cause/correction/prevention, security and supply-chain lessons, process improvements, remaining risks, and follow-up actions.
+3. Link the retrospective from the release issue and release evidence record.
+4. Keep owner acceptance and security/architecture review as separate checklist items.
+5. Do not mark the retrospective complete until follow-up actions are tracked as issues or explicitly accepted.
+
+Historical retrospectives MUST remain unchanged after acceptance; corrections require an additive follow-up record.
 
 The release workflow MUST run from a baseline containing all prerequisite fixes. A passing isolated feature branch is not sufficient when the workflow depends on an earlier CLI or contract fix.
 

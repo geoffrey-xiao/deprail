@@ -28,7 +28,7 @@ func WriteDiscoveryTerminal(w io.Writer, graph discovery.ProjectGraph, verbose b
 		return err
 	}
 	for _, workspace := range graph.Workspaces {
-		if _, err := fmt.Fprintf(w, "- %s [%s] %s\n", workspace.RelativePath, workspace.Ecosystem, workspace.Completeness); err != nil {
+		if _, err := fmt.Fprintf(w, "- %s [%s] %s\n", SanitizeLabel(workspace.RelativePath), SanitizeLabel(string(workspace.Ecosystem)), SanitizeLabel(string(workspace.Completeness))); err != nil {
 			return err
 		}
 	}

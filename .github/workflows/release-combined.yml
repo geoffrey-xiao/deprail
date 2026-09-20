@@ -68,6 +68,8 @@ jobs:
         run: |
           set -euo pipefail
           [[ "$VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+(-(preview|rc)\.[0-9]+)?$ ]]
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git rev-parse "refs/tags/v$VERSION" >/dev/null 2>&1 && { echo "tag exists" >&2; exit 2; } || true
           git tag -a "v$VERSION" -m "DepRail $VERSION" "$(git rev-parse HEAD)"
           git push origin "v$VERSION"

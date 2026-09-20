@@ -103,8 +103,20 @@ jobs:
           check-latest: true
           cache: true
 
-      - name: Verify reviewed source
-        run: make verify
+      - name: Verify Go toolchain
+        run: make bootstrap
+
+      - name: Run generators
+        run: make generate
+
+      - name: Run formatting and vet checks
+        run: make lint
+
+      - name: Run unit and contract tests
+        run: make test
+
+      - name: Build source
+        run: make build
 
       - name: Create immutable release
         env:

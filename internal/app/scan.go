@@ -94,6 +94,7 @@ func Scan(ctx context.Context, root string, options ScanOptions) (ScanReport, er
 			report.Status = discovery.Partial
 			continue
 		}
+		validFindings := make([]adapter.Finding, 0, len(findings))
 		for i := range findings {
 			component, componentErr := normalize.NormalizeComponent(normalize.ComponentInput{
 				Name: findings[i].Component, Version: findings[i].Version,
@@ -108,8 +109,9 @@ func Scan(ctx context.Context, root string, options ScanOptions) (ScanReport, er
 			findings[i].WorkspaceID = unit.Target.WorkspaceID
 			findings[i].WorkspacePath = unit.Target.RelativePath
 			findings[i].Ecosystem = unit.Target.Ecosystem
+			validFindings = append(validFindings, findings[i])
 		}
-		report.Findings = append(report.Findings, findings...)
+		report.Findings = append(report.Findings, validFindings...)
 	}
 	if len(report.Findings) == 0 && len(report.Errors) > 0 {
 		report.Status = discovery.Failed

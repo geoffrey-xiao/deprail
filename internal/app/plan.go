@@ -7,14 +7,13 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"os"
-	"path/filepath"
-	"strings"
-
 	"github.com/geoffrey-xiao/deprail/internal/remediation"
 	"github.com/geoffrey-xiao/deprail/internal/remediation/java"
 	"github.com/geoffrey-xiao/deprail/internal/remediation/javascript"
 	"github.com/geoffrey-xiao/deprail/internal/remediation/python"
+	"os"
+	"path/filepath"
+	"strings"
 )
 
 var (
@@ -177,7 +176,7 @@ func loadPlanningReport(path string) (remediation.Report, error) {
 		report.Findings = append(report.Findings, remediation.ReportFinding{
 			StableKey: key,
 			Workspace: workspace,
-			Component: remediation.Component{PURL: purl, Name: componentName(purl), Version: finding.Version},
+			Component: remediation.Component{PURL: purl, Name: finding.Component, Version: finding.Version},
 			Aliases:   finding.Aliases, CurrentVersion: finding.Version,
 			FixedVersions: nonEmptyFixed(finding.Fixed),
 			Provenance:    remediation.Provenance{ArtifactDigests: scan.ArtifactDigests, Sources: []string{"scan-json"}},
@@ -187,17 +186,6 @@ func loadPlanningReport(path string) (remediation.Report, error) {
 		return remediation.Report{}, err
 	}
 	return report, nil
-}
-
-func componentName(purl string) string {
-	if i := strings.LastIndex(purl, "/"); i >= 0 {
-		value := purl[i+1:]
-		if j := strings.Index(value, "@"); j >= 0 {
-			return value[:j]
-		}
-		return value
-	}
-	return purl
 }
 
 func nonEmptyFixed(value string) []string {

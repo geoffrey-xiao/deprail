@@ -30,6 +30,27 @@ deprail fix plan --report <scan-report> --finding <finding-key>
 - `--quiet` suppresses successful progress and summaries while retaining required errors.
 - `--verbose` adds safe diagnostics without exposing secrets or changing result meaning.
 
+## Human message lifecycle
+
+Long-running commands use the following truthful sequence when the relevant boundary exists:
+
+1. Start notice naming the operation and target, such as `Scanning <path>...` or `Discovering workspaces...`.
+2. Real-work progress for discovered workspaces, scan targets, artifacts, or normalization; never invented percentages, durations, or activity.
+3. Finding summary using only trustworthy counts and severities; unknown severity remains unknown.
+4. One terminal outcome: `Complete`, `Partial`, `Failed`, or `Cancelled`.
+5. A bounded next action when safe, such as a JSON output path, affected workspace, stable finding key, or read-only plan command.
+
+Start notices, progress, summaries, and guidance are incidental output. They use stderr when stdout carries machine data. JSON stdout contains only the versioned report.
+
+| Outcome | Required meaning |
+| --- | --- |
+| `Complete` | Work finished; zero findings may say `No known vulnerabilities found.` |
+| `Partial` | Some scope was omitted, failed, or incomplete; identify affected scope where known. |
+| `Failed` | No trustworthy result or core execution failed; include stable error code and safe reason. |
+| `Cancelled` | User/context cancellation stopped work; never claim report readiness or success. |
+
+`--quiet` suppresses progress and successful summaries but retains required errors; an interactive one-shot start notice may remain. `--verbose` adds safe diagnostics and evidence without changing result meaning.
+
 ## Outcome behavior
 
 - `complete` with zero findings may render `No known vulnerabilities found.`

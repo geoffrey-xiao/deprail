@@ -20,18 +20,11 @@ func WriteScanTerminal(w io.Writer, report app.ScanReport, verbose bool) error {
 	if err := WriteStatus(w, string(report.Status)); err != nil {
 		return err
 	}
-	if err := WriteSummary(w, "Findings", len(report.Findings)); err != nil {
+	if err := WriteOutcomeSummary(w, string(report.Status), len(report.Findings), report.Errors); err != nil {
 		return err
 	}
-	if verbose || len(report.Errors) > 0 {
-		if err := WriteSection(w, "Diagnostics"); err != nil {
-			return err
-		}
-		for _, diagnostic := range report.Errors {
-			if err := WriteError(w, "", diagnostic); err != nil {
-				return err
-			}
-		}
+	if verbose && len(report.Errors) == 0 {
+		return WriteSummary(w, "Diagnostics", "none")
 	}
 	return nil
 }

@@ -10,6 +10,7 @@ permissions:
 
 jobs:
   build:
+    if: ${{ false }}
     permissions:
       contents: read
       actions: read

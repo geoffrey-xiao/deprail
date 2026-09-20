@@ -43,11 +43,23 @@ func run(args []string, stdout, stderr io.Writer) int {
 	}
 	if hasHelp(args[1:]) {
 		command := args[0]
-		if command == "fix" && len(args) > 1 && args[1] == "plan" {
+		switch command {
+		case "discover", "scan", "doctor", "diff":
+		case "fix":
+			if len(args) < 2 || args[1] != "plan" {
+				writeCLIError(stderr, "CONFIG_INVALID", "fix requires the plan subcommand", "fix")
+				return 2
+			}
 			command = "fix plan"
-		}
-		if command == "policy" && len(args) > 1 && args[1] == "check" {
+		case "policy":
+			if len(args) < 2 || args[1] != "check" {
+				writeCLIError(stderr, "CONFIG_INVALID", "policy requires the check subcommand", "policy")
+				return 2
+			}
 			command = "policy check"
+		default:
+			writeCLIError(stderr, "CONFIG_INVALID", fmt.Sprintf("unknown command %q", command), "command")
+			return 2
 		}
 		if err := writeCommandHelp(stdout, command); err != nil {
 			return 3

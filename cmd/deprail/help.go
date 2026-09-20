@@ -32,7 +32,7 @@ func writeCommandHelp(w io.Writer, command string) error {
 	case "diff":
 		text = "Usage: deprail diff --base path --head path [--format terminal|json]\n\nCompare two scan baselines.\n"
 	case "fix plan":
-		text = "Usage: deprail fix plan --report path --finding key [--format terminal|json]\n\nProduce a read-only remediation plan.\n"
+		text = "Usage: deprail fix plan --report path --finding key [--format terminal|json] [--output path]\n\nProduce a read-only remediation plan.\n"
 	case "policy check":
 		text = "Usage: deprail policy check --baseline path [--format json|sarif]\n\nEvaluate a baseline policy.\n"
 	default:

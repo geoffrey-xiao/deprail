@@ -39,6 +39,12 @@ v0.3.1: clear, safe, cross-platform terminal presentation
 v0.4: approved plan -> isolated application -> verification -> rescan -> patch evidence
 ```
 
+### Release sequencing and displaced work
+
+No v0.4 capability is displaced or removed. v0.3.1 is a bounded preview refinement scheduled between the v0.3 planning gate and v0.4 mutation/verification work; it consumes only presentation-focused planning and implementation capacity. The v0.4 start gate remains unchanged and still requires its own execution package, isolation, rollback, verification, rescan, and patch-evidence contracts.
+
+The repository has no approved stable `v0.3.0` tag at this planning point. The `v0.3.0-preview.1` release evidence and retrospective are therefore implementation carryover context, not a stable compatibility baseline. v0.3.1 compatibility must be checked against the latest stable repository contracts and explicitly recorded release evidence; if no stable v0.x tag exists, the release record must state that fact rather than treating the preview as stable.
+
 ## 2. Release outcome
 
 A developer using `deprail` receives clear, consistent, actionable terminal output during discovery, scanning, reporting, and plan inspection while automation receives unchanged, deterministic machine output.
@@ -121,11 +127,10 @@ Define reusable presentation primitives for:
 
 Visual meaning must not depend on color alone. Human output must remain useful when color is disabled or unavailable.
 
-Initial command surfaces:
-
 - `deprail doctor`;
 - `deprail discover`;
 - `deprail scan`;
+- `deprail diff`;
 - `deprail fix plan`.
 
 ### 4.3 Interactive progress
@@ -173,9 +178,9 @@ A partial or failed scan must never look like a successful empty result.
 
 ### 4.5 Existing flag compatibility
 
-The v0.1 CLI contract defines `--quiet` and `--verbose` for `deprail scan`. v0.3.1 preserves those contracts.
+The current implementation does not yet accept `--quiet` for `deprail scan`; this is a known CLI contract gap, not behavior to preserve. v0.3.1 must either implement the documented quiet behavior or explicitly defer and remove it from the release acceptance criteria before implementation approval. The preferred scope is to implement it and add parser, stream, and smoke coverage.
 
-Recommended semantics:
+Required semantics:
 
 - `--quiet` suppresses progress and successful human summaries while retaining errors and required diagnostics.
 - `--verbose` preserves existing behavior and exposes additional safe diagnostics.
@@ -307,8 +312,8 @@ The following are not v0.3.1 deliverables:
 
 ### Sprint 3 — cross-command integration and hardening
 
-- Integrate presentation behavior across `doctor`, `discover`, `scan`, and `fix plan`.
-- Reconcile `--quiet` and `--verbose` semantics.
+- Integrate presentation behavior across `doctor`, `discover`, `scan`, `diff`, and `fix plan`.
+- Implement and test `--quiet`; preserve and test `--verbose`.
 - Test redirected output, CI behavior, cancellation, terminal cleanup, and concurrent output.
 - Review dependency footprint and renderer ownership.
 - Produce manual and cross-platform evidence.
@@ -393,7 +398,7 @@ Manual evidence must include:
 
 ### Dependencies
 
-- v0.3.0-preview.1 release evidence and retrospective remain the baseline.
+- The v0.3.0-preview.1 release evidence and retrospective remain carryover context; no approved stable v0.3.0 tag exists at this planning point.
 - Issue #230 and PR #231 provide the approved UX scope.
 - Existing CLI, JSON, stdout/stderr, and flag contracts remain normative.
 - Existing application lifecycle boundaries must be sufficient to emit real progress events.
@@ -405,7 +410,9 @@ Manual evidence must include:
 | --- | --- | --- |
 | Progress contaminates JSON or stdout | Route all progress through presentation and stderr policy | JSON purity tests and redirected-output evidence |
 | False progress claims completion | Emit only from real application lifecycle events | Event contract and integration tests |
-| `--quiet` or `--verbose` behavior changes silently | Preserve current semantics and add compatibility cases | CLI contract review and smoke evidence |
+| `--quiet` or `--verbose` behavior changes silently | Define quiet implementation and preserve verbose semantics with compatibility evidence | CLI contract review and smoke evidence |
+| `--quiet` is currently rejected by the scan parser | Implement quiet mode explicitly rather than treating rejection as compatibility | Parser, stream, and smoke coverage |
+| Whole-CLI coverage omits `diff` | Include `diff` in shared presenter integration and evidence | Cross-command smoke coverage |
 | Hostile labels inject terminal control sequences | Escape and test all repository-derived labels | Adversarial presenter tests |
 | Styling makes output unreadable in CI or narrow terminals | Disable animation and provide monochrome/width fallbacks | Cross-platform and narrow-terminal evidence |
 | Terminal library leaks global output or cancellation behavior | Keep renderer behind DepRail-owned interfaces and review dependencies | Architecture/security review |
@@ -421,12 +428,12 @@ Before creating implementation issues or editing runtime code:
 - product, architecture, roadmap, UX plan, and this plan agree;
 - the v0.3.1 execution package exists;
 - presentation events and renderer ownership are explicit;
-- CLI, JSON, stdout/stderr, TTY, non-TTY, quiet, and verbose contracts are reconciled;
+- CLI, JSON, stdout/stderr, TTY, non-TTY, quiet, verbose, and exit contracts are reconciled;
 - hostile-label and terminal-control requirements are named;
 - fixtures and manual evidence scenarios are named;
 - dependency and license review scope is defined;
 - owner and reviewer are assigned;
-- milestone, Project view, and issue tracking are prepared.
+- tracking context is prepared; no implementation issues are created by this planning step.
 
 ## 11. Definition of Done
 
@@ -435,7 +442,7 @@ v0.3.1 is complete when:
 - the whole CLI uses consistent human presentation primitives;
 - interactive progress reflects real application phases without false claims;
 - complete, partial, failed, and cancelled outcomes are distinct;
-- existing `--quiet` and `--verbose` behavior is preserved and documented;
+- `--quiet` is implemented with the documented suppression semantics and covered by parser, stream, and smoke evidence;
 - JSON stdout remains parseable, deterministic, and free of progress or ANSI escapes;
 - non-TTY and CI output is stable and line-oriented;
 - hostile labels cannot inject terminal control sequences;

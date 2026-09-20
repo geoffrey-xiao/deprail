@@ -15,13 +15,16 @@ func WriteDiscoveryJSON(w io.Writer, graph discovery.ProjectGraph) error {
 }
 
 func WriteDiscoveryTerminal(w io.Writer, graph discovery.ProjectGraph, verbose bool) error {
-	if _, err := fmt.Fprintf(w, "Repository: %s\n", graph.DisplayName); err != nil {
+	if err := WriteHeader(w, "Repository: "+graph.DisplayName); err != nil {
 		return err
 	}
-	if _, err := fmt.Fprintf(w, "Completeness: %s\n", graph.Completeness); err != nil {
+	if err := WriteStatus(w, string(graph.Completeness)); err != nil {
 		return err
 	}
-	if _, err := fmt.Fprintf(w, "Workspaces: %d\n", len(graph.Workspaces)); err != nil {
+	if err := WriteSummary(w, "Workspaces", len(graph.Workspaces)); err != nil {
+		return err
+	}
+	if err := WriteSection(w, "Workspace results"); err != nil {
 		return err
 	}
 	for _, workspace := range graph.Workspaces {
@@ -30,8 +33,11 @@ func WriteDiscoveryTerminal(w io.Writer, graph discovery.ProjectGraph, verbose b
 		}
 	}
 	if verbose {
+		if err := WriteSection(w, "Diagnostics"); err != nil {
+			return err
+		}
 		for _, diagnostic := range graph.Diagnostics {
-			if _, err := fmt.Fprintf(w, "Diagnostic: %s (%s): %s\n", diagnostic.Code, diagnostic.Scope, diagnostic.Message); err != nil {
+			if err := WriteError(w, diagnostic.Code, diagnostic.Scope+": "+diagnostic.Message); err != nil {
 				return err
 			}
 		}

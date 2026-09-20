@@ -1,13 +1,13 @@
 # DepRail v0.3.1 Preview.1 Release Evidence Record
 
-**Status:** Draft release record; preview not published.
+**Status:** Preview published; final owner/security review and remaining supply-chain evidence pending.
 **Release mode:** Preview
 **Target version:** `0.3.1-preview.1`
-**Release owner:** `@geoffrey-xiao` — owner confirmation pending
-**Reviewer:** Architecture/security reviewer — assignment pending
-**Decision:** `GO / GO WITH APPROVED GAPS / NO-GO` — owner decision pending
+**Release owner:** `@geoffrey-xiao` — owner-approved preview publication
+**Reviewer:** Architecture/security reviewer — pending
+**Decision:** `GO WITH APPROVED GAPS` for preview publication; stable release not approved
 
-This record is an evidence index, not a release approval. Unchecked items are open gaps. A preview may proceed only with explicit owner approval of documented gaps; this record must not be read as a stable-release claim.
+This record is an evidence index, not a stable-release approval. Remaining unchecked items are open gaps and must be dispositioned before release closeout.
 
 Reusable gate: [`docs/RELEASE-CHECKLIST.md`](../RELEASE-CHECKLIST.md)
 
@@ -15,14 +15,14 @@ Reusable gate: [`docs/RELEASE-CHECKLIST.md`](../RELEASE-CHECKLIST.md)
 
 | Field | Evidence |
 | --- | --- |
-| Reviewed source commit | `94ab2f0dcfb3b983f627b917da65ab5ee6480463` at record creation |
-| Release tag | Not created; preview tag must be new and immutable |
-| DepRail version | Current manifest remains `0.3.0-preview.1`; update only through the approved release process |
-| Release workflow | Not run for `v0.3.1-preview.1` |
+| Reviewed source commit | `75932e7aecd533f2fee3d9c3f45da37fc5513be2` |
+| Release tag | [`v0.3.1-preview.1`](https://github.com/geoffrey-xiao/deprail/releases/tag/v0.3.1-preview.1) |
+| DepRail version | `v0.3.1-preview.1` |
+| Release workflow | [Combined run 35516278376](https://github.com/geoffrey-xiao/deprail/actions/runs/35516278376) |
 | Local verification platform | macOS arm64 / Darwin |
 | Local Go version | `go1.27.1 darwin/arm64` |
-| OSV-Scanner | Record exact installed version during release verification |
-| Local artifact SHA-256 | Not generated for a release artifact |
+| OSV-Scanner | External prerequisite; exact release-run version not recorded |
+| Release assets | Four platform binaries, `SHA256SUMS`, and SPDX SBOM published on the GitHub Release |
 | Tracking issue | [#253](https://github.com/geoffrey-xiao/deprail/issues/253) |
 | Project | DepRail project, v0.3.1 release work |
 
@@ -77,14 +77,14 @@ The local commands above were smoke verification only. They do not replace the c
 
 | Checklist area | Status | Evidence or gap |
 | --- | --- | --- |
-| Release identity and immutable tag | Open | Version manifest and tag are not yet prepared |
-| Plan and scope completion | Partial | v0.3.1 plan and implementation PRs exist; release disposition remains open |
+| Release identity and immutable tag | Passed | Published tag and release: `v0.3.1-preview.1` |
+| Plan and scope completion | Partial | v0.3.1 plan and implementation PRs exist; final closeout remains open |
 | Contract and security completion | Partial | Runtime contracts are implemented; architecture/security review is not recorded |
-| Automated verification | Partial | CI and local smoke evidence exist; clean release-checkout `make verify` record pending |
+| Automated verification | Passed | Combined run completed source verification and artifact publication |
 | Manual verification | Partial | Owner confirmed command UX verification; full release scenario bundle and platform captures pending |
-| Artifact and supply-chain verification | Open | Release artifacts, checksums, SBOM, signing, and provenance not generated for this preview |
-| Publication and approval | Open | No preview release workflow, notes, approval, or go/no-go decision yet |
-| Post-release closure | Open | Retrospective and follow-up evidence are not yet prepared |
+| Artifact and supply-chain verification | Partial | Binaries, checksums, and SBOM published; signing and provenance evidence pending |
+| Publication and approval | Passed with approved gaps | Preview published after owner approval; stable approval not implied |
+| Post-release closure | Open | Retrospective and final review remain open |
 
 ## Required release-gate work
 

@@ -3,7 +3,7 @@
 **Tracking issue:** [#239](https://github.com/geoffrey-xiao/deprail/issues/239)
 **Release evidence:** [`RELEASE-v0.3.1-preview.1-EVIDENCE.md`](../release-evidence/RELEASE-v0.3.1-preview.1-EVIDENCE.md)
 **Release gate:** [#253](https://github.com/geoffrey-xiao/deprail/issues/253)
-**Status:** Draft; preview publication and final owner/security review pending
+**Status:** Preview published; retrospective closeout pending final owner/security review and supply-chain evidence
 **Release mode:** Preview only; no stable-release claim
 **Owner:** `@geoffrey-xiao`
 **Reviewer:** `@geoffreyxiaoai` / architecture-security reviewer to confirm
@@ -14,7 +14,7 @@ The v0.3.1 cycle delivered a presentation-focused CLI refinement without changin
 
 The release work also exposed weaknesses in version and publication automation. Release Please repeatedly calculated `0.4.0-preview.1` for the intended `0.3.1-preview.1` preview and was replaced with an explicit release workflow. The combined workflow then required fixes for shell regex quoting, pinned Go setup, Git tag identity, and job decomposition. These corrections are recorded as process lessons, not hidden as successful first-pass behavior.
 
-This retrospective remains open until the preview release evidence, artifact workflow, owner decision, and architecture/security review are complete.
+This retrospective records the published preview and remains open only for final evidence and review closeout.
 
 ## What we delivered
 
@@ -37,9 +37,9 @@ This retrospective remains open until the preview release evidence, artifact wor
 - Help output became directly actionable: all six command pages include a tip and example.
 - CI passed across Linux, macOS, and Windows for the implementation PRs.
 - Hostile labels remained presentation data rather than executable terminal input.
-- Quiet mode retained required errors while suppressing successful progress and summaries.
+- The combined release workflow completed source verification, cross-platform artifact builds, checksums, and SBOM publication for `v0.3.1-preview.1`.
 - Release failures were caught before publication; no incorrect `0.4.0-preview.1` release was published.
-- The release workflow was made explicit and owner-controlled instead of relying on ambiguous automatic version calculation.
+- The preview was published only after explicit owner approval and remains clearly separated from stable-release approval.
 
 ## Mistakes and corrections
 

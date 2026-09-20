@@ -29,80 +29,146 @@ permissions:
   issues: read
 
 jobs:
-  release:
+  prepare:
     runs-on: ubuntu-latest
-    environment:
-      name: release-approval
-      url: https://github.com/${{ github.repository }}/issues/${{ inputs.evidence_issue }}
+    outputs:
+      version: ${{ steps.validate.outputs.version }}
     steps:
-      - name: Check out reviewed main
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
         with:
           ref: main
           fetch-depth: 0
+      - id: validate
+        env:
+          VERSION: ${{ inputs.version }}
+          EVIDENCE_ISSUE: ${{ inputs.evidence_issue }}
+          CONFIRM: ${{ inputs.confirm }}
+        run: |
+          set -euo pipefail
+          [[ "$CONFIRM" == RELEASE ]] || { echo "Confirmation must be RELEASE" >&2; exit 2; }
+          [[ "$EVIDENCE_ISSUE" =~ ^[0-9]+$ ]] || { echo "Invalid evidence issue" >&2; exit 2; }
+          [[ "$VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+(-(preview|rc)\.[0-9]+)?$ ]] || { echo "Invalid release version" >&2; exit 2; }
+          git rev-parse "refs/tags/v$VERSION" >/dev/null 2>&1 && { echo "Tag already exists" >&2; exit 2; } || true
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
 
-      - name: Set up Go
-        uses: actions/setup-go@v5
+  verify:
+    needs: prepare
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+      - uses: actions/setup-go@v5
         with:
           go-version-file: .go-version
           check-latest: true
           cache: true
+      - name: Verify Go toolchain
+        run: make bootstrap
+      - name: Run generators
+        run: make generate
+      - name: Run formatting and vet checks
+        run: make lint
+      - name: Run unit and contract tests
+        run: make test
+      - name: Build source
+        run: make build
 
-      - name: Verify source
-        run: |
-          set -euo pipefail
-          test "$(git rev-parse --abbrev-ref HEAD)" = main
-          test "${{ inputs.confirm }}" = RELEASE
-          test "${{ inputs.evidence_issue }}" -eq "${{ inputs.evidence_issue }}"
-          make bootstrap
-          make generate
-          make lint
-          make test
-          make build
-
-      - name: Create immutable tag and release
+  publish:
+    needs: [prepare, verify]
+    runs-on: ubuntu-latest
+    environment:
+      name: release-approval
+      url: https://github.com/${{ github.repository }}/issues/${{ inputs.evidence_issue }}
+    outputs:
+      tag: ${{ steps.publish.outputs.tag }}
+    permissions:
+      contents: write
+      issues: read
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 0
+      - id: publish
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          VERSION: ${{ inputs.version }}
+          VERSION: ${{ needs.prepare.outputs.version }}
           EVIDENCE_ISSUE: ${{ inputs.evidence_issue }}
         run: |
           set -euo pipefail
-          [[ "$VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+(-(preview|rc)\.[0-9]+)?$ ]]
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git rev-parse "refs/tags/v$VERSION" >/dev/null 2>&1 && { echo "tag exists" >&2; exit 2; } || true
-          git tag -a "v$VERSION" -m "DepRail $VERSION" "$(git rev-parse HEAD)"
-          git push origin "v$VERSION"
-          prerelease_flag=()
-          if [[ "${{ inputs.prerelease }}" == true ]]; then prerelease_flag+=(--prerelease); fi
-          gh release create "v$VERSION" --target "$(git rev-parse HEAD)" "${prerelease_flag[@]}" --generate-notes --title "DepRail $VERSION" --notes "Release evidence: https://github.com/${{ github.repository }}/issues/$EVIDENCE_ISSUE"
+          tag="v$VERSION"
+          git tag -a "$tag" -m "DepRail $VERSION" "$(git rev-parse HEAD)"
+          git push origin "$tag"
+          flags=()
+          [[ "${{ inputs.prerelease }}" == true ]] && flags+=(--prerelease)
+          gh release create "$tag" --target "$(git rev-parse HEAD)" "${flags[@]}" --generate-notes --title "DepRail $VERSION" --notes "Release evidence: https://github.com/${{ github.repository }}/issues/$EVIDENCE_ISSUE"
+          echo "tag=$tag" >> "$GITHUB_OUTPUT"
 
-      - name: Build release artifacts
+  build-artifacts:
+    needs: [prepare, publish]
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        target: [linux-amd64, darwin-amd64, darwin-arm64, windows-amd64]
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ needs.publish.outputs.tag }}
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: .go-version
+          check-latest: true
+          cache: true
+      - name: Build platform artifact
         env:
-          VERSION: ${{ inputs.version }}
+          TARGET: ${{ matrix.target }}
+          VERSION: ${{ needs.prepare.outputs.version }}
         run: |
           set -euo pipefail
           mkdir -p dist
+          IFS=- read -r goos goarch <<< "$TARGET"
+          suffix=""
+          [[ "$goos" == windows ]] && suffix=.exe
           commit="$(git rev-parse HEAD)"
           ldflags="-s -w -X github.com/geoffrey-xiao/deprail/internal/buildinfo.Version=v$VERSION -X github.com/geoffrey-xiao/deprail/internal/buildinfo.Tag=v$VERSION -X github.com/geoffrey-xiao/deprail/internal/buildinfo.Commit=$commit"
-          for target in linux-amd64 darwin-amd64 darwin-arm64 windows-amd64; do
-            IFS=- read -r goos goarch <<< "$target"
-            suffix=""
-            [[ "$goos" == windows ]] && suffix=.exe
-            GOOS="$goos" GOARCH="$goarch" go build -trimpath -ldflags="$ldflags" -o "dist/deprail-$target$suffix" ./cmd/deprail
-          done
-          (cd dist && sha256sum deprail-*) > dist/SHA256SUMS
+          GOOS="$goos" GOARCH="$goarch" go build -trimpath -ldflags="$ldflags" -o "dist/deprail-$TARGET$suffix" ./cmd/deprail
+      - uses: actions/upload-artifact@v4
+        with:
+          name: artifact-${{ matrix.target }}
+          path: dist/*
 
+  finalize:
+    needs: [prepare, publish, build-artifacts]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      id-token: write
+      attestations: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ needs.publish.outputs.tag }}
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: artifact-*
+          path: dist
+          merge-multiple: true
+      - name: Generate checksums
+        working-directory: dist
+        run: sha256sum deprail-* > SHA256SUMS
       - name: Generate SBOM
         uses: anchore/sbom-action@v0
         with:
           path: .
           format: spdx-json
-          output-file: dist/deprail-${{ inputs.version }}.spdx.json
+          output-file: dist/deprail-${{ needs.prepare.outputs.version }}.spdx.json
           upload-artifact: false
-
-      - name: Upload release artifacts
+      - name: Upload release assets
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          VERSION: ${{ inputs.version }}
-        run: gh release upload "v$VERSION" dist/* --repo "${{ github.repository }}" --clobber
+          TAG: ${{ needs.publish.outputs.tag }}
+        run: gh release upload "$TAG" dist/* --repo "${{ github.repository }}" --clobber

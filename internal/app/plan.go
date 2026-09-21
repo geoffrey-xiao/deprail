@@ -37,15 +37,23 @@ func Plan(ctx context.Context, reportPath, findingKey, repositoryRoot string, op
 	if err != nil {
 		return remediation.Plan{}, err
 	}
-	stateRoot := repositoryRoot
+	stateRoot := report.RepositoryIdentity.Root
 	if stateRoot == "" {
-		stateRoot = report.RepositoryIdentity.Root
+		return remediation.Plan{}, &remediation.ReportError{Code: remediation.ReportInvalid, Message: "report repository root is required"}
 	}
 	stateRoot, err = filepath.Abs(stateRoot)
 	if err != nil {
+		return remediation.Plan{}, fmt.Errorf("resolve report repository root: %w", err)
+	}
+	rootInput := repositoryRoot
+	if rootInput == "" {
+		rootInput = stateRoot
+	}
+	rootInput, err = filepath.Abs(rootInput)
+	if err != nil {
 		return remediation.Plan{}, fmt.Errorf("resolve repository root: %w", err)
 	}
-	root, err := isolation.RepositoryRootForPath(ctx, stateRoot)
+	root, err := isolation.RepositoryRootForPath(ctx, rootInput)
 	if err != nil {
 		return remediation.Plan{}, fmt.Errorf("resolve canonical repository root: %w", err)
 	}

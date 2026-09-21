@@ -15,7 +15,7 @@ Reusable gate: [`docs/RELEASE-CHECKLIST.md`](../RELEASE-CHECKLIST.md)
 
 | Field | Evidence |
 |---|---|
-| Reviewed source commit | [`7903612`](https://github.com/geoffrey-xiao/deprail/commit/7903612) (`origin/main` after PR #331 merge) |
+| Reviewed source commit | [`eaf1d48`](https://github.com/geoffrey-xiao/deprail/commit/eaf1d48) (`origin/main` after documentation PR #333 merge) |
 | Latest stable tag | None; latest preview is `v0.3.1-preview.1` |
 | Existing preview tags | `v0.3.1-preview.1`, `v0.3.0-preview.1`, `v0.2.0-preview.4`, `v0.2.0-preview.3`, `v0.2.0-preview.2`, `v0.2.0-preview.1`, `v0.1.0-preview.1` |
 | Release manifest | Not required for this manually run release; manual version/tag/release identity will be recorded here |
@@ -23,7 +23,7 @@ Reusable gate: [`docs/RELEASE-CHECKLIST.md`](../RELEASE-CHECKLIST.md)
 | DepRail version | Pending release workflow |
 | Release owner | `@geoffrey-xiao` |
 | Architecture/security reviewer | Pending named review |
-| Release workflow | Pending |
+| Release workflow | Not runnable as configured; `.github/workflows/release.yml` currently has `build.if: ${{ false }}` |
 
 ## Scope
 
@@ -57,25 +57,25 @@ The current merged slices do not include a user-facing `deprail fix apply` orche
 
 | Area | Status | Evidence or gap |
 |---|---|---|
-| Release identity and immutable tag | Partial | Baseline captured at `7903612`; manual version/tag identity and tag are still pending |
+| Release identity and immutable tag | Partial | Candidate source captured at `eaf1d48`; release tag and final CLI identity remain pending |
 | Plan and scope completion | Partial | Preview.1 baseline/diff scope is implemented; complete apply orchestration is intentionally deferred to preview.2 under #332 |
 | Contract and security completion | Partial | Contracts exist; named release security/architecture review pending |
-| Automated verification | Complete for merged baseline slice | PR #331 CI passed on Linux/macOS/Windows; reviewed `origin/main` binary smoke passed locally |
+| Automated verification | Complete for merged preview.1 scope | `make verify` passed on macOS arm64; PR #331 and #333 CI passed on Linux/macOS/Windows |
 | Manual verification | Partial | Scan, baseline, diff, policy-help, and fix-plan workflow passed on macOS arm64; fix apply is deferred to preview.2 |
-| Artifact and supply-chain verification | Partial | Reviewed binary `/tmp/deprail-v0.4.0-main`; SHA-256 `e2e19070486eb79dd1948b88041e861c220daca7ec214496f1d07706ec3688dc`; SBOM, signing, and provenance pending |
-| Publication and approval | Open | No release publication authorized |
+| Artifact and supply-chain verification | Partial | Local candidate artifacts built for macOS arm64, Linux amd64, and Windows amd64 with verified SHA-256 checksums; the release CI build job is disabled, so CI-generated SBOM/signatures/provenance are not available |
+| Publication and approval | Blocked | Manual publication would bypass the configured release workflow; owner decision alone does not provide CI-generated supply-chain evidence |
 | Post-release closure | Open | Retrospective cannot be completed before release decision |
 
 ## Required next evidence
 
 - [x] Capture release baseline: `origin/main`, tags, releases, and manifest status. Manifest is not required for the owner-run manual release process.
-- [x] Run `make verify` from a clean reviewed checkout. Result: passed on macOS arm64 from baseline branch; `go generate`, `go vet`, `go test`, and `go build` completed successfully.
+- [x] Run `make verify` from reviewed `origin/main` `eaf1d48` on macOS arm64; `go generate`, `go vet`, `go test`, and `go build` completed successfully.
 - [x] Run representative repository scan and baseline/diff smoke; macOS arm64, source `7903612`, binary `/tmp/deprail-v0.4.0-main`, scan complete with 14 findings, baseline create exit `0`, identical diff exit `0`.
 - [x] Reconcile complete `deprail fix apply` scope for preview.1: explicitly deferred to preview.2 under [#332](https://github.com/geoffrey-xiao/deprail/issues/332); no implementation claim is made for preview.1.
-- [x] Record reviewed binary identity and checksum: `/tmp/deprail-v0.4.0-main`, SHA-256 `e2e19070486eb79dd1948b88041e861c220daca7ec214496f1d07706ec3688dc`, macOS arm64.
-- [ ] Record SBOM, signing, and provenance status.
-- [ ] Obtain named architecture/security review.
+- [x] Build candidate artifacts from `eaf1d48`: `deprail-darwin-arm64` (5,737,698 bytes), `deprail-linux-amd64` (6,165,199 bytes), and `deprail-windows-amd64.exe` (6,174,720 bytes). Checksums are in local-only `local_test/v0.4.0-preview.1/artifacts/SHA256SUMS` and verified with `shasum -a 256 -c`.
+- [x] Record reviewed candidate identity: macOS artifact reports `deprail 0.4.0-preview.1 (tag=unreleased-candidate commit=eaf1d48...)`; final immutable tag remains pending.
 - [ ] Prepare preview notes and rollback procedure.
+- [ ] Enable and review the release workflow build job before publication; current `build.if: ${{ false }}` prevents the `manual-verify` job from running.
 - [ ] Record owner go/no-go decision.
 - [ ] Create and link retrospective after publication.
 

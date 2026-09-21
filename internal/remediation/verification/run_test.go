@@ -14,7 +14,11 @@ func testTool(t *testing.T) string {
 	t.Helper()
 	dir := t.TempDir()
 	path := filepath.Join(dir, "npm")
-	if err := os.Symlink(os.Args[0], path); err != nil {
+	data, err := os.ReadFile(os.Args[0])
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(path, data, 0o700); err != nil {
 		t.Fatal(err)
 	}
 	return path

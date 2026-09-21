@@ -106,6 +106,36 @@ func (a Approval) Validate(plan Plan, sourceRoot, sourceCommit string, now time.
 	return nil
 }
 
+// ValidatePersisted validates an approval loaded by a separate CLI process.
+// Single-use enforcement is delegated to ApprovalStore, which provides an
+// atomic cross-process marker.
+func (a Approval) ValidatePersisted(plan Plan, sourceRoot, sourceCommit string, now time.Time) error {
+	if a.SchemaVersion != ApprovalSchemaVersion || a.Token == "" {
+		return &ApprovalError{Code: ApprovalInvalid, Message: "approval schema or token is invalid"}
+	}
+	if !now.Before(a.ExpiresAt) {
+		return &ApprovalError{Code: ApprovalExpired, Message: "approval has expired"}
+	}
+	if a.Used {
+		return &ApprovalError{Code: ApprovalUsed, Message: "approval has already been used"}
+	}
+	if a.PlanID != plan.PlanID || a.PlanDigest != PlanDigest(plan) {
+		return &ApprovalError{Code: ApprovalPlanMismatch, Message: "approval does not match plan"}
+	}
+	canonical, err := isolation.CanonicalRepositoryRoot(context.Background(), sourceRoot)
+	if err != nil || a.SourceRoot != canonical || a.SourceCommit != sourceCommit {
+		return &ApprovalError{Code: ApprovalSourceMismatch, Message: "approval does not match source identity"}
+	}
+	paths, err := authorizedPaths(plan, canonical)
+	if err != nil {
+		return err
+	}
+	if !equalStrings(a.AuthorizedPaths, paths) {
+		return &ApprovalError{Code: ApprovalPlanMismatch, Message: "approval authorized paths do not match plan"}
+	}
+	return nil
+}
+
 func (a *Approval) Consume() error {
 	if a == nil || a.Token == "" {
 		return &ApprovalError{Code: ApprovalInvalid, Message: "approval token is missing"}

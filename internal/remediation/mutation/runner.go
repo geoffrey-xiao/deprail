@@ -54,8 +54,8 @@ func validate(request Request) error {
 	if err != nil || !info.Mode().IsRegular() {
 		return errors.New("mutation executable must be a regular file")
 	}
-	if !supportedExecutable(filepath.Base(resolved)) {
-		return fmt.Errorf("unsupported mutation executable: %s", filepath.Base(resolved))
+	if !supportedExecutable(filepath.Base(request.Path)) {
+		return fmt.Errorf("unsupported mutation executable: %s", filepath.Base(request.Path))
 	}
 	if request.Timeout <= 0 || request.OutputCap <= 0 {
 		return errors.New("positive timeout and output cap are required")

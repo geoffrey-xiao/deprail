@@ -35,9 +35,9 @@ No caller-worktree mutation, automatic commit/push/PR/merge, autonomous approval
 - [#336 — Implement allowlisted adapter mutations](https://github.com/geoffrey-xiao/deprail/issues/336)
 - [#340 — Add bounded verification and rescan orchestration](https://github.com/geoffrey-xiao/deprail/issues/340)
 - [#339 — Classify remediation finding transitions](https://github.com/geoffrey-xiao/deprail/issues/339)
-- [#346 — Implement rollback, discard, and cleanup evidence](https://github.com/geoffrey-xiao/deprail/issues/346)
+- [#345 — Implement rollback, discard, and cleanup evidence](https://github.com/geoffrey-xiao/deprail/issues/345)
 - [#347 — Implement apply evidence and deterministic output](https://github.com/geoffrey-xiao/deprail/issues/347)
-- [#345 — Add security and cross-platform apply coverage](https://github.com/geoffrey-xiao/deprail/issues/345)
+- [#346 — Add security and cross-platform apply coverage](https://github.com/geoffrey-xiao/deprail/issues/346)
 
 ## Acceptance criteria
 

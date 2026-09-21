@@ -27,9 +27,9 @@ Implementation order is dependency-aware; security and cross-platform validation
 3. [#336 — Implement allowlisted adapter mutations](https://github.com/geoffrey-xiao/deprail/issues/336)
 4. [#340 — Add bounded verification and rescan orchestration](https://github.com/geoffrey-xiao/deprail/issues/340)
 5. [#339 — Classify remediation finding transitions](https://github.com/geoffrey-xiao/deprail/issues/339)
-6. [#346 — Implement rollback, discard, and cleanup evidence](https://github.com/geoffrey-xiao/deprail/issues/346)
+6. [#345 — Implement rollback, discard, and cleanup evidence](https://github.com/geoffrey-xiao/deprail/issues/345)
 7. [#347 — Implement apply evidence and deterministic output](https://github.com/geoffrey-xiao/deprail/issues/347)
-8. [#345 — Add security and cross-platform apply coverage](https://github.com/geoffrey-xiao/deprail/issues/345)
+8. [#346 — Add security and cross-platform apply coverage](https://github.com/geoffrey-xiao/deprail/issues/346)
 
 ## Acceptance
 

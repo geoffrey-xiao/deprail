@@ -40,7 +40,7 @@ func TestPlanBuildsReadOnlyJavaScriptPlanFromReport(t *testing.T) {
 	if err := plan.Validate(); err != nil {
 		t.Fatal(err)
 	}
-	if plan.Component.Name != "lodash" || len(plan.Commands) != 1 || plan.Commands[0].WorkingDirectory != "." {
+	if plan.Component.Name != "lodash" || len(plan.Commands) != 1 || plan.Commands[0].WorkingDirectory != plan.WorkspaceIdentity.Path {
 		t.Fatalf("plan = %#v", plan)
 	}
 }

@@ -47,7 +47,7 @@ func Classify(before, after []remediation.ReportFinding, afterComplete bool) ([]
 			state = Residual
 		case existed && afterComplete:
 			state = Resolved
-		case !existed && afterComplete:
+		case !existed:
 			state = Introduced
 		}
 		result = append(result, FindingTransition{StableKey: key, State: state})

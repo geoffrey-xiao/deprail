@@ -16,8 +16,8 @@ Commands:
   baseline create create a baseline from a complete scan
   diff           compare two scan baselines
   fix plan       produce a read-only remediation plan
+  fix approve    create a time-limited approval record
   fix apply      validate or apply an approved plan
-
 Output:
   Human output is plain terminal text.
   JSON result data is written to stdout; incidental diagnostics use stderr.
@@ -45,6 +45,8 @@ func writeCommandHelp(w io.Writer, command string) error {
 		text = "Usage: deprail doctor [--format terminal|json]\n\nInspect local tool availability without scanning the repository.\n\nTip: run doctor first when scanner availability is uncertain.\nExample: deprail doctor --format json\n"
 	case "fix plan":
 		text = "Usage: deprail fix plan --report path --finding key [--format terminal|json] [--output path]\n\nProduce a read-only remediation plan; no files are mutated.\n\nTip: obtain the finding key from a completed scan report.\nExample: deprail fix plan --report scan.json --finding FINDING_KEY --format json --output plan.json\n"
+	case "fix approve":
+		text = "Usage: deprail fix approve --plan path --output path [--root path] [--expires-in duration]\n\nCreate a time-limited approval record bound to the plan and current source commit.\n\nTip: review the plan before creating approval.\nExample: deprail fix approve --plan plan.json --output approval.json --expires-in 1h\n"
 	case "fix apply":
 		text = "Usage: deprail fix apply --plan path --approval path [--root path] [--dry-run] [--format terminal|json]\n\nValidate or apply an approved plan in an isolated worktree.\n\nTip: use --dry-run to validate without consuming approval or mutating files.\nExample: deprail fix apply --plan plan.json --approval approval.json --dry-run --format json\n"
 	case "policy check":

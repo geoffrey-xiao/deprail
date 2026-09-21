@@ -65,8 +65,8 @@ The current merged slices do **not** yet prove a complete user-facing `deprail f
 ## Required next evidence
 
 - [x] Capture release baseline: `origin/main`, tags, releases, and manifest status. Manifest is missing and blocks publication until dispositioned.
+- [x] Run `make verify` from a clean reviewed checkout. Result: passed on macOS arm64 from baseline branch; `go generate`, `go vet`, `go test`, and `go build` completed successfully.
 - [ ] Reconcile complete `deprail fix apply` scope and compatibility impact.
-- [ ] Run `make verify` from a clean reviewed checkout.
 - [ ] Run representative repository smoke coverage and record exit codes.
 - [ ] Record platform, binary identity, artifacts, sizes, and SHA-256 checksums.
 - [ ] Record SBOM, signing, and provenance status.

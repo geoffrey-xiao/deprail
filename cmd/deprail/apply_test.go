@@ -3,6 +3,7 @@ package main
 import (
 	"bytes"
 	"context"
+	"encoding/json"
 	"errors"
 	"os"
 	"path/filepath"
@@ -14,6 +15,7 @@ import (
 	"github.com/geoffrey-xiao/deprail/internal/discovery"
 	"github.com/geoffrey-xiao/deprail/internal/process"
 	"github.com/geoffrey-xiao/deprail/internal/remediation"
+	"github.com/geoffrey-xiao/deprail/internal/remediation/evidence"
 	"github.com/geoffrey-xiao/deprail/internal/remediation/isolation"
 	"github.com/geoffrey-xiao/deprail/internal/remediation/verification"
 )
@@ -161,5 +163,59 @@ func TestWriteApplyResultReturnsFailureExitForTerminalFailures(t *testing.T) {
 	var stdout, stderr bytes.Buffer
 	if code := writeApplyResult(applyResult{Outcome: "applied", Diagnostics: []string{}}, "json", &stdout, &stderr); code != 0 {
 		t.Fatalf("applied exit code = %d", code)
+	}
+}
+
+func TestPersistApplyEvidenceRedactsAndRetainsIdentity(t *testing.T) {
+	plan := remediation.Plan{
+		WorkspaceIdentity: remediation.WorkspaceIdentity{ID: "workspace"},
+		FindingIdentity:   remediation.FindingIdentity{StableKey: "finding"},
+		AffectedFiles:     []remediation.AffectedFile{{Path: "package.json", Kind: "manifest", Effect: "update"}},
+		Commands:          []remediation.Command{{Executable: "npm", WorkingDirectory: "."}},
+	}
+	state, err := newApplyEvidenceState(plan)
+	if err != nil {
+		t.Fatal(err)
+	}
+	state.BeforeDigest = "before"
+	state.AfterDigest = "after"
+	state.FindingAfterDigest = "finding-after"
+	state.VerificationStatus = "complete"
+	state.RescanStatus = "complete"
+	state.Commands = append(state.Commands, applyEvidenceCommand("mutation:0", "/usr/bin/npm", process.Result{
+		Stdout: []byte("token=secret"),
+		Stderr: []byte("Authorization: Bearer credential"),
+	}))
+	result := applyResult{
+		Outcome:               "partial",
+		PlanDigest:            "plan",
+		SourceCommit:          "commit",
+		SourceRoot:            "/repo",
+		RescanArtifactDigests: []string{},
+		Diagnostics:           []string{"secret=hidden"},
+	}
+	path, digest, err := persistApplyEvidence(filepath.Join(t.TempDir(), "evidence"), plan, result, state, "/tmp/worktree", "partial")
+	if err != nil {
+		t.Fatal(err)
+	}
+	data, err := os.ReadFile(path)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(digest) != 64 || len(data) == 0 {
+		t.Fatalf("evidence path/digest/data = %q/%q/%q", path, digest, data)
+	}
+	if len(data) == 0 || bytes.Contains(data, []byte("token=secret")) || bytes.Contains(data, []byte("Bearer credential")) || bytes.Contains(data, []byte("secret=hidden")) {
+		t.Fatalf("sensitive evidence persisted: %s", data)
+	}
+	var record evidence.Record
+	if err := json.Unmarshal(data, &record); err != nil {
+		t.Fatal(err)
+	}
+	if err := record.Validate(); err != nil {
+		t.Fatal(err)
+	}
+	if record.WorkspaceID != "workspace" || record.WorkspacePath != "/tmp/worktree" || record.Outcome != evidence.Partial || record.Cleanup != "partial" {
+		t.Fatalf("record identity/outcome = %#v", record)
 	}
 }

@@ -22,6 +22,7 @@ import (
 	"github.com/geoffrey-xiao/deprail/internal/discovery"
 	"github.com/geoffrey-xiao/deprail/internal/process"
 	"github.com/geoffrey-xiao/deprail/internal/remediation"
+	"github.com/geoffrey-xiao/deprail/internal/remediation/evidence"
 	"github.com/geoffrey-xiao/deprail/internal/remediation/isolation"
 	"github.com/geoffrey-xiao/deprail/internal/remediation/mutation"
 	"github.com/geoffrey-xiao/deprail/internal/remediation/verification"
@@ -44,6 +45,9 @@ type applyResult struct {
 	CleanupGitRemoved        bool                             `json:"cleanup_git_removed,omitempty"`
 	CleanupFilesystemRemoved bool                             `json:"cleanup_filesystem_removed,omitempty"`
 	CleanupRetryable         bool                             `json:"cleanup_retryable,omitempty"`
+	EvidencePath             string                           `json:"evidence_path,omitempty"`
+	EvidenceDigest           string                           `json:"evidence_digest,omitempty"`
+	EvidenceError            string                           `json:"evidence_error,omitempty"`
 	Diagnostics              []string                         `json:"diagnostics"`
 }
 
@@ -121,19 +125,43 @@ func runFixApplyContext(ctx context.Context, args []string, stdout, stderr io.Wr
 		cleanupResult = workspace.RemoveWithEvidence(cleanupCtx)
 		return cleanupResult
 	}
+	evidenceState, stateErr := newApplyEvidenceState(plan)
 	finish := func(outcome, diagnostic string) int {
 		if diagnostic != "" {
 			result.Diagnostics = append(result.Diagnostics, diagnostic)
 		}
+		if afterDigest, err := app.CurrentRepositoryState(workspace.Path); err == nil {
+			evidenceState.AfterDigest = afterDigest
+		} else {
+			result.Diagnostics = append(result.Diagnostics, "capture after state failed: "+err.Error())
+		}
 		recordCleanupOutcome(&result, outcome, cleanup())
+		evidencePath, evidenceDigest, err := persistApplyEvidence(filepath.Join(canonical, ".deprail", "evidence"), plan, result, evidenceState, result.Workspace, result.CleanupStatus)
+		if err != nil {
+			result.EvidenceError = err.Error()
+			result.Diagnostics = append(result.Diagnostics, "evidence persistence failed: "+err.Error())
+			if result.Outcome != string(evidence.CleanupFailed) {
+				result.Outcome = string(evidence.Failed)
+			}
+		} else {
+			result.EvidencePath = evidencePath
+			result.EvidenceDigest = evidenceDigest
+		}
 		return writeApplyResult(result, *format, stdout, stderr)
+	}
+	if stateErr != nil {
+		return finish("failed", "initialize evidence state failed: "+stateErr.Error())
+	}
+	evidenceState.BeforeDigest, stateErr = app.CurrentRepositoryState(workspace.Path)
+	if stateErr != nil {
+		return finish("failed", "capture before state failed: "+stateErr.Error())
 	}
 	mutationAttempted := false
 	operationOutcome := func(err error) string {
 		return applyOperationOutcome(ctx, err, mutationAttempted)
 	}
 
-	for _, command := range plan.Commands {
+	for commandIndex, command := range plan.Commands {
 		workingDirectory := command.WorkingDirectory
 		if workingDirectory == "" {
 			workingDirectory = "."
@@ -150,33 +178,55 @@ func runFixApplyContext(ctx context.Context, args []string, stdout, stderr io.Wr
 			return finish("failed", "mutation executable is unavailable: "+command.Executable)
 		}
 		mutationAttempted = true
-		_, err = mutation.Run(ctx, mutation.Request{
+		mutationResult, err := mutation.Run(ctx, mutation.Request{
 			Path: executable, Args: command.Arguments, Workspace: commandWorkspace, Approved: true,
 			Timeout: 2 * time.Minute, OutputCap: 16 << 20, DenyScripts: true, DenyNetwork: true,
 		})
+		evidenceState.Commands = append(evidenceState.Commands, applyEvidenceCommand(fmt.Sprintf("mutation:%d", commandIndex), executable, mutationResult))
 		if err != nil {
 			return finish(operationOutcome(err), err.Error())
 		}
 	}
 	verificationCommands, err := applyVerificationCommands(plan)
 	if err != nil {
+		evidenceState.VerificationStatus = "failed"
 		return finish(operationOutcome(err), "verification unavailable: "+err.Error())
 	}
-	_, err = verification.Run(ctx, workspace.Path, verificationCommands, 2*time.Minute, 16<<20)
+	verificationResults, err := verification.Run(ctx, workspace.Path, verificationCommands, 2*time.Minute, 16<<20)
+	for index, verificationResult := range verificationResults {
+		evidenceState.Commands = append(evidenceState.Commands, applyEvidenceCommand(fmt.Sprintf("verification:%d", index), verificationResult.Command.Path, verificationResult.Process))
+	}
 	if err != nil {
+		evidenceState.VerificationStatus = "failed"
 		return finish(operationOutcome(err), "verification failed: "+err.Error())
 	}
+	evidenceState.VerificationStatus = "complete"
 	result.Diagnostics = append(result.Diagnostics, fmt.Sprintf("verification complete: %d command(s)", len(verificationCommands)))
 	rescan, err := rescanApplyWorkspace(ctx, workspace.Path)
 	result.RescanStatus = string(rescan.Status)
 	result.RescanScanID = rescan.ScanID
 	result.RescanRepositoryState = rescan.RepositoryState
 	result.RescanArtifactDigests = append([]string(nil), rescan.ArtifactDigests...)
+	evidenceState.RescanStatus = result.RescanStatus
+	rescanExitCode := 0
+	if err != nil {
+		rescanExitCode = 1
+		if evidenceState.RescanStatus == "" {
+			evidenceState.RescanStatus = "failed"
+		}
+	}
+	evidenceState.Commands = append(evidenceState.Commands, applyEvidenceCommand("rescan", "osv-scanner", process.Result{ExitCode: rescanExitCode}))
 	if err != nil {
 		return finish(operationOutcome(err), "rescan failed: "+err.Error())
 	}
 	result.Diagnostics = append(result.Diagnostics, fmt.Sprintf("rescan complete: %s (%d finding(s))", rescan.ScanID, len(rescan.Findings)))
-	transitions, err := verification.Classify([]remediation.ReportFinding{planFinding(plan)}, rescanFindingsForPlan(rescan, plan), true)
+	rescanFindings := rescanFindingsForPlan(rescan, plan)
+	findingAfterDigest, digestErr := digestApplyValue(rescanFindings)
+	if digestErr != nil {
+		return finish(operationOutcome(digestErr), "digest finding after state failed: "+digestErr.Error())
+	}
+	evidenceState.FindingAfterDigest = findingAfterDigest
+	transitions, err := verification.Classify([]remediation.ReportFinding{planFinding(plan)}, rescanFindings, true)
 	if err != nil {
 		return finish(operationOutcome(err), "transition classification failed: "+err.Error())
 	}
@@ -316,6 +366,12 @@ func writeApplyResult(result applyResult, format string, stdout, stderr io.Write
 		_, _ = fmt.Fprintf(stdout, "Outcome: %s\nPlan: %s\nSource: %s\n", result.Outcome, result.PlanID, result.SourceCommit)
 		if result.CleanupStatus != "" {
 			_, _ = fmt.Fprintf(stdout, "Cleanup: %s\n", result.CleanupStatus)
+		}
+		if result.EvidencePath != "" {
+			_, _ = fmt.Fprintf(stdout, "Evidence: %s (%s)\n", result.EvidencePath, result.EvidenceDigest)
+		}
+		if result.EvidenceError != "" {
+			_, _ = fmt.Fprintf(stdout, "Evidence error: %s\n", result.EvidenceError)
 		}
 		for _, diagnostic := range result.Diagnostics {
 			_, _ = fmt.Fprintf(stdout, "Diagnostic: %s\n", diagnostic)

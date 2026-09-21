@@ -6,7 +6,7 @@ import (
 )
 
 func testRecord() Record {
-	return Record{SchemaVersion: SchemaVersion, Outcome: Failed, PlanDigest: "plan", SourceCommit: "commit", SourceRoot: "/repo", WorkspaceID: "workspace", AuthorizedPaths: []string{"package.json"}, Operations: []Operation{{ID: "op", Path: "package.json", Effect: "update"}}, BeforeDigest: "before", FindingBeforeDigest: "finding-before", VerificationStatus: "failed", RescanStatus: "not_run", Commands: []CommandRecord{{ID: "scan", Tool: "tool", ExitCode: 1, Stdout: "token=abc Authorization: Bearer xyz", Stderr: "request failed for https://user:pass@example.invalid/x"}}, Diagnostics: []string{"secret=hidden"}, Cleanup: "discarded", ArtifactDigests: []string{}}
+	return Record{SchemaVersion: SchemaVersion, Outcome: Failed, PlanDigest: "plan", SourceCommit: "commit", SourceRoot: "/repo", WorkspaceID: "workspace", WorkspacePath: "/tmp/workspace", AuthorizedPaths: []string{"package.json"}, Operations: []Operation{{ID: "op", Path: "package.json", Effect: "update"}}, BeforeDigest: "before", FindingBeforeDigest: "finding-before", VerificationStatus: "failed", RescanStatus: "not_run", Commands: []CommandRecord{{ID: "scan", Tool: "tool", ExitCode: 1, Stdout: "token=abc Authorization: Bearer xyz", Stderr: "request failed for https://user:pass@example.invalid/x"}}, Diagnostics: []string{"secret=hidden"}, Cleanup: "discarded", ArtifactDigests: []string{}}
 }
 
 func TestCanonicalRedactsEvidence(t *testing.T) {

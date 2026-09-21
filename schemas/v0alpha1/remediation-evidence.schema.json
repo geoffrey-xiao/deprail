@@ -4,11 +4,11 @@
   "title": "DepRail Remediation Evidence",
   "type": "object",
   "additionalProperties": false,
-  "required": ["schema_version", "outcome", "plan_digest", "source_commit", "source_root", "workspace_id", "authorized_paths", "operations", "before_digest", "finding_before_digest", "verification_status", "rescan_status", "artifact_digests", "commands", "diagnostics", "cleanup"],
+  "required": ["schema_version", "outcome", "plan_digest", "source_commit", "source_root", "workspace_id", "workspace_path", "authorized_paths", "operations", "before_digest", "finding_before_digest", "verification_status", "rescan_status", "artifact_digests", "commands", "diagnostics", "cleanup"],
   "properties": {
     "schema_version": {"const": "v0alpha1"},
     "outcome": {"enum": ["dry_run", "applied", "verified", "partial", "failed", "cancelled", "cleanup_failed"]},
-    "plan_digest": {"type": "string", "minLength": 1}, "source_commit": {"type": "string", "minLength": 1}, "source_root": {"type": "string", "minLength": 1}, "workspace_id": {"type": "string", "minLength": 1},
+    "plan_digest": {"type": "string", "minLength": 1}, "source_commit": {"type": "string", "minLength": 1}, "source_root": {"type": "string", "minLength": 1}, "workspace_id": {"type": "string", "minLength": 1}, "workspace_path": {"type": "string", "minLength": 1},
     "authorized_paths": {"type": "array", "items": {"type": "string"}}, "operations": {"type": "array"}, "before_digest": {"type": "string", "minLength": 1}, "after_digest": {"type": "string"}, "finding_before_digest": {"type": "string", "minLength": 1}, "finding_after_digest": {"type": "string"}, "diff_digest": {"type": "string"}, "artifact_digests": {"type": "array", "items": {"type": "string"}}, "verification_status": {"type": "string", "minLength": 1}, "rescan_status": {"type": "string", "minLength": 1}, "commands": {"type": "array"}, "diagnostics": {"type": "array", "items": {"type": "string"}}, "cleanup": {"type": "string", "minLength": 1}
   }
 }

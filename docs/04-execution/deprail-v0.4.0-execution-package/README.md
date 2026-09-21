@@ -1,0 +1,75 @@
+# DepRail v0.4.0 Execution Package
+
+**Version:** `v0.4.0-preview.1`
+**Status:** Planning baseline; implementation blocked pending Definition of Ready
+**Parent epic:** [#299](https://github.com/geoffrey-xiao/deprail/issues/299)
+**Plan:** [`docs/03-planning/deprail-development-plan-v0.4.0.md`](../../03-planning/deprail-development-plan-v0.4.0.md)
+
+## Source order
+
+1. Product design and architecture.
+2. Whole-project roadmap.
+3. v0.4 development plan.
+4. This execution package and its requirements.
+5. Approved issue contracts.
+6. Implementation and evidence.
+
+Lower-level issue contracts must not contradict the plan or architecture. Any change to mutation, approval, process, path, compatibility, schema, or publication boundaries requires explicit change control.
+
+## Release boundary
+
+```text
+v0.3: finding -> candidate analysis -> reviewable plan
+v0.4: approved plan -> isolated apply -> verify -> rescan -> patch evidence
+```
+
+## Required contracts
+
+| Contract | Required decision | Evidence |
+| --- | --- | --- |
+| Mutation boundary | Only approved plan operations in isolated workspace | Path and tree comparison |
+| Isolation | Temporary worktree/equivalent with restrictive permissions and cleanup | Workspace lifecycle record |
+| Approval | Approval bound to plan digest, source commit, target, expiry | Approval contract test |
+| Atomic writes | Temp file plus atomic rename; no source-tree writes | Interrupted-write test |
+| Rollback | Discard/restore on failure, timeout, cancellation, or regression | Rollback evidence |
+| Package manager | Direct argv, bounded process, scripts/network denied by default | Process contract tests |
+| Limits | Deadline, cancellation, output cap, process-tree termination | Failure matrix |
+| Verification | Supported test/build/type-check discovery only | Command-selection evidence |
+| Rescan | Same scan contract; stable finding transition classification | Before/after scan evidence |
+| Patch evidence | Diff, digests, commands, tools, outcomes, redacted diagnostics | Schema/golden evidence |
+| Failure | Explicit complete/partial/failed/cancelled states | Partial-failure fixtures |
+
+## Required scenario matrix
+
+- Valid approved plan.
+- Invalid or stale plan.
+- Approval mismatch, expiry, and cancellation.
+- External symlink and traversal escape.
+- Shell metacharacters and hostile package names.
+- Package-manager missing, incompatible, non-zero, timeout, malformed output, and output limit.
+- Install-script and network denial.
+- Interrupted atomic write.
+- Partial mutation followed by rollback.
+- Test/build/type-check success and failure.
+- Resolved, residual, introduced, and unknown findings after rescan.
+- Original repository tree unchanged.
+- Linux, macOS, and Windows semantic equivalence.
+
+## Definition of Ready checklist
+
+- [ ] Owner and named architecture/security reviewer assigned.
+- [ ] Product, architecture, roadmap, v0.3 evidence, and v0.4 plan reconciled.
+- [ ] Mutation and isolation boundaries approved.
+- [ ] Approval and authorization contract approved.
+- [ ] Atomicity and rollback contract approved.
+- [ ] Package-manager and process limits approved.
+- [ ] Verification discovery and rescan contracts approved.
+- [ ] Patch evidence shape and redaction rules approved.
+- [ ] Failure and partial-failure behavior approved.
+- [ ] Fixtures and cross-platform evidence plan approved.
+- [ ] Issue contracts, milestone, Project view, and reviewer assignments ready.
+- [ ] Explicit exclusions recorded.
+
+## No implementation authorization
+
+This package does not authorize code changes. Runtime implementation begins only after every Definition of Ready item is checked with linked evidence and owner/reviewer approval. No issue may add repository mutation, publication, autonomous approval, web/team services, or agent write scope without a new decision record.

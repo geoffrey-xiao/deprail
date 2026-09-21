@@ -8,6 +8,14 @@ import (
 	"os/exec"
 	"path/filepath"
 	"strings"
+	"time"
+
+	"github.com/geoffrey-xiao/deprail/internal/process"
+)
+
+const (
+	gitTimeout   = 30 * time.Second
+	gitOutputCap = 1 << 20
 )
 
 type Workspace struct {
@@ -18,12 +26,20 @@ type Workspace struct {
 }
 
 func Create(ctx context.Context, root, sourceRef string) (Workspace, error) {
-	canonical, err := canonicalDirectory(root)
+	canonical, err := canonicalDirectory(ctx, root)
 	if err != nil {
 		return Workspace{}, err
 	}
-	if sourceRef == "" || strings.ContainsAny(sourceRef, "\r\n") {
-		return Workspace{}, errors.New("source ref is required")
+	if sourceRef == "" || strings.ContainsAny(sourceRef, "\r\n") || strings.HasPrefix(sourceRef, "-") {
+		return Workspace{}, errors.New("source ref is invalid")
+	}
+	resolved, err := runGit(ctx, canonical, "rev-parse", "--verify", sourceRef+"^{commit}")
+	if err != nil {
+		return Workspace{}, fmt.Errorf("resolve source ref: %w", err)
+	}
+	commit := strings.TrimSpace(string(resolved.Stdout))
+	if commit == "" || strings.ContainsAny(commit, "\r\n") {
+		return Workspace{}, errors.New("source ref did not resolve to a commit")
 	}
 	parent, err := os.MkdirTemp("", "deprail-worktree-")
 	if err != nil {
@@ -34,29 +50,34 @@ func Create(ctx context.Context, root, sourceRef string) (Workspace, error) {
 		return Workspace{}, fmt.Errorf("restrict workspace parent: %w", err)
 	}
 	path := filepath.Join(parent, "worktree")
-	cmd := exec.CommandContext(ctx, "git", "-C", canonical, "worktree", "add", "--detach", path, sourceRef)
-	if output, err := cmd.CombinedOutput(); err != nil {
+	if _, err := runGit(ctx, canonical, "worktree", "add", "--detach", path, commit); err != nil {
 		_ = os.RemoveAll(parent)
-		return Workspace{}, fmt.Errorf("create isolated worktree: %w: %s", err, strings.TrimSpace(string(output)))
+		return Workspace{}, fmt.Errorf("create isolated worktree: %w", err)
 	}
-	return Workspace{Root: canonical, Path: path, SourceRef: sourceRef, Created: true}, nil
+	return Workspace{Root: canonical, Path: path, SourceRef: commit, Created: true}, nil
 }
 
 func (w *Workspace) Remove(ctx context.Context) error {
-	if w == nil || !w.Created || w.Path == "" {
+	if w == nil || (!w.Created && w.Path == "") {
 		return nil
 	}
-	cmd := exec.CommandContext(ctx, "git", "-C", w.Root, "worktree", "remove", "--force", w.Path)
-	if output, err := cmd.CombinedOutput(); err != nil {
-		return fmt.Errorf("remove isolated worktree: %w: %s", err, strings.TrimSpace(string(output)))
-	}
-	err := os.RemoveAll(filepath.Dir(w.Path))
-	if err == nil {
+	var gitErr error
+	if w.Created {
+		_, gitErr = runGit(ctx, w.Root, "worktree", "remove", "--force", w.Path)
 		w.Created = false
 	}
-	return err
+	removeErr := os.RemoveAll(filepath.Dir(w.Path))
+	w.Path = ""
+	if gitErr != nil && removeErr != nil {
+		return fmt.Errorf("remove isolated worktree: %v; remove workspace parent: %w", gitErr, removeErr)
+	}
+	if gitErr != nil {
+		return fmt.Errorf("remove isolated worktree: %w", gitErr)
+	}
+	return removeErr
 }
-func canonicalDirectory(root string) (string, error) {
+
+func canonicalDirectory(ctx context.Context, root string) (string, error) {
 	if root == "" {
 		return "", errors.New("repository root is required")
 	}
@@ -75,5 +96,21 @@ func canonicalDirectory(root string) (string, error) {
 	if !info.IsDir() {
 		return "", errors.New("repository root must be a directory")
 	}
+	result, err := runGit(ctx, canonical, "rev-parse", "--show-toplevel")
+	if err != nil {
+		return "", fmt.Errorf("resolve Git repository root: %w", err)
+	}
+	gitRoot, err := filepath.EvalSymlinks(strings.TrimSpace(string(result.Stdout)))
+	if err != nil || gitRoot != canonical {
+		return "", errors.New("repository root must be the canonical Git top-level")
+	}
 	return canonical, nil
+}
+
+func runGit(ctx context.Context, dir string, args ...string) (process.Result, error) {
+	git, err := exec.LookPath("git")
+	if err != nil {
+		return process.Result{}, err
+	}
+	return process.Run(ctx, process.Request{Path: git, Args: append([]string{"-C", dir}, args...), Dir: dir, Timeout: gitTimeout, OutputCap: gitOutputCap})
 }

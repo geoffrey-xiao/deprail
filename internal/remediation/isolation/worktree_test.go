@@ -56,6 +56,24 @@ func TestCreateAndRemoveWorktreePreservesSource(t *testing.T) {
 	}
 }
 
+func TestCreateRejectsRepositorySubdirectory(t *testing.T) {
+	root := t.TempDir()
+	run := func(args ...string) {
+		t.Helper()
+		if out, err := exec.Command(args[0], args[1:]...).CombinedOutput(); err != nil {
+			t.Fatalf("%v: %v: %s", args, err, out)
+		}
+	}
+	run("git", "-C", root, "init", "-q")
+	subdir := filepath.Join(root, "nested")
+	if err := os.Mkdir(subdir, 0o700); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := Create(context.Background(), subdir, "HEAD"); err == nil {
+		t.Fatal("expected repository subdirectory rejection")
+	}
+}
+
 func TestCreateRejectsInvalidInput(t *testing.T) {
 	if _, err := Create(context.Background(), "", "HEAD"); err == nil {
 		t.Fatal("expected empty root rejection")

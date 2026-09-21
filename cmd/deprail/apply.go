@@ -15,6 +15,11 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/geoffrey-xiao/deprail/internal/adapter"
+	"github.com/geoffrey-xiao/deprail/internal/adapters/osv"
+	"github.com/geoffrey-xiao/deprail/internal/app"
+	"github.com/geoffrey-xiao/deprail/internal/artifact"
+	"github.com/geoffrey-xiao/deprail/internal/discovery"
 	"github.com/geoffrey-xiao/deprail/internal/remediation"
 	"github.com/geoffrey-xiao/deprail/internal/remediation/isolation"
 	"github.com/geoffrey-xiao/deprail/internal/remediation/mutation"
@@ -22,14 +27,18 @@ import (
 )
 
 type applyResult struct {
-	SchemaVersion string   `json:"schema_version"`
-	Outcome       string   `json:"outcome"`
-	PlanID        string   `json:"plan_id"`
-	PlanDigest    string   `json:"plan_digest"`
-	SourceRoot    string   `json:"source_root"`
-	SourceCommit  string   `json:"source_commit"`
-	Workspace     string   `json:"workspace,omitempty"`
-	Diagnostics   []string `json:"diagnostics"`
+	SchemaVersion         string   `json:"schema_version"`
+	Outcome               string   `json:"outcome"`
+	PlanID                string   `json:"plan_id"`
+	PlanDigest            string   `json:"plan_digest"`
+	SourceRoot            string   `json:"source_root"`
+	SourceCommit          string   `json:"source_commit"`
+	Workspace             string   `json:"workspace,omitempty"`
+	RescanStatus          string   `json:"rescan_status,omitempty"`
+	RescanScanID          string   `json:"rescan_scan_id,omitempty"`
+	RescanRepositoryState string   `json:"rescan_repository_state,omitempty"`
+	RescanArtifactDigests []string `json:"rescan_artifact_digests,omitempty"`
+	Diagnostics           []string `json:"diagnostics"`
 }
 
 func runFixApply(args []string, stdout, stderr io.Writer) int {
@@ -152,9 +161,39 @@ func runFixApplyContext(ctx context.Context, args []string, stdout, stderr io.Wr
 		return writeApplyResult(result, *format, stdout, stderr)
 	}
 	result.Diagnostics = append(result.Diagnostics, fmt.Sprintf("verification complete: %d command(s)", len(verificationCommands)))
+	rescan, err := rescanApplyWorkspace(ctx, workspace.Path)
+	result.RescanStatus = string(rescan.Status)
+	result.RescanScanID = rescan.ScanID
+	result.RescanRepositoryState = rescan.RepositoryState
+	result.RescanArtifactDigests = append([]string(nil), rescan.ArtifactDigests...)
+	if err != nil {
+		result.Outcome = "failed"
+		result.Diagnostics = append(result.Diagnostics, "rescan failed: "+err.Error())
+		_ = cleanup()
+		return writeApplyResult(result, *format, stdout, stderr)
+	}
+	result.Diagnostics = append(result.Diagnostics, fmt.Sprintf("rescan complete: %s (%d finding(s))", rescan.ScanID, len(rescan.Findings)))
 	result.Outcome = "applied"
 	_ = cleanup()
 	return writeApplyResult(result, *format, stdout, stderr)
+}
+
+func rescanApplyWorkspace(ctx context.Context, workspace string) (app.ScanReport, error) {
+	scannerPath, err := exec.LookPath("osv-scanner")
+	if err != nil {
+		return app.ScanReport{Status: discovery.Failed, Findings: []adapter.Finding{}, Errors: []string{err.Error()}, ArtifactDigests: []string{}}, fmt.Errorf("osv-scanner is unavailable: %w", err)
+	}
+	report, err := app.Scan(ctx, workspace, app.ScanOptions{
+		Scanner:   osv.Scanner{Path: scannerPath, Dir: workspace, Timeout: 2 * time.Minute, OutputCap: 16 << 20},
+		Artifacts: artifact.Store{Root: filepath.Join(workspace, ".deprail", "artifacts"), MaxBytes: 16 << 20},
+	})
+	if err != nil {
+		return report, err
+	}
+	if report.Status != discovery.Complete {
+		return report, fmt.Errorf("rescan is incomplete: %s", report.Status)
+	}
+	return report, nil
 }
 
 func applyVerificationCommands(plan remediation.Plan) ([]verification.Command, error) {

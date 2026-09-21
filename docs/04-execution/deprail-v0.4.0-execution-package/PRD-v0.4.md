@@ -3,6 +3,9 @@
 **Status:** Planning draft; owner and architecture/security review required
 **Release:** `v0.4.0-preview.1`
 **Roadmap outcome:** Remediation application and verification
+## Preview sequencing decision
+
+The complete `deprail fix apply` outcome remains planned by this PRD and the v0.4 architecture, but implementation is deferred from `v0.4.0-preview.1` to `v0.4.0-preview.2`. The backlog epic and implementation-ready contract are [EPIC-006](epics/EPIC-006-fix-apply.md) and [V04-008](issues/V04-008-fix-apply.md), tracked in GitHub issue [#332](https://github.com/geoffrey-xiao/deprail/issues/332). Preview.1 evidence must not claim `fix apply` is implemented or manually verified.
 
 ## User outcome
 

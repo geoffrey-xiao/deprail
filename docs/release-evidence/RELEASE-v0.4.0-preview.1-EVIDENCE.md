@@ -15,8 +15,10 @@ Reusable gate: [`docs/RELEASE-CHECKLIST.md`](../RELEASE-CHECKLIST.md)
 
 | Field | Evidence |
 |---|---|
-| Reviewed source commit | Pending release baseline capture |
-| Release manifest | Pending |
+| Reviewed source commit | [`76a717f`](https://github.com/geoffrey-xiao/deprail/commit/76a717f) (`origin/main` at baseline capture) |
+| Latest stable tag | None; latest preview is `v0.3.1-preview.1` |
+| Existing preview tags | `v0.3.1-preview.1`, `v0.3.0-preview.1`, `v0.2.0-preview.4`, `v0.2.0-preview.3`, `v0.2.0-preview.2`, `v0.2.0-preview.1`, `v0.1.0-preview.1` |
+| Release manifest | Missing at `origin/main:.release-please-manifest.json`; release process must document the manifest source or add the required file before publication |
 | Release tag | Not created; publication not authorized |
 | DepRail version | Pending release workflow |
 | Release owner | `@geoffrey-xiao` |
@@ -51,7 +53,7 @@ The current merged slices do **not** yet prove a complete user-facing `deprail f
 
 | Area | Status | Evidence or gap |
 |---|---|---|
-| Release identity and immutable tag | Open | Baseline, manifest, and tag not captured |
+| Release identity and immutable tag | Partial | Baseline captured at `76a717f`; release manifest is missing and tag not created |
 | Plan and scope completion | Partial | Implementation slices merged; complete apply orchestration remains unresolved |
 | Contract and security completion | Partial | Contracts exist; named release security/architecture review pending |
 | Automated verification | Partial | Implementation PR CI passed; clean-checkout `make verify` pending |
@@ -62,7 +64,7 @@ The current merged slices do **not** yet prove a complete user-facing `deprail f
 
 ## Required next evidence
 
-- [ ] Capture release baseline: `origin/main`, tags, releases, manifest.
+- [x] Capture release baseline: `origin/main`, tags, releases, and manifest status. Manifest is missing and blocks publication until dispositioned.
 - [ ] Reconcile complete `deprail fix apply` scope and compatibility impact.
 - [ ] Run `make verify` from a clean reviewed checkout.
 - [ ] Run representative repository smoke coverage and record exit codes.

@@ -158,7 +158,8 @@ func requireScanArrays(data []byte) error {
 	}
 	for _, name := range []string{"findings", "errors", "artifact_digests"} {
 		value, ok := object[name]
-		if !ok || bytes.Equal(bytes.TrimSpace(value), []byte("null")) || len(value) == 0 || value[0] != '[' {
+		trimmed := bytes.TrimSpace(value)
+		if !ok || len(trimmed) == 0 || bytes.Equal(trimmed, []byte("null")) || trimmed[0] != '[' {
 			return fmt.Errorf("scan %s must be an array", name)
 		}
 	}

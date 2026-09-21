@@ -15,6 +15,7 @@ import (
 
 	"github.com/geoffrey-xiao/deprail/internal/remediation"
 	"github.com/geoffrey-xiao/deprail/internal/remediation/isolation"
+	"github.com/geoffrey-xiao/deprail/internal/remediation/mutation"
 )
 
 type applyResult struct {
@@ -24,6 +25,7 @@ type applyResult struct {
 	PlanDigest    string   `json:"plan_digest"`
 	SourceRoot    string   `json:"source_root"`
 	SourceCommit  string   `json:"source_commit"`
+	Workspace     string   `json:"workspace,omitempty"`
 	Diagnostics   []string `json:"diagnostics"`
 }
 
@@ -64,20 +66,70 @@ func runFixApply(args []string, stdout, stderr io.Writer) int {
 		return 3
 	}
 	if err := approval.ValidatePersisted(plan, canonical, commit, time.Now().UTC()); err != nil {
-		var approvalErr *remediation.ApprovalError
-		if errors.As(err, &approvalErr) {
-			writeCLIError(stderr, string(approvalErr.Code), approvalErr.Message, "approval")
-		} else {
-			writeCLIError(stderr, "APPROVAL_INVALID", err.Error(), "approval")
-		}
+		writeApprovalError(stderr, err)
 		return 3
 	}
 	result := applyResult{SchemaVersion: "v0alpha1", Outcome: "dry_run", PlanID: plan.PlanID, PlanDigest: remediation.PlanDigest(plan), SourceRoot: canonical, SourceCommit: commit, Diagnostics: []string{}}
-	if !*dryRun {
-		result.Outcome = "not_ready"
-		result.Diagnostics = append(result.Diagnostics, "mutation, verification, rescan, cleanup, and evidence orchestration are not yet wired")
+	if *dryRun {
+		return writeApplyResult(result, *format, stdout, stderr)
 	}
-	if *format == "json" {
+
+	store := remediation.ApprovalStore{Root: filepath.Join(canonical, ".deprail", "approvals", "consumed")}
+	if err := store.Consume(approval.Token); err != nil {
+		writeApprovalError(stderr, err)
+		return 3
+	}
+	workspace, err := isolation.Create(context.Background(), canonical, commit)
+	if err != nil {
+		writeCLIError(stderr, "WORKTREE_CREATE_FAILED", err.Error(), "fix apply")
+		return 3
+	}
+	result.Workspace = workspace.Path
+	cleanup := func() error { return workspace.Remove(context.Background()) }
+	defer cleanup()
+
+	for _, command := range plan.Commands {
+		if command.WorkingDirectory != "." && command.WorkingDirectory != "" {
+			result.Outcome = "failed"
+			result.Diagnostics = append(result.Diagnostics, "non-root mutation working directories are not yet supported")
+			_ = cleanup()
+			return writeApplyResult(result, *format, stdout, stderr)
+		}
+		executable, err := exec.LookPath(command.Executable)
+		if err != nil {
+			result.Outcome = "failed"
+			result.Diagnostics = append(result.Diagnostics, "mutation executable is unavailable: "+command.Executable)
+			_ = cleanup()
+			return writeApplyResult(result, *format, stdout, stderr)
+		}
+		_, err = mutation.Run(context.Background(), mutation.Request{
+			Path: executable, Args: command.Arguments, Workspace: workspace, Approved: true,
+			Timeout: 2 * time.Minute, OutputCap: 16 << 20, DenyScripts: true, DenyNetwork: true,
+		})
+		if err != nil {
+			result.Outcome = "failed"
+			result.Diagnostics = append(result.Diagnostics, err.Error())
+			_ = cleanup()
+			return writeApplyResult(result, *format, stdout, stderr)
+		}
+	}
+	result.Outcome = "applied"
+	result.Diagnostics = append(result.Diagnostics, "verification, rescan, transition classification, and durable evidence are pending orchestration")
+	_ = cleanup()
+	return writeApplyResult(result, *format, stdout, stderr)
+}
+
+func writeApprovalError(stderr io.Writer, err error) {
+	var approvalErr *remediation.ApprovalError
+	if errors.As(err, &approvalErr) {
+		writeCLIError(stderr, string(approvalErr.Code), approvalErr.Message, "approval")
+		return
+	}
+	writeCLIError(stderr, "APPROVAL_INVALID", err.Error(), "approval")
+}
+
+func writeApplyResult(result applyResult, format string, stdout, stderr io.Writer) int {
+	if format == "json" {
 		if err := json.NewEncoder(stdout).Encode(result); err != nil {
 			writeCLIError(stderr, "OUTPUT_WRITE_FAILED", err.Error(), "stdout")
 			return 3
@@ -88,7 +140,7 @@ func runFixApply(args []string, stdout, stderr io.Writer) int {
 			_, _ = fmt.Fprintf(stdout, "Diagnostic: %s\n", diagnostic)
 		}
 	}
-	if !*dryRun {
+	if result.Outcome == "failed" {
 		return 3
 	}
 	return 0

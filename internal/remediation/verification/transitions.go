@@ -2,15 +2,16 @@ package verification
 
 import (
 	"errors"
-	"sort"
-
 	"github.com/geoffrey-xiao/deprail/internal/remediation"
+	"reflect"
+	"sort"
 )
 
 type Transition string
 
 const (
 	Resolved   Transition = "resolved"
+	Unchanged  Transition = "unchanged"
 	Residual   Transition = "residual"
 	Introduced Transition = "introduced"
 	Unknown    Transition = "unknown"
@@ -22,27 +23,29 @@ type FindingTransition struct {
 }
 
 func Classify(before, after []remediation.ReportFinding, afterComplete bool) ([]FindingTransition, error) {
-	beforeKeys, err := findingKeys(before)
+	beforeFindings, err := findingMap(before)
 	if err != nil {
 		return nil, err
 	}
-	afterKeys, err := findingKeys(after)
+	afterFindings, err := findingMap(after)
 	if err != nil {
 		return nil, err
 	}
-	keys := make(map[string]struct{}, len(beforeKeys)+len(afterKeys))
-	for key := range beforeKeys {
+	keys := make(map[string]struct{}, len(beforeFindings)+len(afterFindings))
+	for key := range beforeFindings {
 		keys[key] = struct{}{}
 	}
-	for key := range afterKeys {
+	for key := range afterFindings {
 		keys[key] = struct{}{}
 	}
 	result := make([]FindingTransition, 0, len(keys))
 	for key := range keys {
-		_, existed := beforeKeys[key]
-		_, remains := afterKeys[key]
+		beforeFinding, existed := beforeFindings[key]
+		afterFinding, remains := afterFindings[key]
 		state := Unknown
 		switch {
+		case existed && remains && reflect.DeepEqual(beforeFinding, afterFinding):
+			state = Unchanged
 		case existed && remains:
 			state = Residual
 		case existed && afterComplete:
@@ -53,6 +56,20 @@ func Classify(before, after []remediation.ReportFinding, afterComplete bool) ([]
 		result = append(result, FindingTransition{StableKey: key, State: state})
 	}
 	sort.Slice(result, func(i, j int) bool { return result[i].StableKey < result[j].StableKey })
+	return result, nil
+}
+
+func findingMap(findings []remediation.ReportFinding) (map[string]remediation.ReportFinding, error) {
+	result := make(map[string]remediation.ReportFinding, len(findings))
+	for _, finding := range findings {
+		if finding.StableKey == "" {
+			return nil, errors.New("finding stable key is required")
+		}
+		if _, exists := result[finding.StableKey]; exists {
+			return nil, errors.New("duplicate finding stable key")
+		}
+		result[finding.StableKey] = finding
+	}
 	return result, nil
 }
 

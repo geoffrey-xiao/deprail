@@ -9,8 +9,12 @@ import (
 
 func finding(key string) remediation.ReportFinding { return remediation.ReportFinding{StableKey: key} }
 
+func findingVersion(key, version string) remediation.ReportFinding {
+	return remediation.ReportFinding{StableKey: key, CurrentVersion: version}
+}
+
 func TestClassifyCompleteScanDeterministically(t *testing.T) {
-	result, err := Classify([]remediation.ReportFinding{finding("residual"), finding("resolved")}, []remediation.ReportFinding{finding("introduced"), finding("residual")}, true)
+	result, err := Classify([]remediation.ReportFinding{findingVersion("residual", "1.0.0"), finding("resolved")}, []remediation.ReportFinding{finding("introduced"), findingVersion("residual", "2.0.0")}, true)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -27,7 +31,17 @@ func TestClassifyIncompleteScanWithholdsMissingSafetyClaims(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if result[0] != (FindingTransition{"introduced", Introduced}) || result[1] != (FindingTransition{"missing", Unknown}) || result[2] != (FindingTransition{"residual", Residual}) {
+	if result[0] != (FindingTransition{"introduced", Introduced}) || result[1] != (FindingTransition{"missing", Unknown}) || result[2] != (FindingTransition{"residual", Unchanged}) {
+		t.Fatalf("result = %#v", result)
+	}
+}
+
+func TestClassifyReportsUnchangedFinding(t *testing.T) {
+	result, err := Classify([]remediation.ReportFinding{findingVersion("same", "1.0.0")}, []remediation.ReportFinding{findingVersion("same", "1.0.0")}, true)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(result) != 1 || result[0] != (FindingTransition{"same", Unchanged}) {
 		t.Fatalf("result = %#v", result)
 	}
 }

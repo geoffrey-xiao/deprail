@@ -18,10 +18,8 @@ Lower-level issue contracts must not contradict the plan or architecture. Any ch
 
 ## Release boundary
 
-```text
 v0.3: finding -> candidate analysis -> reviewable plan
-v0.4: approved plan -> isolated apply -> verify -> rescan -> patch evidence
-```
+v0.4: scan -> trusted baseline -> approved plan -> isolated apply -> verify -> rescan -> patch evidence
 
 ## Required contracts
 
@@ -47,6 +45,7 @@ The contract set covers:
 | Limits | Deadline, cancellation, output cap, process-tree termination | Failure matrix |
 | Verification | Supported test/build/type-check discovery only | Command-selection evidence |
 | Rescan | Same scan contract; stable finding transition classification | Before/after scan evidence |
+| Baseline generation | Complete scan -> validated `v1alpha` baseline; deterministic identity and ordering | Conversion, schema, failure, and CLI evidence |
 | Patch evidence | Diff, digests, commands, tools, outcomes, redacted diagnostics | Schema/golden evidence |
 | Failure | Explicit complete/partial/failed/cancelled states | Partial-failure fixtures |
 
@@ -63,19 +62,22 @@ The contract set covers:
 - Partial mutation followed by rollback.
 - Test/build/type-check success and failure.
 - Resolved, residual, introduced, and unknown findings after rescan.
+- Complete scan converted to a trusted baseline.
+- Partial, failed, malformed, stale, and unsupported scan rejected.
 - Original repository tree unchanged.
 - Linux, macOS, and Windows semantic equivalence.
 
 ## Definition of Ready checklist
 
-The v0.4 Definition of Ready and ADR-0002 approval are already recorded in
-[`tracking/MASTER-CHECKLIST.md`](tracking/MASTER-CHECKLIST.md). This package
-does not reset those completed records.
+The v0.4 Definition of Ready, ADR-0002 approval, and baseline-generation scope change in ADR-0003 are recorded in
+[`tracking/MASTER-CHECKLIST.md`](tracking/MASTER-CHECKLIST.md) and the linked release issue. This package
+does not reset completed records.
 
 The supplemental context review required before implementation is:
 
 - [ ] PRD and architecture context accepted.
 - [ ] Functional requirements accepted.
+- [ ] Baseline generation contract and ADR-0003 accepted.
 - [ ] Failure/data and redaction contract accepted.
 - [ ] Test strategy and cross-platform evidence plan accepted.
 - [ ] Child issue contracts derived from the accepted documents.

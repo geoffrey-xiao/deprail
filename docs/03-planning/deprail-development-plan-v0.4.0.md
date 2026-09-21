@@ -22,20 +22,13 @@ The roadmap defines v0.4 as remediation and verification. v0.3 remains plan-only
 
 ## 2. User outcome
 
-A user can apply an explicitly approved remediation plan inside an isolated workspace, run bounded verification, rescan the result, and receive durable patch evidence without risking the source repository or hiding partial failure.
+A user can create a validated baseline from a complete scan result, apply an explicitly approved remediation plan inside an isolated workspace, run bounded verification, rescan the result, and receive durable patch evidence without risking the source repository or hiding partial failure.
 
 ## 3. Included scope
 
-- Read and validate a versioned remediation plan.
-- Require explicit approval before any mutation.
-- Create an isolated temporary worktree or equivalent workspace.
-- Apply only allowlisted, plan-described dependency changes.
-- Execute package-manager operations without a shell and without implicit install scripts unless explicitly approved.
-- Discover and run bounded tests, builds, and type checks.
-- Capture before/after trees, diffs, commands, exit codes, and artifacts.
-- Rescan after verification and classify resolved, residual, introduced, and unverifiable findings.
-- Roll back or discard the isolated workspace on failure.
-- Emit deterministic machine-readable patch and verification evidence.
+- Convert a complete scan result into a validated, deterministic baseline consumed by `deprail diff` and `deprail policy check`.
+- Reject partial, failed, malformed, stale, and unsupported scan inputs as explicit failures; never promote them to trusted baselines.
+- Persist generated baselines atomically with restrictive permissions and no implicit replacement.
 
 ## 4. Explicit exclusions
 
@@ -80,6 +73,11 @@ Tests, builds, and type checks are discovered from repository conventions and su
 
 The post-change scan uses the same repository root semantics and scanner contract as the pre-change scan. Evidence compares before/after findings by stable keys and classifies resolved, residual, introduced, and unknown states. A scan failure yields incomplete verification, not success.
 
+### Baseline generation
+
+The `deprail baseline create --scan <path> --output <path>` command is the sole v0.4 user-facing producer for persisted baselines. It accepts only the existing versioned scan contract, preserves scan identity, artifact digests, and stable finding keys, and emits deterministic `v1alpha` baseline JSON. It is read-only with respect to the scanned repository and performs no network access or tool installation.
+
+
 ### Patch evidence
 
 Evidence includes plan digest, source commit, isolated workspace identity, changed files, before/after digests, diff, commands and arguments, tool versions, exit codes, durations, scan identities, findings transition, rollback state, and redaction-safe diagnostics. Credentials, full environments, and source content outside the diff are excluded.
@@ -92,6 +90,10 @@ The result has explicit `complete`, `partial`, `failed`, and `cancelled` states.
 
 The preview is acceptable only when:
 
+- A complete scan can be converted into a schema-valid baseline without manual JSON authoring.
+- Incomplete, failed, malformed, stale, and unsupported scan inputs fail explicitly with documented diagnostics and exit status.
+- Generated baseline identity, ordering, finding keys, and artifact digests are deterministic across Linux, macOS, and Windows.
+- Baseline output is atomic, restrictive, and non-overwriting by default.
 - Approved plans apply only inside an isolated workspace.
 - Original repository trees remain unchanged.
 - Process, path, symlink, credential, timeout, cancellation, and output-limit boundaries are tested.
@@ -100,7 +102,12 @@ The preview is acceptable only when:
 - Linux, macOS, and Windows semantics are equivalent where supported.
 - Security/architecture review and owner approval are recorded separately.
 
-## 7. Definition of Ready
+## 7. Scope-change reconciliation
+
+Baseline generation is an additive v0.4 capability recorded in [ADR-0003](../../adr/ADR-0003-baseline-generation.md) and tracked by [#329](https://github.com/geoffrey-xiao/deprail/issues/329). It does not expand v0.4 into policy-language changes, remote publishing, automatic replacement, repository mutation, or new scanner families.
+
+
+## 8. Definition of Ready
 
 Implementation remains blocked until the owner and named reviewer confirm:
 
@@ -111,6 +118,6 @@ Implementation remains blocked until the owner and named reviewer confirm:
 - Required fixtures, hostile-input scenarios, and cross-platform matrix are named.
 - No issue silently expands into v0.5, web, team, MCP, or autonomous mutation scope.
 
-## 8. Rollback and displaced work
+## 9. Rollback and displaced work
 
 If the preview fails, do not mutate the source repository or move the release tag. Preserve evidence, discard isolated workspaces, and publish a corrected immutable preview only after the failed contract is fixed. v0.5 web/history and v0.7 agent write capabilities remain unchanged and deferred.

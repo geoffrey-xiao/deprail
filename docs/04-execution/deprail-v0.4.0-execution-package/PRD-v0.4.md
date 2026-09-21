@@ -6,10 +6,12 @@
 
 ## User outcome
 
-A developer can review an approved remediation plan, apply it in an isolated workspace, run bounded verification, rescan the result, and receive patch evidence without changing the caller's repository or hiding failure.
+A developer can create a trusted baseline from a complete scan, review an approved remediation plan, apply it in an isolated workspace, run bounded verification, rescan the result, and receive patch evidence without changing the caller's repository or hiding failure.
 
 ## Included
 
+- `deprail baseline create` conversion from a complete scan result to the existing validated baseline contract.
+- Explicit rejection of incomplete, failed, malformed, stale, or unsupported scan inputs.
 - `deprail fix apply` plan validation and dry-run.
 - Explicit approval bound to plan and source identity.
 - Isolated Git worktree lifecycle.
@@ -20,7 +22,7 @@ A developer can review an approved remediation plan, apply it in an isolated wor
 
 ## Excluded
 
-No caller-worktree mutation, automatic commit/push/PR/merge, autonomous approval, arbitrary shell commands, unbounded scripts/network, new ecosystems, web/team services, MCP write tools, or stable-release claim.
+No caller-worktree mutation, automatic commit/push/PR/merge, autonomous approval, arbitrary shell commands, unbounded scripts/network, new ecosystems, web/team services, MCP write tools, automatic baseline replacement, remote baseline publishing, policy-language expansion, or stable-release claim.
 
 ## Success gate
 

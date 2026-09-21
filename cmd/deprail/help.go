@@ -13,7 +13,7 @@ Start here:
 Commands:
   discover       discover dependency workspaces
   scan           scan dependencies for known vulnerabilities
-  doctor         inspect local tool availability
+  baseline create create a baseline from a complete scan
   diff           compare two scan baselines
   fix plan       produce a read-only remediation plan
   policy check   evaluate a baseline policy
@@ -37,10 +37,10 @@ func writeCommandHelp(w io.Writer, command string) error {
 		text = "Usage: deprail discover [path] [--format terminal|json] [--verbose]\n\nDiscover dependency workspaces and completeness.\n\nTip: start with `deprail discover .`; use `--format json` for automation.\nExample: deprail discover . --format json\n"
 	case "scan":
 		text = "Usage: deprail scan [path] [--format terminal|json] [--output path] [--quiet] [--verbose]\n\nScan dependencies for known vulnerabilities.\n\nTip: use JSON for automation and --verbose for safe diagnostics. Quiet mode keeps required errors.\nExample: deprail scan . --format json --output scan.json\n"
+	case "baseline create":
+		text = "Usage: deprail baseline create --scan path --output path [--format terminal|json]\n\nCreate a trusted baseline from a complete scan result.\n\nTip: only complete, error-free scans are accepted; output is never overwritten.\nExample: deprail baseline create --scan scan.json --output baseline.json --format json\n"
 	case "doctor":
 		text = "Usage: deprail doctor [--format terminal|json]\n\nInspect local tool availability without scanning the repository.\n\nTip: run doctor first when scanner availability is uncertain.\nExample: deprail doctor --format json\n"
-	case "diff":
-		text = "Usage: deprail diff --base path --head path [--format terminal|json]\n\nCompare two scan baselines.\n\nTip: use JSON when another tool will consume the comparison.\nExample: deprail diff --base base.json --head head.json --format json\n"
 	case "fix plan":
 		text = "Usage: deprail fix plan --report path --finding key [--format terminal|json] [--output path]\n\nProduce a read-only remediation plan; no files are mutated.\n\nTip: obtain the finding key from a completed scan report.\nExample: deprail fix plan --report scan.json --finding FINDING_KEY --format json --output plan.json\n"
 	case "policy check":

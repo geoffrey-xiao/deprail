@@ -110,18 +110,107 @@ func Validate(d Document) error {
 	return nil
 }
 
-type Store struct{ Root string }
-
-func (s Store) Save(document Document) (string, error) {
+// Marshal returns the canonical, schema-validated baseline encoding.
+func Marshal(document Document) ([]byte, error) {
 	document.Canonicalize()
 	if err := Validate(document); err != nil {
-		return "", err
+		return nil, err
 	}
 	data, err := json.MarshalIndent(document, "", "  ")
 	if err != nil {
-		return "", fmt.Errorf("encode baseline: %w", err)
+		return nil, fmt.Errorf("encode baseline: %w", err)
 	}
-	data = append(data, '\n')
+	return append(data, '\n'), nil
+}
+
+// SaveAs publishes a canonical baseline at path without replacing an existing file.
+func SaveAs(path string, document Document) error {
+	if path == "" {
+		return errors.New("baseline output path is required")
+	}
+	data, err := Marshal(document)
+	if err != nil {
+		return err
+	}
+	dir := filepath.Dir(path)
+	if err := os.MkdirAll(dir, 0o700); err != nil {
+		return fmt.Errorf("create baseline output directory: %w", err)
+	}
+	root, err := filepath.Abs(dir)
+	if err != nil {
+		return fmt.Errorf("resolve baseline output directory: %w", err)
+	}
+	path = filepath.Join(root, filepath.Base(path))
+	temp, err := os.CreateTemp(root, ".baseline-output-*")
+	if err != nil {
+		return fmt.Errorf("create baseline output temporary file: %w", err)
+	}
+	tempName := temp.Name()
+	defer os.Remove(tempName)
+	if err := temp.Chmod(0o600); err != nil {
+		_ = temp.Close()
+		return fmt.Errorf("restrict baseline output temporary file: %w", err)
+	}
+	if _, err := temp.Write(data); err != nil {
+		_ = temp.Close()
+		return fmt.Errorf("write baseline output: %w", err)
+	}
+	if err := temp.Sync(); err != nil {
+		_ = temp.Close()
+		return fmt.Errorf("sync baseline output: %w", err)
+	}
+	if err := temp.Close(); err != nil {
+		return fmt.Errorf("close baseline output: %w", err)
+	}
+	if err := os.Link(tempName, path); err != nil {
+		return fmt.Errorf("publish baseline output without overwrite: %w", err)
+	}
+	return nil
+}
+
+type Store struct{ Root string }
+
+// LoadFile validates a baseline at an explicit user-facing path. Unlike Store.Load,
+// it does not require the content-addressed store filename convention.
+func LoadFile(path string) (Document, error) {
+	file, err := os.Open(path)
+	if err != nil {
+		return Document{}, err
+	}
+	defer file.Close()
+	data, err := io.ReadAll(io.LimitReader(file, 16<<20+1))
+	if err != nil {
+		return Document{}, err
+	}
+	if len(data) > 16<<20 {
+		return Document{}, errors.New("baseline exceeds the input limit")
+	}
+	return decode(data)
+}
+
+func decode(data []byte) (Document, error) {
+	decoder := json.NewDecoder(strings.NewReader(string(data)))
+	decoder.DisallowUnknownFields()
+	var document Document
+	if err := decoder.Decode(&document); err != nil {
+		return Document{}, fmt.Errorf("decode baseline: %w", err)
+	}
+	var extra struct{}
+	if err := decoder.Decode(&extra); err != io.EOF {
+		return Document{}, errors.New("baseline contains trailing data")
+	}
+	if err := Validate(document); err != nil {
+		return Document{}, err
+	}
+	document.Canonicalize()
+	return document, nil
+}
+
+func (s Store) Save(document Document) (string, error) {
+	data, err := Marshal(document)
+	if err != nil {
+		return "", err
+	}
 	digest := sha256.Sum256(data)
 	name := document.BaselineID + "-" + hex.EncodeToString(digest[:]) + ".json"
 	if err := os.MkdirAll(s.Root, 0o700); err != nil {
@@ -177,19 +266,5 @@ func (s Store) Load(path string) (Document, error) {
 	if hex.EncodeToString(digest[:]) != expected {
 		return Document{}, errors.New("baseline integrity check failed")
 	}
-	var document Document
-	decoder := json.NewDecoder(strings.NewReader(string(data)))
-	decoder.DisallowUnknownFields()
-	if err := decoder.Decode(&document); err != nil {
-		return Document{}, fmt.Errorf("decode baseline: %w", err)
-	}
-	var extra struct{}
-	if err := decoder.Decode(&extra); err != io.EOF {
-		return Document{}, errors.New("baseline contains trailing data")
-	}
-	if err := Validate(document); err != nil {
-		return Document{}, err
-	}
-	document.Canonicalize()
-	return document, nil
+	return decode(data)
 }

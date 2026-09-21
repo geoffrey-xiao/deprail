@@ -9,5 +9,6 @@ These epics are local source contracts for the proposed GitHub parent issues. Th
 | EPIC-003 | [#315](https://github.com/geoffrey-xiao/deprail/issues/315) | Verification and rescan | V04-004 / #309 |
 | EPIC-004 | [#316](https://github.com/geoffrey-xiao/deprail/issues/316) | Patch evidence and failure reporting | V04-005 / #310 |
 | EPIC-005 | [#317](https://github.com/geoffrey-xiao/deprail/issues/317) | Cross-platform acceptance evidence | V04-006 / #311 |
+| EPIC-006 | [#332](https://github.com/geoffrey-xiao/deprail/issues/332) | Isolated fix apply orchestration for `v0.4.0-preview.2` | V04-008 / #332 |
 
-Dependencies flow from EPIC-001 through EPIC-005. The overall release parent candidate is #299. No epic authorizes implementation until the crosswalk and tracking hierarchy are accepted.
+Dependencies flow from EPIC-001 through EPIC-006. EPIC-006 is explicitly backlog scope for `v0.4.0-preview.2`; it is not part of the `v0.4.0-preview.1` implementation evidence. The overall release parent candidate is #299. No epic authorizes implementation until the crosswalk and tracking hierarchy are accepted.

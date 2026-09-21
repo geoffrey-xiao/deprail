@@ -18,7 +18,7 @@ Reusable gate: [`docs/RELEASE-CHECKLIST.md`](../RELEASE-CHECKLIST.md)
 | Reviewed source commit | [`76a717f`](https://github.com/geoffrey-xiao/deprail/commit/76a717f) (`origin/main` at baseline capture) |
 | Latest stable tag | None; latest preview is `v0.3.1-preview.1` |
 | Existing preview tags | `v0.3.1-preview.1`, `v0.3.0-preview.1`, `v0.2.0-preview.4`, `v0.2.0-preview.3`, `v0.2.0-preview.2`, `v0.2.0-preview.1`, `v0.1.0-preview.1` |
-| Release manifest | Missing at `origin/main:.release-please-manifest.json`; release process must document the manifest source or add the required file before publication |
+| Release manifest | Not required for this manually run release; manual version/tag/release identity will be recorded here |
 | Release tag | Not created; publication not authorized |
 | DepRail version | Pending release workflow |
 | Release owner | `@geoffrey-xiao` |
@@ -53,7 +53,7 @@ The current merged slices do **not** yet prove a complete user-facing `deprail f
 
 | Area | Status | Evidence or gap |
 |---|---|---|
-| Release identity and immutable tag | Partial | Baseline captured at `76a717f`; release manifest is missing and tag not created |
+| Release identity and immutable tag | Partial | Baseline captured at `76a717f`; manual version/tag identity and tag are still pending |
 | Plan and scope completion | Partial | Implementation slices merged; complete apply orchestration remains unresolved |
 | Contract and security completion | Partial | Contracts exist; named release security/architecture review pending |
 | Automated verification | Partial | Implementation PR CI passed; clean-checkout `make verify` pending |
@@ -64,9 +64,9 @@ The current merged slices do **not** yet prove a complete user-facing `deprail f
 
 ## Required next evidence
 
-- [x] Capture release baseline: `origin/main`, tags, releases, and manifest status. Manifest is missing and blocks publication until dispositioned.
+- [x] Capture release baseline: `origin/main`, tags, releases, and manifest status. Manifest is not required for the owner-run manual release process.
+- [x] Run `make verify` from a clean reviewed checkout. Result: passed on macOS arm64 from baseline branch; `go generate`, `go vet`, `go test`, and `go build` completed successfully.
 - [ ] Reconcile complete `deprail fix apply` scope and compatibility impact.
-- [ ] Run `make verify` from a clean reviewed checkout.
 - [ ] Run representative repository smoke coverage and record exit codes.
 - [ ] Record platform, binary identity, artifacts, sizes, and SHA-256 checksums.
 - [ ] Record SBOM, signing, and provenance status.

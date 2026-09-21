@@ -134,18 +134,35 @@ func authorizedPaths(plan Plan, root string) ([]string, error) {
 		}
 		seen[path] = struct{}{}
 		full := filepath.Join(root, filepath.FromSlash(path))
-		if resolved, err := filepath.EvalSymlinks(full); err == nil {
-			relative, relErr := filepath.Rel(root, resolved)
-			if relErr != nil || relative == ".." || strings.HasPrefix(relative, ".."+string(filepath.Separator)) {
-				return nil, &ApprovalError{Code: ApprovalInvalid, Message: "affected paths must remain inside the repository"}
-			}
-		} else if !os.IsNotExist(err) {
-			return nil, &ApprovalError{Code: ApprovalInvalid, Message: "affected path cannot be resolved safely"}
+		if err := validateContainedPath(root, full); err != nil {
+			return nil, err
 		}
 		paths = append(paths, path)
 	}
 	sort.Strings(paths)
 	return paths, nil
+}
+
+func validateContainedPath(root, full string) error {
+	current := full
+	for {
+		resolved, err := filepath.EvalSymlinks(current)
+		if err == nil {
+			relative, relErr := filepath.Rel(root, resolved)
+			if relErr != nil || relative == ".." || strings.HasPrefix(relative, ".."+string(filepath.Separator)) {
+				return &ApprovalError{Code: ApprovalInvalid, Message: "affected paths must remain inside the repository"}
+			}
+			return nil
+		}
+		if !os.IsNotExist(err) {
+			return &ApprovalError{Code: ApprovalInvalid, Message: "affected path cannot be resolved safely"}
+		}
+		parent := filepath.Dir(current)
+		if parent == current {
+			return &ApprovalError{Code: ApprovalInvalid, Message: "affected path cannot be resolved safely"}
+		}
+		current = parent
+	}
 }
 
 func equalStrings(a, b []string) bool {

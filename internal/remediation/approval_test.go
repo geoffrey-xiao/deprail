@@ -93,3 +93,20 @@ func TestApprovalRejectsSymlinkedAffectedPathOutsideRoot(t *testing.T) {
 		t.Fatal("expected symlink escape rejection")
 	}
 }
+
+func TestApprovalRejectsMissingPathUnderSymlinkedDirectory(t *testing.T) {
+	if runtime.GOOS == "windows" {
+		t.Skip("symlink permissions vary on Windows")
+	}
+	plan, root := approvalTestPlan(t)
+	outside := t.TempDir()
+	link := filepath.Join(root, "nested")
+	if err := os.Symlink(outside, link); err != nil {
+		t.Fatal(err)
+	}
+	plan.AffectedFiles[0].Path = "nested/new.json"
+	plan.PlanID = StablePlanID(plan)
+	if _, err := NewApproval(plan, root, time.Now().UTC().Add(time.Hour)); err == nil {
+		t.Fatal("expected missing path under symlink rejection")
+	}
+}

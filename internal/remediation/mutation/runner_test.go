@@ -101,3 +101,22 @@ func TestSecuredArgsAddOfflineAndScriptFlags(t *testing.T) {
 		}
 	}
 }
+
+func TestSecuredArgsPreserveShellMetacharactersAsArguments(t *testing.T) {
+	args, err := securedArgs("/usr/bin/npm", []string{"install", "pkg;touch /tmp/pwned", "$(id)"})
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, want := range []string{"pkg;touch /tmp/pwned", "$(id)"} {
+		found := false
+		for _, arg := range args {
+			if arg == want {
+				found = true
+				break
+			}
+		}
+		if !found {
+			t.Fatalf("argument %q was not preserved: %v", want, args)
+		}
+	}
+}

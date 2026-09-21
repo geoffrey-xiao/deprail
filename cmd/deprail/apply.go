@@ -27,18 +27,19 @@ import (
 )
 
 type applyResult struct {
-	SchemaVersion         string   `json:"schema_version"`
-	Outcome               string   `json:"outcome"`
-	PlanID                string   `json:"plan_id"`
-	PlanDigest            string   `json:"plan_digest"`
-	SourceRoot            string   `json:"source_root"`
-	SourceCommit          string   `json:"source_commit"`
-	Workspace             string   `json:"workspace,omitempty"`
-	RescanStatus          string   `json:"rescan_status,omitempty"`
-	RescanScanID          string   `json:"rescan_scan_id,omitempty"`
-	RescanRepositoryState string   `json:"rescan_repository_state,omitempty"`
-	RescanArtifactDigests []string `json:"rescan_artifact_digests,omitempty"`
-	Diagnostics           []string `json:"diagnostics"`
+	SchemaVersion         string                           `json:"schema_version"`
+	Outcome               string                           `json:"outcome"`
+	PlanID                string                           `json:"plan_id"`
+	PlanDigest            string                           `json:"plan_digest"`
+	SourceRoot            string                           `json:"source_root"`
+	SourceCommit          string                           `json:"source_commit"`
+	Workspace             string                           `json:"workspace,omitempty"`
+	RescanStatus          string                           `json:"rescan_status,omitempty"`
+	RescanScanID          string                           `json:"rescan_scan_id,omitempty"`
+	RescanRepositoryState string                           `json:"rescan_repository_state,omitempty"`
+	RescanArtifactDigests []string                         `json:"rescan_artifact_digests,omitempty"`
+	Transitions           []verification.FindingTransition `json:"transitions,omitempty"`
+	Diagnostics           []string                         `json:"diagnostics"`
 }
 
 func runFixApply(args []string, stdout, stderr io.Writer) int {
@@ -173,9 +174,52 @@ func runFixApplyContext(ctx context.Context, args []string, stdout, stderr io.Wr
 		return writeApplyResult(result, *format, stdout, stderr)
 	}
 	result.Diagnostics = append(result.Diagnostics, fmt.Sprintf("rescan complete: %s (%d finding(s))", rescan.ScanID, len(rescan.Findings)))
+	transitions, err := verification.Classify([]remediation.ReportFinding{planFinding(plan)}, rescanFindingsForPlan(rescan, plan), true)
+	if err != nil {
+		result.Outcome = "failed"
+		result.Diagnostics = append(result.Diagnostics, "transition classification failed: "+err.Error())
+		_ = cleanup()
+		return writeApplyResult(result, *format, stdout, stderr)
+	}
+	result.Transitions = transitions
 	result.Outcome = "applied"
 	_ = cleanup()
 	return writeApplyResult(result, *format, stdout, stderr)
+}
+
+func planFinding(plan remediation.Plan) remediation.ReportFinding {
+	return remediation.ReportFinding{
+		StableKey:      plan.FindingIdentity.StableKey,
+		Workspace:      plan.WorkspaceIdentity,
+		Component:      plan.Component,
+		Aliases:        append([]string(nil), plan.FindingIdentity.Aliases...),
+		CurrentVersion: plan.FindingIdentity.CurrentVersion,
+		DependencyPath: append([]string(nil), plan.FindingIdentity.DependencyPath...),
+		FixedVersions:  append([]string(nil), plan.FindingIdentity.FixedVersions...),
+		Provenance:     plan.Provenance,
+	}
+}
+
+func rescanFindingsForPlan(report app.ScanReport, plan remediation.Plan) []remediation.ReportFinding {
+	findings := make([]remediation.ReportFinding, 0, len(report.Findings))
+	for _, finding := range report.Findings {
+		key := finding.TargetID
+		if key == "" {
+			key = finding.Component + "@" + finding.Version
+		}
+		if key != plan.FindingIdentity.StableKey {
+			continue
+		}
+		findings = append(findings, remediation.ReportFinding{
+			StableKey:      key,
+			Workspace:      remediation.WorkspaceIdentity{ID: finding.WorkspaceID, Path: finding.WorkspacePath},
+			Component:      remediation.Component{PURL: finding.PURL, Name: finding.Component, Version: finding.Version},
+			Aliases:        append([]string(nil), finding.Aliases...),
+			CurrentVersion: finding.Version,
+			Provenance:     remediation.Provenance{ArtifactDigests: append([]string(nil), report.ArtifactDigests...)},
+		})
+	}
+	return findings
 }
 
 func rescanApplyWorkspace(ctx context.Context, workspace string) (app.ScanReport, error) {

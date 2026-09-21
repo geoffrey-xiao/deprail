@@ -1,8 +1,8 @@
 # DepRail v0.4.0 Execution Package
 
 **Version:** `v0.4.0-preview.1`
-**Status:** Planning baseline; implementation blocked pending Definition of Ready
-**Parent epic:** [#299](https://github.com/geoffrey-xiao/deprail/issues/299)
+**Status:** Context package draft; implementation remains blocked pending owner review
+**Parent epic:** Not finalized; candidate epic #299 exists for review
 **Plan:** [`docs/03-planning/deprail-development-plan-v0.4.0.md`](../../03-planning/deprail-development-plan-v0.4.0.md)
 
 ## Source order
@@ -24,6 +24,17 @@ v0.4: approved plan -> isolated apply -> verify -> rescan -> patch evidence
 ```
 
 ## Required contracts
+
+The following documents are the normative v0.4 context drafts:
+
+- [`PRD-v0.4.md`](PRD-v0.4.md)
+- [`ARCHITECTURE-v0.4.md`](ARCHITECTURE-v0.4.md)
+- [`requirements/FUNCTIONAL-REQUIREMENTS.md`](requirements/FUNCTIONAL-REQUIREMENTS.md)
+- [`requirements/FAILURE-AND-DATA-CONTRACT.md`](requirements/FAILURE-AND-DATA-CONTRACT.md)
+- [`requirements/TEST-STRATEGY.md`](requirements/TEST-STRATEGY.md)
+- [`requirements/ISOLATION-AND-ROLLBACK.md`](requirements/ISOLATION-AND-ROLLBACK.md)
+
+The contract set covers:
 
 | Contract | Required decision | Evidence |
 | --- | --- | --- |

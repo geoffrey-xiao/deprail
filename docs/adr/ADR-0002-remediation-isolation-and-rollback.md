@@ -1,6 +1,6 @@
 # ADR-0002 Remediation Isolation and Rollback
 
-- Status: Proposed
+- Status: Accepted
 - Date: 2026-09-21
 - Owners: `@geoffrey-xiao`
 - Related issues: [#299](https://github.com/geoffrey-xiao/deprail/issues/299), [#302](https://github.com/geoffrey-xiao/deprail/issues/302), [#303](https://github.com/geoffrey-xiao/deprail/issues/303)
@@ -66,4 +66,4 @@ No existing v0.3 or v0.3.1 command mutates repositories. v0.4 adds the boundary 
 
 ## Validation
 
-Acceptance requires contract tests for canonical paths, symlink escape, restrictive permissions, source-tree immutability, repeated cleanup, interrupted cleanup, timeout, cancellation, and Linux/macOS/Windows behavior. Architecture/security review must accept this ADR before #302 implementation merges.
+Acceptance requires contract tests for canonical paths, symlink escape, restrictive permissions, source-tree immutability, repeated cleanup, interrupted cleanup, timeout, cancellation, and Linux/macOS/Windows behavior. These remain implementation acceptance criteria for #302.

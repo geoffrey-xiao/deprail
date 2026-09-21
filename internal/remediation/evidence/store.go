@@ -23,9 +23,19 @@ func (s Store) Save(record Record) (string, string, error) {
 	if s.Root == "" {
 		return "", "", errors.New("evidence root is required")
 	}
-	dir := filepath.Join(s.Root, digest[:2])
+	root, err := secureRoot(s.Root)
+	if err != nil {
+		return "", "", err
+	}
+	dir := filepath.Join(root, digest[:2])
 	if err := os.MkdirAll(dir, 0o700); err != nil {
 		return "", "", fmt.Errorf("create evidence directory: %w", err)
+	}
+	if err := os.Chmod(dir, 0o700); err != nil {
+		return "", "", fmt.Errorf("restrict evidence directory: %w", err)
+	}
+	if err := validatePrivateDirectory(dir); err != nil {
+		return "", "", err
 	}
 	path := filepath.Join(dir, digest+".json")
 	if existing, err := os.ReadFile(path); err == nil {
@@ -64,4 +74,46 @@ func (s Store) Save(record Record) (string, string, error) {
 		return "", "", fmt.Errorf("publish evidence: %w", err)
 	}
 	return path, digest, nil
+}
+
+func secureRoot(root string) (string, error) {
+	absolute, err := filepath.Abs(root)
+	if err != nil {
+		return "", fmt.Errorf("resolve evidence root: %w", err)
+	}
+	if err := os.MkdirAll(absolute, 0o700); err != nil {
+		return "", fmt.Errorf("create evidence root: %w", err)
+	}
+	if err := os.Chmod(absolute, 0o700); err != nil {
+		return "", fmt.Errorf("restrict evidence root: %w", err)
+	}
+	info, err := os.Lstat(absolute)
+	if err != nil {
+		return "", fmt.Errorf("inspect evidence root: %w", err)
+	}
+	if info.Mode()&os.ModeSymlink != 0 {
+		return "", errors.New("evidence root must not be a symlink")
+	}
+	resolved, err := filepath.EvalSymlinks(absolute)
+	if err != nil {
+		return "", fmt.Errorf("resolve evidence root: %w", err)
+	}
+	if err := validatePrivateDirectory(resolved); err != nil {
+		return "", err
+	}
+	return resolved, nil
+}
+
+func validatePrivateDirectory(path string) error {
+	info, err := os.Lstat(path)
+	if err != nil {
+		return fmt.Errorf("inspect evidence directory: %w", err)
+	}
+	if info.Mode()&os.ModeSymlink != 0 || !info.IsDir() {
+		return errors.New("evidence write boundary must be a private directory")
+	}
+	if info.Mode().Perm()&0o077 != 0 {
+		return errors.New("evidence directory permissions are too permissive")
+	}
+	return nil
 }

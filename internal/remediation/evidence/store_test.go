@@ -2,6 +2,7 @@ package evidence
 
 import (
 	"os"
+	"path/filepath"
 	"testing"
 )
 
@@ -31,5 +32,42 @@ func TestStoreSaveIsDeterministicAndNonOverwriting(t *testing.T) {
 func TestStoreRejectsMissingRoot(t *testing.T) {
 	if _, _, err := (Store{}).Save(testRecord()); err == nil {
 		t.Fatal("expected missing root rejection")
+	}
+}
+func TestStoreRejectsSymlinkedShard(t *testing.T) {
+	root := t.TempDir()
+	outside := t.TempDir()
+	record := testRecord()
+	digest, err := Digest(record)
+	if err != nil {
+		t.Fatal(err)
+	}
+	shard := filepath.Join(root, digest[:2])
+	if err := os.Symlink(outside, shard); err != nil {
+		t.Skip("symlinks unavailable")
+	}
+	if _, _, err := (Store{Root: root}).Save(record); err == nil {
+		t.Fatal("expected symlinked shard rejection")
+	}
+}
+
+func TestStoreRestrictsPermissiveRoot(t *testing.T) {
+	root := t.TempDir()
+	if err := os.Chmod(root, 0o777); err != nil {
+		t.Fatal(err)
+	}
+	path, _, err := (Store{Root: root}).Save(testRecord())
+	if err != nil {
+		t.Fatal(err)
+	}
+	info, err := os.Stat(root)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if info.Mode().Perm()&0o077 != 0 {
+		t.Fatalf("root permissions remain permissive: %o", info.Mode().Perm())
+	}
+	if _, err := os.Stat(path); err != nil {
+		t.Fatal(err)
 	}
 }

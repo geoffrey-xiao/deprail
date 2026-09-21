@@ -20,6 +20,7 @@ import (
 	"github.com/geoffrey-xiao/deprail/internal/app"
 	"github.com/geoffrey-xiao/deprail/internal/artifact"
 	"github.com/geoffrey-xiao/deprail/internal/discovery"
+	"github.com/geoffrey-xiao/deprail/internal/process"
 	"github.com/geoffrey-xiao/deprail/internal/remediation"
 	"github.com/geoffrey-xiao/deprail/internal/remediation/isolation"
 	"github.com/geoffrey-xiao/deprail/internal/remediation/mutation"
@@ -27,19 +28,23 @@ import (
 )
 
 type applyResult struct {
-	SchemaVersion         string                           `json:"schema_version"`
-	Outcome               string                           `json:"outcome"`
-	PlanID                string                           `json:"plan_id"`
-	PlanDigest            string                           `json:"plan_digest"`
-	SourceRoot            string                           `json:"source_root"`
-	SourceCommit          string                           `json:"source_commit"`
-	Workspace             string                           `json:"workspace,omitempty"`
-	RescanStatus          string                           `json:"rescan_status,omitempty"`
-	RescanScanID          string                           `json:"rescan_scan_id,omitempty"`
-	RescanRepositoryState string                           `json:"rescan_repository_state,omitempty"`
-	RescanArtifactDigests []string                         `json:"rescan_artifact_digests,omitempty"`
-	Transitions           []verification.FindingTransition `json:"transitions,omitempty"`
-	Diagnostics           []string                         `json:"diagnostics"`
+	SchemaVersion            string                           `json:"schema_version"`
+	Outcome                  string                           `json:"outcome"`
+	PlanID                   string                           `json:"plan_id"`
+	PlanDigest               string                           `json:"plan_digest"`
+	SourceRoot               string                           `json:"source_root"`
+	SourceCommit             string                           `json:"source_commit"`
+	Workspace                string                           `json:"workspace,omitempty"`
+	RescanStatus             string                           `json:"rescan_status,omitempty"`
+	RescanScanID             string                           `json:"rescan_scan_id,omitempty"`
+	RescanRepositoryState    string                           `json:"rescan_repository_state,omitempty"`
+	RescanArtifactDigests    []string                         `json:"rescan_artifact_digests,omitempty"`
+	Transitions              []verification.FindingTransition `json:"transitions,omitempty"`
+	CleanupStatus            string                           `json:"cleanup_status,omitempty"`
+	CleanupGitRemoved        bool                             `json:"cleanup_git_removed,omitempty"`
+	CleanupFilesystemRemoved bool                             `json:"cleanup_filesystem_removed,omitempty"`
+	CleanupRetryable         bool                             `json:"cleanup_retryable,omitempty"`
+	Diagnostics              []string                         `json:"diagnostics"`
 }
 
 func runFixApply(args []string, stdout, stderr io.Writer) int {
@@ -104,12 +109,29 @@ func runFixApplyContext(ctx context.Context, args []string, stdout, stderr io.Wr
 		return 3
 	}
 	result.Workspace = workspace.Path
-	cleanup := func() error {
+	var cleanupResult isolation.CleanupResult
+	cleanupDone := false
+	cleanup := func() isolation.CleanupResult {
+		if cleanupDone {
+			return cleanupResult
+		}
+		cleanupDone = true
 		cleanupCtx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 		defer cancel()
-		return workspace.Remove(cleanupCtx)
+		cleanupResult = workspace.RemoveWithEvidence(cleanupCtx)
+		return cleanupResult
 	}
-	defer cleanup()
+	finish := func(outcome, diagnostic string) int {
+		if diagnostic != "" {
+			result.Diagnostics = append(result.Diagnostics, diagnostic)
+		}
+		recordCleanupOutcome(&result, outcome, cleanup())
+		return writeApplyResult(result, *format, stdout, stderr)
+	}
+	mutated := false
+	operationOutcome := func(err error) string {
+		return applyOperationOutcome(ctx, err, mutated)
+	}
 
 	for _, command := range plan.Commands {
 		workingDirectory := command.WorkingDirectory
@@ -117,49 +139,32 @@ func runFixApplyContext(ctx context.Context, args []string, stdout, stderr io.Wr
 			workingDirectory = "."
 		}
 		if err := remediation.ValidateCommandWorkspace(plan, workingDirectory); err != nil {
-			result.Outcome = "failed"
-			result.Diagnostics = append(result.Diagnostics, "unauthorized mutation working directory: "+err.Error())
-			_ = cleanup()
-			return writeApplyResult(result, *format, stdout, stderr)
+			return finish("failed", "unauthorized mutation working directory: "+err.Error())
 		}
 		commandWorkspace, err := workspace.Subdirectory(workingDirectory)
 		if err != nil {
-			result.Outcome = "failed"
-			result.Diagnostics = append(result.Diagnostics, "invalid mutation working directory: "+err.Error())
-			_ = cleanup()
-			return writeApplyResult(result, *format, stdout, stderr)
+			return finish("failed", "invalid mutation working directory: "+err.Error())
 		}
 		executable, err := exec.LookPath(command.Executable)
 		if err != nil {
-			result.Outcome = "failed"
-			result.Diagnostics = append(result.Diagnostics, "mutation executable is unavailable: "+command.Executable)
-			_ = cleanup()
-			return writeApplyResult(result, *format, stdout, stderr)
+			return finish("failed", "mutation executable is unavailable: "+command.Executable)
 		}
 		_, err = mutation.Run(ctx, mutation.Request{
 			Path: executable, Args: command.Arguments, Workspace: commandWorkspace, Approved: true,
 			Timeout: 2 * time.Minute, OutputCap: 16 << 20, DenyScripts: true, DenyNetwork: true,
 		})
 		if err != nil {
-			result.Outcome = "failed"
-			result.Diagnostics = append(result.Diagnostics, err.Error())
-			_ = cleanup()
-			return writeApplyResult(result, *format, stdout, stderr)
+			return finish(operationOutcome(err), err.Error())
 		}
+		mutated = true
 	}
 	verificationCommands, err := applyVerificationCommands(plan)
 	if err != nil {
-		result.Outcome = "failed"
-		result.Diagnostics = append(result.Diagnostics, "verification unavailable: "+err.Error())
-		_ = cleanup()
-		return writeApplyResult(result, *format, stdout, stderr)
+		return finish(operationOutcome(err), "verification unavailable: "+err.Error())
 	}
 	_, err = verification.Run(ctx, workspace.Path, verificationCommands, 2*time.Minute, 16<<20)
 	if err != nil {
-		result.Outcome = "failed"
-		result.Diagnostics = append(result.Diagnostics, "verification failed: "+err.Error())
-		_ = cleanup()
-		return writeApplyResult(result, *format, stdout, stderr)
+		return finish(operationOutcome(err), "verification failed: "+err.Error())
 	}
 	result.Diagnostics = append(result.Diagnostics, fmt.Sprintf("verification complete: %d command(s)", len(verificationCommands)))
 	rescan, err := rescanApplyWorkspace(ctx, workspace.Path)
@@ -168,23 +173,55 @@ func runFixApplyContext(ctx context.Context, args []string, stdout, stderr io.Wr
 	result.RescanRepositoryState = rescan.RepositoryState
 	result.RescanArtifactDigests = append([]string(nil), rescan.ArtifactDigests...)
 	if err != nil {
-		result.Outcome = "failed"
-		result.Diagnostics = append(result.Diagnostics, "rescan failed: "+err.Error())
-		_ = cleanup()
-		return writeApplyResult(result, *format, stdout, stderr)
+		return finish(operationOutcome(err), "rescan failed: "+err.Error())
 	}
 	result.Diagnostics = append(result.Diagnostics, fmt.Sprintf("rescan complete: %s (%d finding(s))", rescan.ScanID, len(rescan.Findings)))
 	transitions, err := verification.Classify([]remediation.ReportFinding{planFinding(plan)}, rescanFindingsForPlan(rescan, plan), true)
 	if err != nil {
-		result.Outcome = "failed"
-		result.Diagnostics = append(result.Diagnostics, "transition classification failed: "+err.Error())
-		_ = cleanup()
-		return writeApplyResult(result, *format, stdout, stderr)
+		return finish(operationOutcome(err), "transition classification failed: "+err.Error())
 	}
 	result.Transitions = transitions
-	result.Outcome = "applied"
-	_ = cleanup()
-	return writeApplyResult(result, *format, stdout, stderr)
+	return finish("applied", "")
+}
+
+func cleanupStatus(result isolation.CleanupResult) string {
+	if result.Err == nil {
+		if result.GitRemoved || result.FilesystemRemoved {
+			return "succeeded"
+		}
+		return "not_attempted"
+	}
+	if result.GitRemoved || result.FilesystemRemoved {
+		return "partial"
+	}
+	return "failed"
+}
+
+func applyFailureOutcome(ctx context.Context, err error) string {
+	if errors.Is(ctx.Err(), context.Canceled) || process.IsCode(err, process.ErrCancelled) {
+		return "cancelled"
+	}
+	return "failed"
+}
+
+func recordCleanupOutcome(result *applyResult, outcome string, cleanup isolation.CleanupResult) {
+	result.CleanupStatus = cleanupStatus(cleanup)
+	result.CleanupGitRemoved = cleanup.GitRemoved
+	result.CleanupFilesystemRemoved = cleanup.FilesystemRemoved
+	result.CleanupRetryable = cleanup.Retryable
+	result.Outcome = outcome
+	if cleanup.Err != nil {
+		result.Diagnostics = append(result.Diagnostics, fmt.Sprintf("cleanup failed after %s: %v", outcome, cleanup.Err))
+		result.Outcome = "cleanup_failed"
+	}
+}
+
+func applyOperationOutcome(ctx context.Context, err error, partial bool) string {
+	outcome := applyFailureOutcome(ctx, err)
+	if outcome == "failed" && partial {
+		return "partial"
+	}
+	return outcome
 }
 
 func planFinding(plan remediation.Plan) remediation.ReportFinding {
@@ -277,14 +314,19 @@ func writeApplyResult(result applyResult, format string, stdout, stderr io.Write
 		}
 	} else {
 		_, _ = fmt.Fprintf(stdout, "Outcome: %s\nPlan: %s\nSource: %s\n", result.Outcome, result.PlanID, result.SourceCommit)
+		if result.CleanupStatus != "" {
+			_, _ = fmt.Fprintf(stdout, "Cleanup: %s\n", result.CleanupStatus)
+		}
 		for _, diagnostic := range result.Diagnostics {
 			_, _ = fmt.Fprintf(stdout, "Diagnostic: %s\n", diagnostic)
 		}
 	}
-	if result.Outcome == "failed" {
+	switch result.Outcome {
+	case "dry_run", "applied", "verified":
+		return 0
+	default:
 		return 3
 	}
-	return 0
 }
 
 func currentCommit(root string) (string, error) {

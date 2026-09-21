@@ -23,7 +23,10 @@ type Workspace struct {
 	Path      string
 	SourceRef string
 	Created   bool
+	verified  bool
 }
+
+func (w Workspace) Prepared() bool { return w.Created && w.verified && w.Path != "" }
 
 func Create(ctx context.Context, root, sourceRef string) (Workspace, error) {
 	canonical, err := canonicalDirectory(ctx, root)
@@ -54,7 +57,7 @@ func Create(ctx context.Context, root, sourceRef string) (Workspace, error) {
 		_ = os.RemoveAll(parent)
 		return Workspace{}, fmt.Errorf("create isolated worktree: %w", err)
 	}
-	return Workspace{Root: canonical, Path: path, SourceRef: commit, Created: true}, nil
+	return Workspace{Root: canonical, Path: path, SourceRef: commit, Created: true, verified: true}, nil
 }
 
 func (w *Workspace) Remove(ctx context.Context) error {
@@ -65,6 +68,7 @@ func (w *Workspace) Remove(ctx context.Context) error {
 	if w.Created {
 		_, gitErr = runGit(ctx, w.Root, "worktree", "remove", "--force", w.Path)
 		w.Created = false
+		w.verified = false
 	}
 	removeErr := os.RemoveAll(filepath.Dir(w.Path))
 	w.Path = ""

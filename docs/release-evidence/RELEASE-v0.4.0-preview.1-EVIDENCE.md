@@ -15,7 +15,7 @@ Reusable gate: [`docs/RELEASE-CHECKLIST.md`](../RELEASE-CHECKLIST.md)
 
 | Field | Evidence |
 |---|---|
-| Reviewed source commit | [`76a717f`](https://github.com/geoffrey-xiao/deprail/commit/76a717f) (`origin/main` at baseline capture) |
+| Reviewed source commit | [`7903612`](https://github.com/geoffrey-xiao/deprail/commit/7903612) (`origin/main` after PR #331 merge) |
 | Latest stable tag | None; latest preview is `v0.3.1-preview.1` |
 | Existing preview tags | `v0.3.1-preview.1`, `v0.3.0-preview.1`, `v0.2.0-preview.4`, `v0.2.0-preview.3`, `v0.2.0-preview.2`, `v0.2.0-preview.1`, `v0.1.0-preview.1` |
 | Release manifest | Not required for this manually run release; manual version/tag/release identity will be recorded here |
@@ -35,9 +35,9 @@ Included implementation contracts and primitives:
 - verification command selection and finding transitions;
 - versioned redaction-safe evidence;
 - cross-platform relative-path semantics;
-- trusted baseline generation from complete scan results under [#329](https://github.com/geoffrey-xiao/deprail/issues/329).
+- trusted baseline generation from complete scan results under [#329](https://github.com/geoffrey-xiao/deprail/issues/329), merged by [#331](https://github.com/geoffrey-xiao/deprail/pull/331).
 
-The baseline-generation runtime is implemented on a separate feature branch and remains pending review. Its local manual workflow is recorded in `local_test/v0.4.0-preview.1/guide/MANUAL-TEST-GUIDE.md`; generated artifacts remain local-only.
+The baseline-generation manual workflow is recorded in `local_test/v0.4.0-preview.1/guide/MANUAL-TEST-GUIDE.md`; generated artifacts remain local-only.
 
 The current merged slices do **not** yet prove a complete user-facing `deprail fix apply` orchestration flow. That scope gap must be reconciled and owner-approved before publication.
 
@@ -51,17 +51,17 @@ The current merged slices do **not** yet prove a complete user-facing `deprail f
 | Verification and rescan | #309 | #322 | Merged; CI passed on Linux/macOS/Windows |
 | Evidence contract | #310 | #323 | Merged; CI passed on Linux/macOS/Windows |
 | Cross-platform semantics | #311 | #324 | Merged; CI passed on Linux/macOS/Windows |
-| Trusted baseline generation | #329 | #331 | Pending review; local tests, `make verify`, and CLI diff/policy smoke passed |
+| Trusted baseline generation | #329 | #331 | Merged; CI passed on Linux/macOS/Windows; reviewed binary smoke passed on macOS arm64 |
 
 ## Checklist reconciliation
 
 | Area | Status | Evidence or gap |
 |---|---|---|
-| Release identity and immutable tag | Partial | Baseline captured at `76a717f`; manual version/tag identity and tag are still pending |
+| Release identity and immutable tag | Partial | Baseline captured at `7903612`; manual version/tag identity and tag are still pending |
 | Plan and scope completion | Partial | Implementation slices merged; complete apply orchestration remains unresolved |
 | Contract and security completion | Partial | Contracts exist; named release security/architecture review pending |
-| Automated verification | Partial | Implementation PR CI passed; clean-checkout `make verify` pending |
-| Manual verification | Open | Representative repository remediation smoke pending |
+| Automated verification | Complete for merged baseline slice | PR #331 CI passed on Linux/macOS/Windows; reviewed `origin/main` binary smoke passed locally |
+| Manual verification | Open | Scan/baseline/diff workflow passed on macOS arm64; representative remediation smoke pending |
 | Artifact and supply-chain verification | Open | Build artifacts, checksums, SBOM, signing, provenance pending |
 | Publication and approval | Open | No release publication authorized |
 | Post-release closure | Open | Retrospective cannot be completed before release decision |
@@ -70,9 +70,10 @@ The current merged slices do **not** yet prove a complete user-facing `deprail f
 
 - [x] Capture release baseline: `origin/main`, tags, releases, and manifest status. Manifest is not required for the owner-run manual release process.
 - [x] Run `make verify` from a clean reviewed checkout. Result: passed on macOS arm64 from baseline branch; `go generate`, `go vet`, `go test`, and `go build` completed successfully.
+- [x] Run representative repository scan and baseline/diff smoke; macOS arm64, source `7903612`, binary `/tmp/deprail-v0.4.0-main`, scan complete with 14 findings, baseline create exit `0`, identical diff exit `0`.
 - [ ] Reconcile complete `deprail fix apply` scope and compatibility impact.
-- [ ] Run representative repository smoke coverage and record exit codes.
 - [ ] Record platform, binary identity, artifacts, sizes, and SHA-256 checksums.
+- Manual evidence artifacts: `local_test/v0.4.0-preview.1/output/scan.json`, `baseline-create.json`, `diff.json`; baseline artifact is under the ignored fixture `.deprail/manual` directory.
 - [ ] Record SBOM, signing, and provenance status.
 - [ ] Obtain named architecture/security review.
 - [ ] Prepare preview notes and rollback procedure.

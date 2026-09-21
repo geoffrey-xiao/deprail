@@ -89,9 +89,20 @@ func runFixApply(args []string, stdout, stderr io.Writer) int {
 	defer cleanup()
 
 	for _, command := range plan.Commands {
-		if command.WorkingDirectory != "." && command.WorkingDirectory != "" {
+		workingDirectory := command.WorkingDirectory
+		if workingDirectory == "" {
+			workingDirectory = "."
+		}
+		if err := remediation.ValidateCommandWorkspace(plan, workingDirectory); err != nil {
 			result.Outcome = "failed"
-			result.Diagnostics = append(result.Diagnostics, "non-root mutation working directories are not yet supported")
+			result.Diagnostics = append(result.Diagnostics, "unauthorized mutation working directory: "+err.Error())
+			_ = cleanup()
+			return writeApplyResult(result, *format, stdout, stderr)
+		}
+		commandWorkspace, err := workspace.Subdirectory(workingDirectory)
+		if err != nil {
+			result.Outcome = "failed"
+			result.Diagnostics = append(result.Diagnostics, "invalid mutation working directory: "+err.Error())
 			_ = cleanup()
 			return writeApplyResult(result, *format, stdout, stderr)
 		}
@@ -103,7 +114,7 @@ func runFixApply(args []string, stdout, stderr io.Writer) int {
 			return writeApplyResult(result, *format, stdout, stderr)
 		}
 		_, err = mutation.Run(context.Background(), mutation.Request{
-			Path: executable, Args: command.Arguments, Workspace: workspace, Approved: true,
+			Path: executable, Args: command.Arguments, Workspace: commandWorkspace, Approved: true,
 			Timeout: 2 * time.Minute, OutputCap: 16 << 20, DenyScripts: true, DenyNetwork: true,
 		})
 		if err != nil {

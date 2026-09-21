@@ -45,7 +45,39 @@ func (w Workspace) Subdirectory(relative string) (Workspace, error) {
 	if err != nil || rel == ".." || strings.HasPrefix(rel, ".."+string(filepath.Separator)) {
 		return Workspace{}, errors.New("workspace subdirectory escapes isolated workspace")
 	}
+	if err := rejectSymlinkComponents(w.Path, path); err != nil {
+		return Workspace{}, err
+	}
+	info, err := os.Stat(path)
+	if err != nil {
+		return Workspace{}, fmt.Errorf("inspect workspace subdirectory: %w", err)
+	}
+	if !info.IsDir() {
+		return Workspace{}, errors.New("workspace subdirectory must be a directory")
+	}
 	return Workspace{Root: w.Root, Path: path, SourceRef: w.SourceRef, Created: true, verified: true}, nil
+}
+
+func rejectSymlinkComponents(root, target string) error {
+	relative, err := filepath.Rel(root, target)
+	if err != nil || relative == ".." || strings.HasPrefix(relative, ".."+string(filepath.Separator)) {
+		return errors.New("workspace subdirectory escapes isolated workspace")
+	}
+	current := root
+	for _, part := range strings.Split(relative, string(filepath.Separator)) {
+		if part == "" || part == "." {
+			continue
+		}
+		current = filepath.Join(current, part)
+		info, err := os.Lstat(current)
+		if err != nil {
+			return fmt.Errorf("inspect workspace subdirectory: %w", err)
+		}
+		if info.Mode()&os.ModeSymlink != 0 {
+			return errors.New("workspace subdirectory cannot contain symlinks")
+		}
+	}
+	return nil
 }
 
 func Create(ctx context.Context, root, sourceRef string) (Workspace, error) {

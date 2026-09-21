@@ -7,6 +7,8 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
+	"os"
+	"path/filepath"
 	"sort"
 	"strings"
 	"sync"
@@ -59,7 +61,7 @@ func NewApproval(plan Plan, sourceRoot string, expiresAt time.Time) (Approval, e
 	if err != nil || plan.RepositoryIdentity.Revision == "" || !expiresAt.After(time.Now().UTC()) {
 		return Approval{}, &ApprovalError{Code: ApprovalInvalid, Message: "canonical source root, source commit, and future expiry are required"}
 	}
-	paths, err := authorizedPaths(plan)
+	paths, err := authorizedPaths(plan, canonical)
 	if err != nil {
 		return Approval{}, err
 	}
@@ -94,7 +96,7 @@ func (a Approval) Validate(plan Plan, sourceRoot, sourceCommit string, now time.
 	if err != nil || a.SourceRoot != canonical || a.SourceCommit != sourceCommit {
 		return &ApprovalError{Code: ApprovalSourceMismatch, Message: "approval does not match source identity"}
 	}
-	paths, err := authorizedPaths(plan)
+	paths, err := authorizedPaths(plan, canonical)
 	if err != nil {
 		return err
 	}
@@ -119,12 +121,26 @@ func (a *Approval) Consume() error {
 	return nil
 }
 
-func authorizedPaths(plan Plan) ([]string, error) {
+func authorizedPaths(plan Plan, root string) ([]string, error) {
 	paths := make([]string, 0, len(plan.AffectedFiles))
+	seen := make(map[string]struct{}, len(plan.AffectedFiles))
 	for _, file := range plan.AffectedFiles {
-		path := strings.ReplaceAll(file.Path, "\\", "/")
-		if path == "" || strings.HasPrefix(path, "/") || path == "." || strings.HasPrefix(path, "../") || strings.Contains(path, "/../") {
+		path := filepath.ToSlash(filepath.Clean(filepath.FromSlash(strings.ReplaceAll(file.Path, "\\", "/"))))
+		if path == "" || path == "." || filepath.IsAbs(filepath.FromSlash(path)) || path == ".." || strings.HasPrefix(path, "../") {
 			return nil, &ApprovalError{Code: ApprovalInvalid, Message: "affected paths must be relative and contained"}
+		}
+		if _, exists := seen[path]; exists {
+			return nil, &ApprovalError{Code: ApprovalInvalid, Message: "affected paths must be unique"}
+		}
+		seen[path] = struct{}{}
+		full := filepath.Join(root, filepath.FromSlash(path))
+		if resolved, err := filepath.EvalSymlinks(full); err == nil {
+			relative, relErr := filepath.Rel(root, resolved)
+			if relErr != nil || relative == ".." || strings.HasPrefix(relative, ".."+string(filepath.Separator)) {
+				return nil, &ApprovalError{Code: ApprovalInvalid, Message: "affected paths must remain inside the repository"}
+			}
+		} else if !os.IsNotExist(err) {
+			return nil, &ApprovalError{Code: ApprovalInvalid, Message: "affected path cannot be resolved safely"}
 		}
 		paths = append(paths, path)
 	}

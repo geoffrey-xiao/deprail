@@ -1,7 +1,10 @@
 package remediation
 
 import (
+	"os"
 	"os/exec"
+	"path/filepath"
+	"runtime"
 	"testing"
 	"time"
 )
@@ -54,5 +57,39 @@ func TestApprovalRejectsExpiredAndMismatchedSource(t *testing.T) {
 	if err := approval.Validate(plan, root, "commit-1", time.Now().UTC().Add(2*time.Hour)); err == nil {
 		t.Fatal("expected expiry rejection")
 	}
+}
 
+func TestApprovalRejectsDuplicateAndEscapingAffectedPaths(t *testing.T) {
+	plan, root := approvalTestPlan(t)
+	plan.AffectedFiles = append(plan.AffectedFiles, plan.AffectedFiles[0])
+	plan.PlanID = StablePlanID(plan)
+	if _, err := NewApproval(plan, root, time.Now().UTC().Add(time.Hour)); err == nil {
+		t.Fatal("expected duplicate affected path rejection")
+	}
+
+	plan, root = approvalTestPlan(t)
+	plan.AffectedFiles[0].Path = "../outside.json"
+	plan.PlanID = StablePlanID(plan)
+	if _, err := NewApproval(plan, root, time.Now().UTC().Add(time.Hour)); err == nil {
+		t.Fatal("expected escaping affected path rejection")
+	}
+}
+
+func TestApprovalRejectsSymlinkedAffectedPathOutsideRoot(t *testing.T) {
+	if runtime.GOOS == "windows" {
+		t.Skip("symlink permissions vary on Windows")
+	}
+	plan, root := approvalTestPlan(t)
+	outside := t.TempDir()
+	target := filepath.Join(outside, "package.json")
+	if err := os.WriteFile(target, []byte("{}"), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	link := filepath.Join(root, "package.json")
+	if err := os.Symlink(target, link); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := NewApproval(plan, root, time.Now().UTC().Add(time.Hour)); err == nil {
+		t.Fatal("expected symlink escape rejection")
+	}
 }

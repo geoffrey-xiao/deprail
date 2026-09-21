@@ -3,6 +3,7 @@ package evidence
 import (
 	"os"
 	"path/filepath"
+	"runtime"
 	"testing"
 )
 
@@ -52,6 +53,9 @@ func TestStoreRejectsSymlinkedShard(t *testing.T) {
 }
 
 func TestStoreRestrictsPermissiveRoot(t *testing.T) {
+	if runtime.GOOS == "windows" {
+		t.Skip("Windows does not expose POSIX directory permission semantics")
+	}
 	root := t.TempDir()
 	if err := os.Chmod(root, 0o777); err != nil {
 		t.Fatal(err)

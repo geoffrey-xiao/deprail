@@ -61,8 +61,8 @@ The current merged slices do **not** yet prove a complete user-facing `deprail f
 | Plan and scope completion | Partial | Implementation slices merged; complete apply orchestration remains unresolved |
 | Contract and security completion | Partial | Contracts exist; named release security/architecture review pending |
 | Automated verification | Complete for merged baseline slice | PR #331 CI passed on Linux/macOS/Windows; reviewed `origin/main` binary smoke passed locally |
-| Manual verification | Open | Scan/baseline/diff workflow passed on macOS arm64; representative remediation smoke pending |
-| Artifact and supply-chain verification | Open | Build artifacts, checksums, SBOM, signing, provenance pending |
+| Manual verification | Partial | Scan, baseline, diff, policy-help, and fix-plan workflow passed on macOS arm64; representative remediation/apply smoke pending |
+| Artifact and supply-chain verification | Partial | Reviewed binary `/tmp/deprail-v0.4.0-main`; SHA-256 `e2e19070486eb79dd1948b88041e861c220daca7ec214496f1d07706ec3688dc`; SBOM, signing, and provenance pending |
 | Publication and approval | Open | No release publication authorized |
 | Post-release closure | Open | Retrospective cannot be completed before release decision |
 
@@ -72,8 +72,7 @@ The current merged slices do **not** yet prove a complete user-facing `deprail f
 - [x] Run `make verify` from a clean reviewed checkout. Result: passed on macOS arm64 from baseline branch; `go generate`, `go vet`, `go test`, and `go build` completed successfully.
 - [x] Run representative repository scan and baseline/diff smoke; macOS arm64, source `7903612`, binary `/tmp/deprail-v0.4.0-main`, scan complete with 14 findings, baseline create exit `0`, identical diff exit `0`.
 - [ ] Reconcile complete `deprail fix apply` scope and compatibility impact.
-- [ ] Record platform, binary identity, artifacts, sizes, and SHA-256 checksums.
-- Manual evidence artifacts: `local_test/v0.4.0-preview.1/output/scan.json`, `baseline-create.json`, `diff.json`; baseline artifact is under the ignored fixture `.deprail/manual` directory.
+- [x] Record reviewed binary identity and checksum: `/tmp/deprail-v0.4.0-main`, SHA-256 `e2e19070486eb79dd1948b88041e861c220daca7ec214496f1d07706ec3688dc`, macOS arm64.
 - [ ] Record SBOM, signing, and provenance status.
 - [ ] Obtain named architecture/security review.
 - [ ] Prepare preview notes and rollback procedure.

@@ -1,6 +1,9 @@
 package main
 
 import (
+	"bytes"
+	"context"
+	"errors"
 	"os"
 	"path/filepath"
 	"runtime"
@@ -9,7 +12,9 @@ import (
 	"github.com/geoffrey-xiao/deprail/internal/adapter"
 	"github.com/geoffrey-xiao/deprail/internal/app"
 	"github.com/geoffrey-xiao/deprail/internal/discovery"
+	"github.com/geoffrey-xiao/deprail/internal/process"
 	"github.com/geoffrey-xiao/deprail/internal/remediation"
+	"github.com/geoffrey-xiao/deprail/internal/remediation/isolation"
 	"github.com/geoffrey-xiao/deprail/internal/remediation/verification"
 )
 
@@ -107,5 +112,54 @@ func TestRescanFindingsForPlanUsesPlanningKeyAndFiltersUnrelated(t *testing.T) {
 	}
 	if len(transitions) != 1 || transitions[0].State != verification.Residual {
 		t.Fatalf("transitions = %#v", transitions)
+	}
+}
+
+func TestRecordCleanupOutcomeExposesPartialFailure(t *testing.T) {
+	result := applyResult{Outcome: "failed", Diagnostics: []string{}}
+	recordCleanupOutcome(&result, "failed", isolation.CleanupResult{
+		GitRemoved:        true,
+		FilesystemRemoved: false,
+		Retryable:         true,
+		Err:               errors.New("git worktree remove failed"),
+	})
+	if result.Outcome != "cleanup_failed" || result.CleanupStatus != "partial" || !result.CleanupGitRemoved || result.CleanupFilesystemRemoved || !result.CleanupRetryable {
+		t.Fatalf("result = %#v", result)
+	}
+	if len(result.Diagnostics) != 1 || result.Diagnostics[0] != "cleanup failed after failed: git worktree remove failed" {
+		t.Fatalf("diagnostics = %#v", result.Diagnostics)
+	}
+}
+
+func TestApplyFailureOutcomeDistinguishesCancellation(t *testing.T) {
+	ctx, cancel := context.WithCancel(context.Background())
+	cancel()
+	if got := applyFailureOutcome(ctx, errors.New("cancelled")); got != "cancelled" {
+		t.Fatalf("cancelled context outcome = %q", got)
+	}
+	if got := applyFailureOutcome(context.Background(), &process.Error{Code: process.ErrCancelled}); got != "cancelled" {
+		t.Fatalf("cancelled process outcome = %q", got)
+	}
+	if got := applyFailureOutcome(context.Background(), errors.New("failed")); got != "failed" {
+		t.Fatalf("failed outcome = %q", got)
+	}
+	if got := applyOperationOutcome(context.Background(), errors.New("failed"), true); got != "partial" {
+		t.Fatalf("partial failure outcome = %q", got)
+	}
+	if got := applyOperationOutcome(context.Background(), &process.Error{Code: process.ErrCancelled}, true); got != "cancelled" {
+		t.Fatalf("partial cancellation outcome = %q", got)
+	}
+}
+
+func TestWriteApplyResultReturnsFailureExitForTerminalFailures(t *testing.T) {
+	for _, outcome := range []string{"partial", "failed", "cancelled", "cleanup_failed"} {
+		var stdout, stderr bytes.Buffer
+		if code := writeApplyResult(applyResult{Outcome: outcome, Diagnostics: []string{}}, "json", &stdout, &stderr); code != 3 {
+			t.Fatalf("outcome %q exit code = %d", outcome, code)
+		}
+	}
+	var stdout, stderr bytes.Buffer
+	if code := writeApplyResult(applyResult{Outcome: "applied", Diagnostics: []string{}}, "json", &stdout, &stderr); code != 0 {
+		t.Fatalf("applied exit code = %d", code)
 	}
 }

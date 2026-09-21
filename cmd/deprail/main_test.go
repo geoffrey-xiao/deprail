@@ -11,6 +11,7 @@ import (
 	"runtime"
 	"strings"
 	"testing"
+	"time"
 )
 
 func TestDiscoverJSONWritesDataToStdoutOnly(t *testing.T) {
@@ -274,8 +275,14 @@ func commandOutput(command *exec.Cmd) ([]byte, []byte, error) {
 }
 
 func TestMain(m *testing.M) {
-	if strings.HasPrefix(filepath.Base(os.Args[0]), "osv-scanner") {
+	base := strings.TrimSuffix(filepath.Base(os.Args[0]), ".exe")
+	if strings.HasPrefix(base, "osv-scanner") {
 		runScannerHelper()
+		return
+	}
+	switch base {
+	case "npm", "pip", "mvn":
+		runMutationHelper(base)
 		return
 	}
 	os.Exit(m.Run())
@@ -303,12 +310,76 @@ func runScannerHelper() {
 	if !filepath.IsAbs(target) {
 		target = filepath.Join(cwd, target)
 	}
+	if _, err := os.Stat(filepath.Join(cwd, "malformed-scanner.marker")); err == nil {
+		_, _ = os.Stdout.Write([]byte("{malformed"))
+		os.Exit(0)
+	}
 	targetID := "OSV-CALLER"
 	if _, err := os.Stat(filepath.Join(filepath.Clean(target), "target.marker")); err == nil {
 		targetID = "OSV-TARGET"
 	}
-	output := `{"results":[{"packages":[{"package":{"name":"target-only","version":"1.0.0"},"vulnerabilities":[{"id":"` + targetID + `","aliases":["CVE-TARGET"],"database_specific":{"severity":"HIGH"},"affected":[{"ranges":[{"events":[{"introduced":"0"},{"fixed":"1.0.1"}]}]}]}]}]}]}`
+	componentName := "target-only"
+	if _, err := os.Stat(filepath.Join(cwd, "pom.xml")); err == nil {
+		componentName = "dev.deprail.fixture:java-maven-fixture"
+	}
+	output := `{"results":[{"packages":[{"package":{"name":"` + componentName + `","version":"1.0.0"},"vulnerabilities":[{"id":"` + targetID + `","aliases":["CVE-TARGET"],"database_specific":{"severity":"HIGH"},"affected":[{"ranges":[{"events":[{"introduced":"0"},{"fixed":"1.0.1"}]}]}]}]}]}]}`
 	_, _ = os.Stdout.Write([]byte(output))
+	os.Exit(0)
+}
+
+func runMutationHelper(tool string) {
+	for _, arg := range os.Args[1:] {
+		switch arg {
+		case "--deprail-e2e-fail":
+			os.Exit(7)
+		case "--deprail-e2e-sleep":
+			time.Sleep(5 * time.Second)
+		}
+	}
+	verification := false
+	for _, arg := range os.Args[1:] {
+		if arg == "test" || arg == "check" {
+			verification = true
+			break
+		}
+	}
+	if verification {
+		os.Exit(0)
+	}
+	var path string
+	switch tool {
+	case "npm":
+		path = "package.json"
+	case "pip":
+		path = "requirements.txt"
+	case "mvn":
+		path = "pom.xml"
+	}
+	data, err := os.ReadFile(path)
+	if err != nil {
+		os.Exit(8)
+	}
+	switch tool {
+	case "npm":
+		var document map[string]any
+		if err := json.Unmarshal(data, &document); err != nil {
+			os.Exit(8)
+		}
+		document["deprail_e2e_applied"] = true
+		data, err = json.MarshalIndent(document, "", "  ")
+		if err != nil {
+			os.Exit(8)
+		}
+		data = append(data, '\n')
+	case "mvn":
+		updated := strings.Replace(string(data), "</project>", "  <!-- deprail e2e applied -->\n</project>", 1)
+		data = []byte(updated)
+	default:
+		data = append(data, []byte("deprail-e2e-applied==1\n")...)
+	}
+	if err := os.WriteFile(path, data, 0o600); err != nil {
+		os.Exit(8)
+	}
 	os.Exit(0)
 }
 

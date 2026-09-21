@@ -46,6 +46,7 @@ type Record struct {
 	SourceCommit        string          `json:"source_commit"`
 	SourceRoot          string          `json:"source_root"`
 	WorkspaceID         string          `json:"workspace_id"`
+	WorkspacePath       string          `json:"workspace_path,omitempty"`
 	AuthorizedPaths     []string        `json:"authorized_paths"`
 	Operations          []Operation     `json:"operations"`
 	BeforeDigest        string          `json:"before_digest"`
@@ -62,7 +63,7 @@ type Record struct {
 }
 
 func (r Record) Validate() error {
-	if r.SchemaVersion != SchemaVersion || !validOutcome(r.Outcome) || r.PlanDigest == "" || r.SourceCommit == "" || r.SourceRoot == "" || r.WorkspaceID == "" || r.BeforeDigest == "" || r.VerificationStatus == "" || r.RescanStatus == "" || r.Cleanup == "" {
+	if r.SchemaVersion != SchemaVersion || !validOutcome(r.Outcome) || r.PlanDigest == "" || r.SourceCommit == "" || r.SourceRoot == "" || r.WorkspaceID == "" || r.WorkspacePath == "" || r.BeforeDigest == "" || r.FindingBeforeDigest == "" || r.VerificationStatus == "" || r.RescanStatus == "" || r.Cleanup == "" {
 		return errors.New("evidence identity, outcome, and statuses are required")
 	}
 	if r.AuthorizedPaths == nil || r.Operations == nil || r.Commands == nil || r.Diagnostics == nil || r.ArtifactDigests == nil {

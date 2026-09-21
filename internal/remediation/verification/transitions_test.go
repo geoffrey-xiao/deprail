@@ -46,6 +46,24 @@ func TestClassifyReportsUnchangedFinding(t *testing.T) {
 	}
 }
 
+func TestClassifyIgnoresProvenanceAndOrderForUnchanged(t *testing.T) {
+	before := findingVersion("same", "1.0.0")
+	before.Aliases = []string{"B", "A"}
+	before.FixedVersions = []string{"2.0.0", "1.5.0"}
+	before.Provenance = remediation.Provenance{ArtifactDigests: []string{"before"}}
+	after := findingVersion("same", "1.0.0")
+	after.Aliases = []string{"A", "B"}
+	after.FixedVersions = []string{"1.5.0", "2.0.0"}
+	after.Provenance = remediation.Provenance{ArtifactDigests: []string{"after"}}
+	result, err := Classify([]remediation.ReportFinding{before}, []remediation.ReportFinding{after}, true)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(result) != 1 || result[0].State != Unchanged {
+		t.Fatalf("result = %#v", result)
+	}
+}
+
 func TestClassifyRejectsDuplicateOrMissingKeys(t *testing.T) {
 	if _, err := Classify([]remediation.ReportFinding{finding("same"), finding("same")}, nil, true); err == nil {
 		t.Fatal("expected duplicate rejection")

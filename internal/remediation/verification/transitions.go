@@ -2,9 +2,10 @@ package verification
 
 import (
 	"errors"
-	"github.com/geoffrey-xiao/deprail/internal/remediation"
 	"reflect"
 	"sort"
+
+	"github.com/geoffrey-xiao/deprail/internal/remediation"
 )
 
 type Transition string
@@ -44,7 +45,7 @@ func Classify(before, after []remediation.ReportFinding, afterComplete bool) ([]
 		afterFinding, remains := afterFindings[key]
 		state := Unknown
 		switch {
-		case existed && remains && reflect.DeepEqual(beforeFinding, afterFinding):
+		case existed && remains && sameFinding(beforeFinding, afterFinding):
 			state = Unchanged
 		case existed && remains:
 			state = Residual
@@ -71,6 +72,16 @@ func findingMap(findings []remediation.ReportFinding) (map[string]remediation.Re
 		result[finding.StableKey] = finding
 	}
 	return result, nil
+}
+
+func sameFinding(before, after remediation.ReportFinding) bool {
+	before.Provenance = remediation.Provenance{}
+	after.Provenance = remediation.Provenance{}
+	sort.Strings(before.Aliases)
+	sort.Strings(after.Aliases)
+	sort.Strings(before.FixedVersions)
+	sort.Strings(after.FixedVersions)
+	return reflect.DeepEqual(before, after)
 }
 
 func findingKeys(findings []remediation.ReportFinding) (map[string]struct{}, error) {

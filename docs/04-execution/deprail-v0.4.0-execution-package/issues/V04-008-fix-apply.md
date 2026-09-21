@@ -30,14 +30,14 @@ No caller-worktree mutation, automatic commit/push/PR/merge, autonomous approval
 
 ## Child issues
 
-- [#342 — Validate apply plans and approval binding](https://github.com/geoffrey-xiao/deprail/issues/342)
-- [#341 — Implement isolated detached worktree lifecycle](https://github.com/geoffrey-xiao/deprail/issues/341)
-- [#343 — Implement allowlisted adapter mutations](https://github.com/geoffrey-xiao/deprail/issues/343)
-- [#336 — Add bounded verification and rescan orchestration](https://github.com/geoffrey-xiao/deprail/issues/336)
-- [#337 — Classify remediation finding transitions](https://github.com/geoffrey-xiao/deprail/issues/337)
-- [#338 — Implement rollback, discard, and cleanup evidence](https://github.com/geoffrey-xiao/deprail/issues/338)
-- [#339 — Implement apply evidence and deterministic output](https://github.com/geoffrey-xiao/deprail/issues/339)
-- [#340 — Add security and cross-platform apply coverage](https://github.com/geoffrey-xiao/deprail/issues/340)
+- [#337 — Validate apply plans and approval binding](https://github.com/geoffrey-xiao/deprail/issues/337)
+- [#338 — Implement isolated detached worktree lifecycle](https://github.com/geoffrey-xiao/deprail/issues/338)
+- [#336 — Implement allowlisted adapter mutations](https://github.com/geoffrey-xiao/deprail/issues/336)
+- [#340 — Add bounded verification and rescan orchestration](https://github.com/geoffrey-xiao/deprail/issues/340)
+- [#339 — Classify remediation finding transitions](https://github.com/geoffrey-xiao/deprail/issues/339)
+- [#345 — Implement rollback, discard, and cleanup evidence](https://github.com/geoffrey-xiao/deprail/issues/345)
+- [#346 — Implement apply evidence and deterministic output](https://github.com/geoffrey-xiao/deprail/issues/346)
+- [#347 — Add security and cross-platform apply coverage](https://github.com/geoffrey-xiao/deprail/issues/347)
 
 ## Acceptance criteria
 

@@ -56,6 +56,17 @@ func TestCreateAndRemoveWorktreePreservesSource(t *testing.T) {
 	}
 }
 
+func TestRemovePreservesStateWhenGitCleanupFails(t *testing.T) {
+	path := filepath.Join(t.TempDir(), "worktree")
+	ws := Workspace{Root: t.TempDir(), Path: path, Created: true, verified: true}
+	if err := ws.Remove(context.Background()); err == nil {
+		t.Fatal("expected cleanup failure for non-repository root")
+	}
+	if !ws.Created || !ws.verified || ws.Path != path {
+		t.Fatalf("workspace state was lost after cleanup failure: %#v", ws)
+	}
+}
+
 func TestCreateRejectsRepositorySubdirectory(t *testing.T) {
 	root := t.TempDir()
 	run := func(args ...string) {

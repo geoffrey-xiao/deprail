@@ -1,0 +1,175 @@
+package main
+
+import (
+	"context"
+	"encoding/json"
+	"errors"
+	"flag"
+	"fmt"
+	"io"
+	"os"
+	"os/exec"
+	"path/filepath"
+	"strings"
+	"time"
+
+	"github.com/geoffrey-xiao/deprail/internal/remediation"
+	"github.com/geoffrey-xiao/deprail/internal/remediation/isolation"
+	"github.com/geoffrey-xiao/deprail/internal/remediation/mutation"
+)
+
+type applyResult struct {
+	SchemaVersion string   `json:"schema_version"`
+	Outcome       string   `json:"outcome"`
+	PlanID        string   `json:"plan_id"`
+	PlanDigest    string   `json:"plan_digest"`
+	SourceRoot    string   `json:"source_root"`
+	SourceCommit  string   `json:"source_commit"`
+	Workspace     string   `json:"workspace,omitempty"`
+	Diagnostics   []string `json:"diagnostics"`
+}
+
+func runFixApply(args []string, stdout, stderr io.Writer) int {
+	flags := flag.NewFlagSet("fix apply", flag.ContinueOnError)
+	flags.SetOutput(io.Discard)
+	planPath := flags.String("plan", "", "versioned remediation plan")
+	approvalPath := flags.String("approval", "", "versioned approval record")
+	root := flags.String("root", ".", "canonical repository root")
+	format := flags.String("format", "terminal", "output format: terminal or json")
+	dryRun := flags.Bool("dry-run", false, "validate without mutation")
+	if err := flags.Parse(args); err != nil || *planPath == "" || *approvalPath == "" || (*format != "terminal" && *format != "json") || len(flags.Args()) != 0 {
+		writeCLIError(stderr, "CONFIG_INVALID", "fix apply requires --plan and --approval and supports --root, --dry-run, and terminal or json output", "fix apply")
+		return 2
+	}
+	plan, err := loadApplyJSON[remediation.Plan](*planPath)
+	if err != nil {
+		writeCLIError(stderr, "PLAN_INVALID", err.Error(), "plan")
+		return 3
+	}
+	if err := plan.Validate(); err != nil {
+		writeCLIError(stderr, "PLAN_INVALID", err.Error(), "plan")
+		return 3
+	}
+	approval, err := loadApplyJSON[remediation.Approval](*approvalPath)
+	if err != nil {
+		writeCLIError(stderr, "APPROVAL_INVALID", err.Error(), "approval")
+		return 3
+	}
+	canonical, err := isolation.CanonicalRepositoryRoot(context.Background(), *root)
+	if err != nil {
+		writeCLIError(stderr, "PATH_OUTSIDE_ROOT", err.Error(), "root")
+		return 3
+	}
+	commit, err := currentCommit(canonical)
+	if err != nil {
+		writeCLIError(stderr, "SOURCE_INVALID", err.Error(), "root")
+		return 3
+	}
+	if err := approval.ValidatePersisted(plan, canonical, commit, time.Now().UTC()); err != nil {
+		writeApprovalError(stderr, err)
+		return 3
+	}
+	result := applyResult{SchemaVersion: "v0alpha1", Outcome: "dry_run", PlanID: plan.PlanID, PlanDigest: remediation.PlanDigest(plan), SourceRoot: canonical, SourceCommit: commit, Diagnostics: []string{}}
+	if *dryRun {
+		return writeApplyResult(result, *format, stdout, stderr)
+	}
+
+	store := remediation.ApprovalStore{Root: filepath.Join(canonical, ".deprail", "approvals", "consumed")}
+	if err := store.Consume(approval.Token); err != nil {
+		writeApprovalError(stderr, err)
+		return 3
+	}
+	workspace, err := isolation.Create(context.Background(), canonical, commit)
+	if err != nil {
+		writeCLIError(stderr, "WORKTREE_CREATE_FAILED", err.Error(), "fix apply")
+		return 3
+	}
+	result.Workspace = workspace.Path
+	cleanup := func() error { return workspace.Remove(context.Background()) }
+	defer cleanup()
+
+	for _, command := range plan.Commands {
+		if command.WorkingDirectory != "." && command.WorkingDirectory != "" {
+			result.Outcome = "failed"
+			result.Diagnostics = append(result.Diagnostics, "non-root mutation working directories are not yet supported")
+			_ = cleanup()
+			return writeApplyResult(result, *format, stdout, stderr)
+		}
+		executable, err := exec.LookPath(command.Executable)
+		if err != nil {
+			result.Outcome = "failed"
+			result.Diagnostics = append(result.Diagnostics, "mutation executable is unavailable: "+command.Executable)
+			_ = cleanup()
+			return writeApplyResult(result, *format, stdout, stderr)
+		}
+		_, err = mutation.Run(context.Background(), mutation.Request{
+			Path: executable, Args: command.Arguments, Workspace: workspace, Approved: true,
+			Timeout: 2 * time.Minute, OutputCap: 16 << 20, DenyScripts: true, DenyNetwork: true,
+		})
+		if err != nil {
+			result.Outcome = "failed"
+			result.Diagnostics = append(result.Diagnostics, err.Error())
+			_ = cleanup()
+			return writeApplyResult(result, *format, stdout, stderr)
+		}
+	}
+	result.Outcome = "applied"
+	result.Diagnostics = append(result.Diagnostics, "verification, rescan, transition classification, and durable evidence are pending orchestration")
+	_ = cleanup()
+	return writeApplyResult(result, *format, stdout, stderr)
+}
+
+func writeApprovalError(stderr io.Writer, err error) {
+	var approvalErr *remediation.ApprovalError
+	if errors.As(err, &approvalErr) {
+		writeCLIError(stderr, string(approvalErr.Code), approvalErr.Message, "approval")
+		return
+	}
+	writeCLIError(stderr, "APPROVAL_INVALID", err.Error(), "approval")
+}
+
+func writeApplyResult(result applyResult, format string, stdout, stderr io.Writer) int {
+	if format == "json" {
+		if err := json.NewEncoder(stdout).Encode(result); err != nil {
+			writeCLIError(stderr, "OUTPUT_WRITE_FAILED", err.Error(), "stdout")
+			return 3
+		}
+	} else {
+		_, _ = fmt.Fprintf(stdout, "Outcome: %s\nPlan: %s\nSource: %s\n", result.Outcome, result.PlanID, result.SourceCommit)
+		for _, diagnostic := range result.Diagnostics {
+			_, _ = fmt.Fprintf(stdout, "Diagnostic: %s\n", diagnostic)
+		}
+	}
+	if result.Outcome == "failed" {
+		return 3
+	}
+	return 0
+}
+
+func currentCommit(root string) (string, error) {
+	git, err := exec.LookPath("git")
+	if err != nil {
+		return "", fmt.Errorf("git is unavailable: %w", err)
+	}
+	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+	defer cancel()
+	output, err := exec.CommandContext(ctx, git, "-C", root, "rev-parse", "HEAD").Output()
+	if err != nil {
+		return "", fmt.Errorf("resolve source commit: %w", err)
+	}
+	return strings.TrimSpace(string(output)), nil
+}
+
+func loadApplyJSON[T any](path string) (T, error) {
+	var value T
+	file, err := os.Open(filepath.Clean(path))
+	if err != nil {
+		return value, err
+	}
+	defer file.Close()
+	decoder := json.NewDecoder(io.LimitReader(file, 16<<20))
+	if err := decoder.Decode(&value); err != nil {
+		return value, err
+	}
+	return value, nil
+}

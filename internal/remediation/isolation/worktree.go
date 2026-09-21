@@ -28,6 +28,26 @@ type Workspace struct {
 
 func (w Workspace) Prepared() bool { return w.Created && w.verified && w.Path != "" }
 
+// Subdirectory returns a verified workspace rooted at a repository-relative
+// subdirectory. It preserves the isolation guarantees of the parent workspace.
+func (w Workspace) Subdirectory(relative string) (Workspace, error) {
+	if !w.Prepared() {
+		return Workspace{}, errors.New("verified isolated workspace is required")
+	}
+	if relative == "" {
+		relative = "."
+	}
+	if filepath.IsAbs(relative) {
+		return Workspace{}, errors.New("workspace subdirectory must be relative")
+	}
+	path := filepath.Clean(filepath.Join(w.Path, filepath.FromSlash(relative)))
+	rel, err := filepath.Rel(w.Path, path)
+	if err != nil || rel == ".." || strings.HasPrefix(rel, ".."+string(filepath.Separator)) {
+		return Workspace{}, errors.New("workspace subdirectory escapes isolated workspace")
+	}
+	return Workspace{Root: w.Root, Path: path, SourceRef: w.SourceRef, Created: true, verified: true}, nil
+}
+
 func Create(ctx context.Context, root, sourceRef string) (Workspace, error) {
 	canonical, err := canonicalDirectory(ctx, root)
 	if err != nil {
@@ -117,6 +137,7 @@ func canonicalDirectory(ctx context.Context, root string) (string, error) {
 	if err != nil {
 		return "", fmt.Errorf("resolve repository root: %w", err)
 	}
+
 	info, err := os.Stat(canonical)
 	if err != nil {
 		return "", fmt.Errorf("stat repository root: %w", err)
@@ -133,6 +154,28 @@ func canonicalDirectory(ctx context.Context, root string) (string, error) {
 		return "", errors.New("repository root must be the canonical Git top-level")
 	}
 	return canonical, nil
+}
+
+// RepositoryRootForPath resolves the canonical Git top-level containing path.
+// It accepts a repository subdirectory while still rejecting non-repositories.
+func RepositoryRootForPath(ctx context.Context, path string) (string, error) {
+	canonical, err := filepath.EvalSymlinks(path)
+	if err != nil {
+		return "", fmt.Errorf("resolve repository path: %w", err)
+	}
+	info, err := os.Stat(canonical)
+	if err != nil || !info.IsDir() {
+		return "", errors.New("repository path must be a directory")
+	}
+	result, err := runGit(ctx, canonical, "rev-parse", "--show-toplevel")
+	if err != nil {
+		return "", fmt.Errorf("resolve Git repository root: %w", err)
+	}
+	root, err := filepath.EvalSymlinks(strings.TrimSpace(string(result.Stdout)))
+	if err != nil {
+		return "", fmt.Errorf("resolve Git repository root: %w", err)
+	}
+	return root, nil
 }
 
 func CanonicalRepositoryRoot(ctx context.Context, root string) (string, error) {

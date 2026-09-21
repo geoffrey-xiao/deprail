@@ -1,15 +1,34 @@
 package app
 
 import (
+	"context"
 	"crypto/sha256"
 	"encoding/hex"
 	"fmt"
 	"io/fs"
 	"os"
+	"os/exec"
 	"path/filepath"
 	"sort"
 	"strings"
 )
+
+func CurrentRepositoryRevision(ctx context.Context, root string) (string, error) {
+	git, err := exec.LookPath("git")
+	if err != nil {
+		return "", err
+	}
+	command := exec.CommandContext(ctx, git, "-C", root, "rev-parse", "HEAD")
+	output, err := command.Output()
+	if err != nil {
+		return "", err
+	}
+	revision := strings.TrimSpace(string(output))
+	if revision == "" {
+		return "", fmt.Errorf("git revision is empty")
+	}
+	return revision, nil
+}
 
 func CurrentRepositoryState(root string) (string, error) {
 	return CurrentRepositoryStateExcluding(root)

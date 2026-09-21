@@ -8,6 +8,7 @@ import (
 	"errors"
 	"fmt"
 	"github.com/geoffrey-xiao/deprail/internal/remediation"
+	"github.com/geoffrey-xiao/deprail/internal/remediation/isolation"
 	"github.com/geoffrey-xiao/deprail/internal/remediation/java"
 	"github.com/geoffrey-xiao/deprail/internal/remediation/javascript"
 	"github.com/geoffrey-xiao/deprail/internal/remediation/python"
@@ -36,17 +37,33 @@ func Plan(ctx context.Context, reportPath, findingKey, repositoryRoot string, op
 	if err != nil {
 		return remediation.Plan{}, err
 	}
-	root := repositoryRoot
-	if root == "" {
-		root = report.RepositoryIdentity.Root
+	stateRoot := report.RepositoryIdentity.Root
+	if stateRoot == "" {
+		return remediation.Plan{}, &remediation.ReportError{Code: remediation.ReportInvalid, Message: "report repository root is required"}
 	}
-	root, err = filepath.Abs(root)
+	stateRoot, err = filepath.Abs(stateRoot)
+	if err != nil {
+		return remediation.Plan{}, fmt.Errorf("resolve report repository root: %w", err)
+	}
+	rootInput := repositoryRoot
+	if rootInput == "" {
+		rootInput = stateRoot
+	}
+	rootInput, err = filepath.Abs(rootInput)
 	if err != nil {
 		return remediation.Plan{}, fmt.Errorf("resolve repository root: %w", err)
 	}
+	root, err := isolation.RepositoryRootForPath(ctx, rootInput)
+	if err != nil {
+		return remediation.Plan{}, fmt.Errorf("resolve canonical repository root: %w", err)
+	}
+	revision, err := CurrentRepositoryRevision(ctx, root)
+	if err != nil {
+		return remediation.Plan{}, &remediation.ReportError{Code: remediation.ReportInputStale, Message: "current repository revision is unavailable"}
+	}
 	currentState := options.CurrentRepositoryState
 	if currentState == "" {
-		currentState, err = CurrentRepositoryState(root)
+		currentState, err = CurrentRepositoryState(stateRoot)
 		if err != nil {
 			return remediation.Plan{}, &remediation.ReportError{Code: remediation.ReportInputStale, Message: "current repository state is unavailable"}
 		}
@@ -58,18 +75,31 @@ func Plan(ctx context.Context, reportPath, findingKey, repositoryRoot string, op
 	if resolved.Report.Status != remediation.ReportComplete {
 		return remediation.Plan{}, ErrPlanIncomplete
 	}
+	workspace := resolved.Finding.Workspace
+	reportRoot, err := filepath.Abs(resolved.Report.RepositoryIdentity.Root)
+	if err != nil {
+		return remediation.Plan{}, fmt.Errorf("resolve report repository root: %w", err)
+	}
+	relativeReportRoot, err := filepath.Rel(root, reportRoot)
+	if err != nil || relativeReportRoot == ".." || strings.HasPrefix(relativeReportRoot, ".."+string(filepath.Separator)) {
+		return remediation.Plan{}, fmt.Errorf("report repository root is outside canonical repository")
+	}
+	if relativeReportRoot != "." {
+		workspace.Path = filepath.ToSlash(filepath.Join(filepath.ToSlash(relativeReportRoot), workspace.Path))
+	}
 	adapters := options.Adapters
 	if len(adapters) == 0 {
 		adapters = []remediation.PlanningAdapter{javascript.Adapter{}, python.Adapter{}, java.Adapter{}}
 	}
 	request := remediation.PlanningRequest{
 		Repository:      resolved.Report.RepositoryIdentity,
-		Workspace:       resolved.Finding.Workspace,
+		Workspace:       workspace,
 		Finding:         remediation.FindingIdentity{StableKey: resolved.Finding.StableKey, Aliases: resolved.Finding.Aliases, DependencyPath: resolved.Finding.DependencyPath, CurrentVersion: resolved.Finding.CurrentVersion, FixedVersions: resolved.Finding.FixedVersions},
 		Component:       resolved.Finding.Component,
 		RepositoryState: resolved.Report.RepositoryState,
 	}
 	request.Repository.Root = root
+	request.Repository.Revision = revision
 	var adapter remediation.PlanningAdapter
 	for _, candidate := range adapters {
 		if supportedPURL(candidate.Name(), request.Component.PURL) {

@@ -52,11 +52,11 @@ func run(args []string, stdout, stderr io.Writer) int {
 			}
 			command = "baseline create"
 		case "fix":
-			if len(args) < 2 || args[1] != "plan" {
-				writeCLIError(stderr, "CONFIG_INVALID", "fix requires the plan subcommand", "fix")
+			if len(args) < 2 || (args[1] != "plan" && args[1] != "approve" && args[1] != "apply") {
+				writeCLIError(stderr, "CONFIG_INVALID", "fix requires the plan, approve, or apply subcommand", "fix")
 				return 2
 			}
-			command = "fix plan"
+			command = "fix " + args[1]
 		case "policy":
 			if len(args) < 2 || args[1] != "check" {
 				writeCLIError(stderr, "CONFIG_INVALID", "policy requires the check subcommand", "policy")
@@ -78,11 +78,21 @@ func run(args []string, stdout, stderr io.Writer) int {
 	case "scan":
 		return runScan(args[1:], stdout, stderr)
 	case "fix":
-		if len(args) < 2 || args[1] != "plan" {
-			writeCLIError(stderr, "CONFIG_INVALID", "fix requires the plan subcommand", "fix")
+		if len(args) < 2 {
+			writeCLIError(stderr, "CONFIG_INVALID", "fix requires the plan, approve, or apply subcommand", "fix")
 			return 2
 		}
-		return runFixPlan(args[2:], stdout, stderr)
+		switch args[1] {
+		case "plan":
+			return runFixPlan(args[2:], stdout, stderr)
+		case "approve":
+			return runFixApprove(args[2:], stdout, stderr)
+		case "apply":
+			return runFixApply(args[2:], stdout, stderr)
+		default:
+			writeCLIError(stderr, "CONFIG_INVALID", "fix requires the plan, approve, or apply subcommand", "fix")
+			return 2
+		}
 	case "diff":
 		return runDiff(args[1:], stdout, stderr)
 	case "baseline":

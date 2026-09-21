@@ -18,6 +18,20 @@ type Result struct {
 	Err     error
 }
 
+var supportedTools = map[string]struct{}{
+	"gradle": {}, "gradle.bat": {}, "mvn": {}, "mvn.cmd": {},
+	"npm": {}, "npm.cmd": {}, "pip": {}, "pip3": {}, "pip.exe": {},
+	"pnpm": {}, "pnpm.cmd": {}, "python": {}, "python3": {}, "python.exe": {},
+	"uv": {}, "uv.exe": {}, "yarn": {}, "yarn.cmd": {},
+}
+
+var ErrNoCommands = errors.New("no verification commands are available")
+
+func trustedTool(path string) bool {
+	_, ok := supportedTools[strings.ToLower(filepath.Base(path))]
+	return ok
+}
+
 // Run executes selected verification commands in the isolated workspace. Results
 // before the first failure are retained; no later command is started after a
 // failure, timeout, cancellation, or output-limit error.
@@ -37,8 +51,14 @@ func Run(ctx context.Context, workspace string, commands []Command, timeout time
 	if err != nil {
 		return nil, err
 	}
+	if len(selected) == 0 {
+		return nil, ErrNoCommands
+	}
 	results := make([]Result, 0, len(selected))
 	for _, command := range selected {
+		if !trustedTool(command.Path) {
+			return results, fmt.Errorf("verification %q uses an untrusted executable", command.ID)
+		}
 		dir := filepath.Join(root, filepath.FromSlash(command.WorkingDirectory))
 		resolvedDir, resolveErr := filepath.EvalSymlinks(dir)
 		if resolveErr != nil {

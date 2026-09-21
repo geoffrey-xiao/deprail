@@ -19,6 +19,7 @@ const (
 	ErrInvalidRequest ErrorCode = "CONFIG_INVALID"
 	ErrNotFound       ErrorCode = "SCANNER_NOT_FOUND"
 	ErrTimeout        ErrorCode = "SCANNER_TIMEOUT"
+	ErrCancelled      ErrorCode = "SCANNER_CANCELLED"
 	ErrExitNonzero    ErrorCode = "SCANNER_EXIT_NONZERO"
 	ErrOutputLimit    ErrorCode = "SCANNER_OUTPUT_LIMIT"
 )
@@ -77,6 +78,10 @@ func Run(ctx context.Context, request Request) (Result, error) {
 	if stdout.Len() >= int(request.OutputCap) || stderr.Len() >= int(request.OutputCap) {
 		terminateProcessGroup(cmd)
 		return Result{Stdout: stdout.Bytes(), Stderr: stderr.Bytes()}, &Error{Code: ErrOutputLimit, Message: "process output exceeded configured limit"}
+	}
+	if errors.Is(ctx.Err(), context.Canceled) {
+		terminateProcessGroup(cmd)
+		return Result{Stdout: stdout.Bytes(), Stderr: stderr.Bytes()}, &Error{Code: ErrCancelled, Message: "process was cancelled", Retryable: false}
 	}
 	if ctx.Err() != nil {
 		terminateProcessGroup(cmd)

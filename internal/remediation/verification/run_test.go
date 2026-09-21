@@ -2,6 +2,7 @@ package verification
 
 import (
 	"context"
+	"errors"
 	"os"
 	"path/filepath"
 	"strings"
@@ -9,9 +10,20 @@ import (
 	"time"
 )
 
+func testTool(t *testing.T) string {
+	t.Helper()
+	dir := t.TempDir()
+	path := filepath.Join(dir, "npm")
+	if err := os.Symlink(os.Args[0], path); err != nil {
+		t.Fatal(err)
+	}
+	return path
+}
+
 func TestRunExecutesSelectedCommandsInWorkspace(t *testing.T) {
 	workspace := t.TempDir()
-	results, err := Run(context.Background(), workspace, []Command{{ID: "test", Kind: Test, Path: os.Args[0], Args: []string{"-test.run=TestVerificationHelper", "--", "ok"}, WorkingDirectory: ".", Enabled: true}}, time.Second, 1024)
+	tool := testTool(t)
+	results, err := Run(context.Background(), workspace, []Command{{ID: "test", Kind: Test, Path: tool, Args: []string{"-test.run=TestVerificationHelper", "--", "ok"}, WorkingDirectory: ".", Enabled: true}}, time.Second, 1024)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -22,9 +34,10 @@ func TestRunExecutesSelectedCommandsInWorkspace(t *testing.T) {
 
 func TestRunStopsAfterFailureAndRetainsPartialResults(t *testing.T) {
 	workspace := t.TempDir()
+	tool := testTool(t)
 	commands := []Command{
-		{ID: "fail", Kind: Test, Path: os.Args[0], Args: []string{"-test.run=TestVerificationHelper", "--", "fail"}, WorkingDirectory: ".", Enabled: true},
-		{ID: "later", Kind: Test, Path: os.Args[0], Args: []string{"-test.run=TestVerificationHelper", "--", "ok"}, WorkingDirectory: ".", Enabled: true},
+		{ID: "fail", Kind: Test, Path: tool, Args: []string{"-test.run=TestVerificationHelper", "--", "fail"}, WorkingDirectory: ".", Enabled: true},
+		{ID: "later", Kind: Test, Path: tool, Args: []string{"-test.run=TestVerificationHelper", "--", "ok"}, WorkingDirectory: ".", Enabled: true},
 	}
 	results, err := Run(context.Background(), workspace, commands, time.Second, 1024)
 	if err == nil || len(results) != 1 || results[0].Command.ID != "fail" {
@@ -33,9 +46,30 @@ func TestRunStopsAfterFailureAndRetainsPartialResults(t *testing.T) {
 }
 
 func TestRunClassifiesTimeout(t *testing.T) {
-	results, err := Run(context.Background(), t.TempDir(), []Command{{ID: "slow", Kind: Test, Path: os.Args[0], Args: []string{"-test.run=TestVerificationHelper", "--", "sleep"}, WorkingDirectory: ".", Enabled: true}}, 20*time.Millisecond, 1024)
+	tool := testTool(t)
+	results, err := Run(context.Background(), t.TempDir(), []Command{{ID: "slow", Kind: Test, Path: tool, Args: []string{"-test.run=TestVerificationHelper", "--", "sleep"}, WorkingDirectory: ".", Enabled: true}}, 20*time.Millisecond, 1024)
 	if err == nil || len(results) != 1 || !strings.Contains(err.Error(), string("SCANNER_TIMEOUT")) {
 		t.Fatalf("results=%#v err=%v", results, err)
+	}
+}
+
+func TestRunRejectsEmptyAndUntrustedCommands(t *testing.T) {
+	if _, err := Run(context.Background(), t.TempDir(), nil, time.Second, 1024); !errors.Is(err, ErrNoCommands) {
+		t.Fatalf("empty commands error = %v", err)
+	}
+	_, err := Run(context.Background(), t.TempDir(), []Command{{ID: "unsafe", Kind: Test, Path: "/usr/bin/rm", WorkingDirectory: ".", Enabled: true}}, time.Second, 1024)
+	if err == nil {
+		t.Fatal("expected untrusted executable rejection")
+	}
+}
+
+func TestRunPreservesCancellation(t *testing.T) {
+	ctx, cancel := context.WithCancel(context.Background())
+	cancel()
+	tool := testTool(t)
+	_, err := Run(ctx, t.TempDir(), []Command{{ID: "cancelled", Kind: Test, Path: tool, Args: []string{"-test.run=TestVerificationHelper", "--", "sleep"}, WorkingDirectory: ".", Enabled: true}}, time.Second, 1024)
+	if err == nil || !strings.Contains(err.Error(), "SCANNER_CANCELLED") {
+		t.Fatalf("cancellation error = %v", err)
 	}
 }
 
@@ -62,7 +96,8 @@ func TestRunRejectsWorkspaceEscape(t *testing.T) {
 	if err := os.Symlink(outside, filepath.Join(workspace, "outside")); err != nil {
 		t.Skip("symlinks unavailable")
 	}
-	_, err := Run(context.Background(), workspace, []Command{{ID: "escape", Kind: Test, Path: os.Args[0], WorkingDirectory: "outside", Enabled: true}}, time.Second, 1024)
+	tool := testTool(t)
+	_, err := Run(context.Background(), workspace, []Command{{ID: "escape", Kind: Test, Path: tool, WorkingDirectory: "outside", Enabled: true}}, time.Second, 1024)
 	if err == nil {
 		t.Fatal("expected workspace escape rejection")
 	}

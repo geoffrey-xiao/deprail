@@ -107,6 +107,10 @@ func canonicalDirectory(ctx context.Context, root string) (string, error) {
 	return canonical, nil
 }
 
+func CanonicalRepositoryRoot(ctx context.Context, root string) (string, error) {
+	return canonicalDirectory(ctx, root)
+}
+
 func runGit(ctx context.Context, dir string, args ...string) (process.Result, error) {
 	git, err := exec.LookPath("git")
 	if err != nil {

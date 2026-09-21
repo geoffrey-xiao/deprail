@@ -11,13 +11,14 @@ type FindingInput struct {
 	WorkspaceID          string
 	ComponentPURL        string
 	ComponentVersion     string
+	VulnerabilityID      string
 	VulnerabilityAliases []string
 }
 
 // StableFindingKey excludes mutable prose, timestamps, severity labels, and evidence order.
 func StableFindingKey(input FindingInput) string {
 	aliases := uniqueSorted(input.VulnerabilityAliases)
-	canonical := strings.Join([]string{input.WorkspaceID, input.ComponentPURL, input.ComponentVersion, strings.Join(aliases, "\x1f")}, "\x00")
+	canonical := strings.Join([]string{input.WorkspaceID, input.ComponentPURL, input.ComponentVersion, input.VulnerabilityID, strings.Join(aliases, "\x1f")}, "\x00")
 	sum := sha256.Sum256([]byte(canonical))
 	return hex.EncodeToString(sum[:])
 }

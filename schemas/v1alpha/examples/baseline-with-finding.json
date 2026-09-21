@@ -1,0 +1,19 @@
+{
+  "schema_version": "v1alpha",
+  "document_type": "baseline",
+  "baseline_id": "base-scan-001",
+  "source_scan_id": "scan-001",
+  "status": "complete",
+  "findings": [
+    {
+      "stable_key": "41fef52ba25a87d090ed393ccf8ef30dd4de320487e51115766327136ebc5024",
+      "workspace_id": "root",
+      "component": "pkg:npm/lodash@4.17.20",
+      "version": "4.17.20",
+      "target_id": "OSV-1",
+      "severity": "high",
+      "vulnerability_aliases": ["CVE-2021-23337"]
+    }
+  ],
+  "artifact_digests": []
+}

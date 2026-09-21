@@ -12,9 +12,36 @@ import (
 )
 
 func CurrentRepositoryState(root string) (string, error) {
+	return CurrentRepositoryStateExcluding(root)
+}
+
+// CurrentRepositoryStateExcluding computes the repository digest while ignoring
+// generated files that were not present when a scan was taken.
+func CurrentRepositoryStateExcluding(root string, excluded ...string) (string, error) {
 	canonical, err := filepath.EvalSymlinks(root)
 	if err != nil {
 		return "", fmt.Errorf("resolve repository root: %w", err)
+	}
+	excludedPaths := make(map[string]struct{}, len(excluded))
+	for _, path := range excluded {
+		if path == "" {
+			continue
+		}
+		absolute, err := filepath.Abs(path)
+		if err != nil {
+			return "", fmt.Errorf("resolve excluded path: %w", err)
+		}
+		resolved := absolute
+		if evaluated, evalErr := filepath.EvalSymlinks(absolute); evalErr == nil {
+			resolved = evaluated
+		} else if parent, parentErr := filepath.EvalSymlinks(filepath.Dir(absolute)); parentErr == nil {
+			resolved = filepath.Join(parent, filepath.Base(absolute))
+		}
+		relative, err := filepath.Rel(canonical, resolved)
+		if err != nil || relative == ".." || strings.HasPrefix(relative, ".."+string(os.PathSeparator)) {
+			continue
+		}
+		excludedPaths[filepath.Clean(relative)] = struct{}{}
 	}
 	type entry struct{ path, digest string }
 	entries := []entry{}
@@ -32,11 +59,14 @@ func CurrentRepositoryState(root string) (string, error) {
 			}
 			return nil
 		}
-		if d.IsDir() {
-			return nil
-		}
 		if d.Type()&os.ModeSymlink != 0 {
 			return fmt.Errorf("repository contains symlink: %s", filepath.ToSlash(rel))
+		}
+		if _, skip := excludedPaths[filepath.Clean(rel)]; skip {
+			return nil
+		}
+		if d.IsDir() {
+			return nil
 		}
 		if !d.Type().IsRegular() {
 			return nil

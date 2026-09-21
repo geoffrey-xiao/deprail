@@ -34,7 +34,10 @@ Included implementation contracts and primitives:
 - bounded direct-argv mutation boundary;
 - verification command selection and finding transitions;
 - versioned redaction-safe evidence;
-- cross-platform relative-path semantics.
+- cross-platform relative-path semantics;
+- trusted baseline generation from complete scan results under [#329](https://github.com/geoffrey-xiao/deprail/issues/329).
+
+The baseline-generation runtime is implemented on a separate feature branch and remains pending review. Its local manual workflow is recorded in `local_test/v0.4.0-preview.1/guide/MANUAL-TEST-GUIDE.md`; generated artifacts remain local-only.
 
 The current merged slices do **not** yet prove a complete user-facing `deprail fix apply` orchestration flow. That scope gap must be reconciled and owner-approved before publication.
 
@@ -48,6 +51,7 @@ The current merged slices do **not** yet prove a complete user-facing `deprail f
 | Verification and rescan | #309 | #322 | Merged; CI passed on Linux/macOS/Windows |
 | Evidence contract | #310 | #323 | Merged; CI passed on Linux/macOS/Windows |
 | Cross-platform semantics | #311 | #324 | Merged; CI passed on Linux/macOS/Windows |
+| Trusted baseline generation | #329 | #331 | Pending review; local tests, `make verify`, and CLI diff/policy smoke passed |
 
 ## Checklist reconciliation
 

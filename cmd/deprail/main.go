@@ -45,6 +45,12 @@ func run(args []string, stdout, stderr io.Writer) int {
 		command := args[0]
 		switch command {
 		case "discover", "scan", "doctor", "diff":
+		case "baseline":
+			if len(args) < 2 || args[1] != "create" {
+				writeCLIError(stderr, "CONFIG_INVALID", "baseline requires the create subcommand", "baseline")
+				return 2
+			}
+			command = "baseline create"
 		case "fix":
 			if len(args) < 2 || args[1] != "plan" {
 				writeCLIError(stderr, "CONFIG_INVALID", "fix requires the plan subcommand", "fix")
@@ -79,6 +85,8 @@ func run(args []string, stdout, stderr io.Writer) int {
 		return runFixPlan(args[2:], stdout, stderr)
 	case "diff":
 		return runDiff(args[1:], stdout, stderr)
+	case "baseline":
+		return runBaseline(args[1:], stdout, stderr)
 	case "policy":
 		if len(args) < 2 || args[1] != "check" {
 			writeCLIError(stderr, "CONFIG_INVALID", "policy requires the check subcommand", "policy")
@@ -411,7 +419,7 @@ func runDiff(args []string, stdout, stderr io.Writer) int {
 		if info.IsDir() {
 			return baseline.Document{}, fmt.Errorf("input %q is a directory, not a baseline", input)
 		}
-		return (baseline.Store{Root: filepath.Dir(input)}).Load(input)
+		return baseline.LoadFile(input)
 	}
 	base, err := load(*basePath)
 	if err != nil {
@@ -459,7 +467,7 @@ func runPolicyCheck(args []string, stdout, stderr io.Writer) int {
 		writeCLIError(stderr, "CONFIG_INVALID", "policy check requires --baseline and --format json or sarif", "policy check")
 		return 2
 	}
-	document, err := (baseline.Store{Root: filepath.Dir(*baselinePath)}).Load(*baselinePath)
+	document, err := baseline.LoadFile(*baselinePath)
 	if err != nil {
 		writeCLIError(stderr, "SCAN_UNUSABLE", err.Error(), "baseline")
 		return 3

@@ -28,6 +28,18 @@ func TestScanHelpDocumentsQuietAndVerbose(t *testing.T) {
 	}
 }
 
+func TestDiffHelpDocumentsComparisonFlags(t *testing.T) {
+	var stdout, stderr bytes.Buffer
+	if code := run([]string{"diff", "--help"}, &stdout, &stderr); code != 0 {
+		t.Fatalf("exit code = %d, stderr=%q", code, stderr.String())
+	}
+	for _, text := range []string{"--base", "--head", "--format"} {
+		if !strings.Contains(stdout.String(), text) {
+			t.Fatalf("help missing %q: %q", text, stdout.String())
+		}
+	}
+}
+
 func TestHelpRejectsUnknownCommand(t *testing.T) {
 	var stdout, stderr bytes.Buffer
 	if code := run([]string{"scna", "--help"}, &stdout, &stderr); code != 2 {

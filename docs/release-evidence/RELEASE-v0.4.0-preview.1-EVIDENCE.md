@@ -51,6 +51,7 @@ The current merged slices do **not** yet prove a complete user-facing `deprail f
 | Verification and rescan | #309 | #322 | Merged; CI passed on Linux/macOS/Windows |
 | Evidence contract | #310 | #323 | Merged; CI passed on Linux/macOS/Windows |
 | Cross-platform semantics | #311 | #324 | Merged; CI passed on Linux/macOS/Windows |
+| Trusted baseline generation | #329 | #331 | Pending review; local tests, `make verify`, and CLI diff/policy smoke passed |
 
 ## Checklist reconciliation
 

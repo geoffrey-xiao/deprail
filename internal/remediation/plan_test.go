@@ -107,6 +107,26 @@ func TestValidateRequiresContainedRelativeCommandDirectory(t *testing.T) {
 	}
 }
 
+func TestValidateCommandWorkspaceCoversAuthorizedPaths(t *testing.T) {
+	plan := testPlan()
+	plan.AffectedFiles = []AffectedFile{
+		{Path: "services/api/package.json", Kind: "manifest"},
+		{Path: "services/api/package-lock.json", Kind: "lockfile"},
+	}
+	for _, directory := range []string{".", "services/api"} {
+		if err := ValidateCommandWorkspace(plan, directory); err != nil {
+			t.Fatalf("directory %q rejected: %v", directory, err)
+		}
+	}
+	if err := ValidateCommandWorkspace(plan, "services/admin"); err == nil {
+		t.Fatal("expected workspace outside authorized paths to be rejected")
+	}
+	plan.AffectedFiles = nil
+	if err := ValidateCommandWorkspace(plan, "."); err == nil {
+		t.Fatal("expected command without authorized paths to be rejected")
+	}
+}
+
 func TestValidateAcceptsExplicitNoRecommendation(t *testing.T) {
 	plan := testPlan()
 	plan.Recommendation = nil

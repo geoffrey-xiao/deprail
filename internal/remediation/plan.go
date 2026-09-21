@@ -399,6 +399,26 @@ func validateCommand(command Command) error {
 	return nil
 }
 
+// ValidateCommandWorkspace ensures a mutation command can only run from a
+// directory containing every plan-authorized affected path.
+func ValidateCommandWorkspace(plan Plan, workingDirectory string) error {
+	if workingDirectory == "" {
+		workingDirectory = "."
+	}
+	if err := validateRelativePath(workingDirectory); err != nil {
+		return fmt.Errorf("command working directory: %w", err)
+	}
+	if len(plan.AffectedFiles) == 0 {
+		return errors.New("mutation command requires authorized affected paths")
+	}
+	for _, file := range plan.AffectedFiles {
+		if workingDirectory != "." && file.Path != workingDirectory && !strings.HasPrefix(file.Path, workingDirectory+"/") {
+			return fmt.Errorf("command working directory %q does not contain authorized path %q", workingDirectory, file.Path)
+		}
+	}
+	return nil
+}
+
 func validateRelativePath(value string) error {
 	if value == "" || strings.HasPrefix(value, "/") || strings.HasPrefix(value, "\\") || strings.Contains(value, ":") {
 		return errors.New("must be a canonical repository-relative path")

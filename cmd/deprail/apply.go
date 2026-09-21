@@ -93,6 +93,12 @@ func runFixApply(args []string, stdout, stderr io.Writer) int {
 		if workingDirectory == "" {
 			workingDirectory = "."
 		}
+		if err := remediation.ValidateCommandWorkspace(plan, workingDirectory); err != nil {
+			result.Outcome = "failed"
+			result.Diagnostics = append(result.Diagnostics, "unauthorized mutation working directory: "+err.Error())
+			_ = cleanup()
+			return writeApplyResult(result, *format, stdout, stderr)
+		}
 		commandWorkspace, err := workspace.Subdirectory(workingDirectory)
 		if err != nil {
 			result.Outcome = "failed"

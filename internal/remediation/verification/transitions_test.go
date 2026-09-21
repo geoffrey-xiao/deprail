@@ -1,6 +1,7 @@
 package verification
 
 import (
+	"path/filepath"
 	"testing"
 
 	"github.com/geoffrey-xiao/deprail/internal/remediation"
@@ -41,11 +42,19 @@ func TestClassifyRejectsDuplicateOrMissingKeys(t *testing.T) {
 }
 
 func TestSelectCommandsFiltersAndSortsSupportedChecks(t *testing.T) {
+	buildPath, err := filepath.Abs("build")
+	if err != nil {
+		t.Fatal(err)
+	}
+	testPath, err := filepath.Abs("test")
+	if err != nil {
+		t.Fatal(err)
+	}
 	commands, err := SelectCommands([]Command{
-		{ID: "build", Kind: Build, Path: "/usr/bin/build", Enabled: true},
-		{ID: "test", Kind: Test, Path: "/usr/bin/test", Enabled: true},
-		{ID: "disabled", Kind: Test, Path: "/usr/bin/test", Enabled: false},
-		{ID: "shell", Kind: CommandKind("shell"), Path: "/bin/sh", Enabled: true},
+		{ID: "build", Kind: Build, Path: buildPath, Enabled: true},
+		{ID: "test", Kind: Test, Path: testPath, Enabled: true},
+		{ID: "disabled", Kind: Test, Path: testPath, Enabled: false},
+		{ID: "shell", Kind: CommandKind("shell"), Path: testPath, Enabled: true},
 	})
 	if err != nil {
 		t.Fatal(err)

@@ -20,7 +20,7 @@ type Result struct {
 
 var supportedTools = map[string]struct{}{
 	"gradle": {}, "gradle.bat": {}, "mvn": {}, "mvn.cmd": {},
-	"npm": {}, "npm.cmd": {}, "pip": {}, "pip3": {}, "pip.exe": {},
+	"npm": {}, "npm.cmd": {}, "npm.exe": {}, "pip": {}, "pip3": {}, "pip.exe": {},
 	"pnpm": {}, "pnpm.cmd": {}, "python": {}, "python3": {}, "python.exe": {},
 	"uv": {}, "uv.exe": {}, "yarn": {}, "yarn.cmd": {},
 }

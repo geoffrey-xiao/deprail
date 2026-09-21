@@ -5,6 +5,7 @@ import (
 	"errors"
 	"os"
 	"path/filepath"
+	"runtime"
 	"strings"
 	"testing"
 	"time"
@@ -13,7 +14,11 @@ import (
 func testTool(t *testing.T) string {
 	t.Helper()
 	dir := t.TempDir()
-	path := filepath.Join(dir, "npm")
+	name := "npm"
+	if runtime.GOOS == "windows" {
+		name = "npm.exe"
+	}
+	path := filepath.Join(dir, name)
 	data, err := os.ReadFile(os.Args[0])
 	if err != nil {
 		t.Fatal(err)

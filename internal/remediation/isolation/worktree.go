@@ -64,18 +64,27 @@ func (w *Workspace) Remove(ctx context.Context) error {
 	if w == nil || (!w.Created && w.Path == "") {
 		return nil
 	}
+	var gitErr error
 	if w.Created {
 		if _, err := runGit(ctx, w.Root, "worktree", "remove", "--force", w.Path); err != nil {
-			return fmt.Errorf("remove isolated worktree: %w", err)
+			gitErr = fmt.Errorf("remove isolated worktree: %w", err)
+		} else {
+			w.Created = false
+			w.verified = false
 		}
-		w.Created = false
-		w.verified = false
 	}
-	if err := os.RemoveAll(filepath.Dir(w.Path)); err != nil {
-		return fmt.Errorf("remove workspace parent: %w", err)
+	removeErr := os.RemoveAll(filepath.Dir(w.Path))
+	if gitErr == nil && removeErr == nil {
+		w.Path = ""
+		return nil
 	}
-	w.Path = ""
-	return nil
+	if gitErr != nil && removeErr != nil {
+		return fmt.Errorf("%v; remove workspace parent: %w", gitErr, removeErr)
+	}
+	if gitErr != nil {
+		return gitErr
+	}
+	return fmt.Errorf("remove workspace parent: %w", removeErr)
 }
 
 func canonicalDirectory(ctx context.Context, root string) (string, error) {

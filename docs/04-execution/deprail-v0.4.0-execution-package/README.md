@@ -68,18 +68,18 @@ The contract set covers:
 
 ## Definition of Ready checklist
 
-- [ ] Owner and named architecture/security reviewer assigned.
-- [ ] Product, architecture, roadmap, v0.3 evidence, and v0.4 plan reconciled.
-- [ ] Mutation and isolation boundaries approved.
-- [ ] Approval and authorization contract approved.
-- [ ] Atomicity and rollback contract approved.
-- [ ] Package-manager and process limits approved.
-- [ ] Verification discovery and rescan contracts approved.
-- [ ] Patch evidence shape and redaction rules approved.
-- [ ] Failure and partial-failure behavior approved.
-- [ ] Fixtures and cross-platform evidence plan approved.
-- [ ] Issue contracts, milestone, Project view, and reviewer assignments ready.
-- [ ] Explicit exclusions recorded.
+The v0.4 Definition of Ready and ADR-0002 approval are already recorded in
+[`tracking/MASTER-CHECKLIST.md`](tracking/MASTER-CHECKLIST.md). This package
+does not reset those completed records.
+
+The supplemental context review required before implementation is:
+
+- [ ] PRD and architecture context accepted.
+- [ ] Functional requirements accepted.
+- [ ] Failure/data and redaction contract accepted.
+- [ ] Test strategy and cross-platform evidence plan accepted.
+- [ ] Child issue contracts derived from the accepted documents.
+- [ ] Owner and named architecture/security reviewer confirm the complete package.
 
 ## No implementation authorization
 

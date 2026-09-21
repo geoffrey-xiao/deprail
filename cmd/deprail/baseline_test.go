@@ -3,21 +3,25 @@ package main
 import (
 	"bytes"
 	"encoding/json"
+	"fmt"
 	"os"
 	"path/filepath"
+	"runtime"
 	"strings"
 	"testing"
 
+	"github.com/geoffrey-xiao/deprail/internal/app"
 	"github.com/geoffrey-xiao/deprail/internal/baseline"
 )
 
-func writeCompleteScan(t *testing.T, path string) {
+func writeCompleteScan(t *testing.T, path, root, state string) {
 	t.Helper()
-	data := []byte(`{
+	data := []byte(fmt.Sprintf(`{
   "schema_version": "v1alpha",
   "document_type": "scan",
   "scan_id": "scan-001",
-  "repository_state": "tree-001",
+  "repository_identity": {"root": %q, "repository": "test"},
+  "repository_state": %q,
   "status": "complete",
   "findings": [{
     "component": "lodash",
@@ -31,7 +35,7 @@ func writeCompleteScan(t *testing.T, path string) {
   "errors": [],
   "artifact_digests": []
 }
-`)
+`, root, state))
 	if err := os.WriteFile(path, data, 0o600); err != nil {
 		t.Fatal(err)
 	}
@@ -42,7 +46,11 @@ func TestBaselineCreateWritesDeterministicBaselineConsumedByDiff(t *testing.T) {
 	scanPath := filepath.Join(root, "scan.json")
 	basePath := filepath.Join(root, "baseline.json")
 	headPath := filepath.Join(root, "baseline-head.json")
-	writeCompleteScan(t, scanPath)
+	state, err := app.CurrentRepositoryState(root)
+	if err != nil {
+		t.Fatal(err)
+	}
+	writeCompleteScan(t, scanPath, root, state)
 
 	var stdout, stderr bytes.Buffer
 	if code := run([]string{"baseline", "create", "--scan", scanPath, "--output", basePath, "--format", "json"}, &stdout, &stderr); code != 0 {
@@ -86,7 +94,11 @@ func TestBaselineCreateRejectsIncompleteAndExistingOutput(t *testing.T) {
 	root := t.TempDir()
 	scanPath := filepath.Join(root, "scan.json")
 	outputPath := filepath.Join(root, "baseline.json")
-	writeCompleteScan(t, scanPath)
+	state, err := app.CurrentRepositoryState(root)
+	if err != nil {
+		t.Fatal(err)
+	}
+	writeCompleteScan(t, scanPath, root, state)
 	data, err := os.ReadFile(scanPath)
 	if err != nil {
 		t.Fatal(err)
@@ -104,7 +116,7 @@ func TestBaselineCreateRejectsIncompleteAndExistingOutput(t *testing.T) {
 		t.Fatalf("incomplete scan created output: err=%v", err)
 	}
 
-	writeCompleteScan(t, scanPath)
+	writeCompleteScan(t, scanPath, root, state)
 	stdout.Reset()
 	stderr.Reset()
 	if code := run([]string{"baseline", "create", "--scan", scanPath, "--output", outputPath}, &stdout, &stderr); code != 0 {
@@ -114,7 +126,7 @@ func TestBaselineCreateRejectsIncompleteAndExistingOutput(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if info.Mode().Perm() != 0o600 {
+	if runtime.GOOS != "windows" && info.Mode().Perm() != 0o600 {
 		t.Fatalf("output permissions = %o, want 600", info.Mode().Perm())
 	}
 	before, err := os.ReadFile(outputPath)

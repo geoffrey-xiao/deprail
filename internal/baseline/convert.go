@@ -19,6 +19,7 @@ type ScanInput struct {
 	SchemaVersion   string
 	DocumentType    string
 	ScanID          string
+	RepositoryRoot  string
 	RepositoryState string
 	Status          discovery.Completeness
 	Findings        []ScanFinding
@@ -93,6 +94,7 @@ func ConvertScan(input ScanInput) (Document, error) {
 			WorkspaceID:          inputFinding.WorkspaceID,
 			ComponentPURL:        component,
 			ComponentVersion:     inputFinding.Version,
+			VulnerabilityID:      inputFinding.TargetID,
 			VulnerabilityAliases: inputFinding.Aliases,
 		})
 		document.Findings = append(document.Findings, Finding{

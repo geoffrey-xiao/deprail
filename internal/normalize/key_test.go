@@ -27,6 +27,15 @@ func TestStableFindingKeySeparatesScopeAndIdentity(t *testing.T) {
 	}
 }
 
+func TestStableFindingKeySeparatesVulnerabilityIDsWithoutAliases(t *testing.T) {
+	base := FindingInput{WorkspaceID: "service", ComponentPURL: "pkg:npm/a@1", ComponentVersion: "1", VulnerabilityID: "OSV-1"}
+	other := base
+	other.VulnerabilityID = "OSV-2"
+	if StableFindingKey(base) == StableFindingKey(other) {
+		t.Fatal("vulnerability IDs with empty aliases collided")
+	}
+}
+
 func TestSortFindingInputsIsDeterministic(t *testing.T) {
 	inputs := []FindingInput{{WorkspaceID: "z", ComponentPURL: "pkg:npm/z@1", ComponentVersion: "1", VulnerabilityAliases: []string{"OSV-2"}}, {WorkspaceID: "a", ComponentPURL: "pkg:npm/a@1", ComponentVersion: "1", VulnerabilityAliases: []string{"OSV-1"}}}
 	SortFindingInputs(inputs)

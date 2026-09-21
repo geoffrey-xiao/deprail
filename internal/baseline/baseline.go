@@ -125,6 +125,75 @@ func Marshal(document Document) ([]byte, error) {
 
 // SaveAs publishes a canonical baseline at path without replacing an existing file.
 func SaveAs(path string, document Document) error {
+	return saveAsPath(path, document)
+}
+
+var ErrOutputOutsideRoot = errors.New("baseline output is outside the repository root")
+
+// SaveAsWithin publishes a baseline only when every existing output directory
+// component resolves inside root.
+func SaveAsWithin(root, path string, document Document) error {
+	safePath, err := confinedOutputPath(root, path)
+	if err != nil {
+		return err
+	}
+	return saveAsPath(safePath, document)
+}
+
+// ValidateOutputPath checks output containment without creating or replacing files.
+func ValidateOutputPath(root, path string) error {
+	_, err := confinedOutputPath(root, path)
+	return err
+}
+
+func confinedOutputPath(root, path string) (string, error) {
+	if root == "" || path == "" {
+		return "", ErrOutputOutsideRoot
+	}
+	canonicalRoot, err := filepath.EvalSymlinks(root)
+	if err != nil {
+		return "", fmt.Errorf("%w: resolve repository root", ErrOutputOutsideRoot)
+	}
+	absolute, err := filepath.Abs(path)
+	if err != nil {
+		return "", fmt.Errorf("%w: resolve output path", ErrOutputOutsideRoot)
+	}
+	parent := filepath.Dir(absolute)
+	missing := []string{}
+	for {
+		info, statErr := os.Lstat(parent)
+		if statErr == nil {
+			if !info.IsDir() {
+				return "", fmt.Errorf("%w: output parent is not a directory", ErrOutputOutsideRoot)
+			}
+			resolved, evalErr := filepath.EvalSymlinks(parent)
+			if evalErr != nil {
+				return "", fmt.Errorf("%w: resolve output parent", ErrOutputOutsideRoot)
+			}
+			candidate := resolved
+			for _, part := range missing {
+				candidate = filepath.Join(candidate, part)
+			}
+			candidate = filepath.Join(candidate, filepath.Base(absolute))
+			resolvedRelative, relErr := filepath.Rel(canonicalRoot, candidate)
+			if relErr != nil || resolvedRelative == ".." || strings.HasPrefix(resolvedRelative, ".."+string(os.PathSeparator)) {
+				return "", ErrOutputOutsideRoot
+			}
+			return candidate, nil
+		}
+		if !os.IsNotExist(statErr) {
+			return "", fmt.Errorf("%w: inspect output parent", ErrOutputOutsideRoot)
+		}
+		next := filepath.Dir(parent)
+		if next == parent {
+			return "", ErrOutputOutsideRoot
+		}
+		missing = append([]string{filepath.Base(parent)}, missing...)
+		parent = next
+	}
+}
+
+func saveAsPath(path string, document Document) error {
 	if path == "" {
 		return errors.New("baseline output path is required")
 	}

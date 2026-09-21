@@ -40,6 +40,19 @@ func runBaselineCreate(args []string, stdout, stderr io.Writer) int {
 		writeCLIError(stderr, scanInputErrorCode(err), err.Error(), "scan")
 		return 3
 	}
+	if err := baseline.ValidateOutputPath(input.RepositoryRoot, *outputPath); err != nil {
+		writeCLIError(stderr, "PATH_OUTSIDE_ROOT", err.Error(), "output")
+		return 3
+	}
+	if err := validateScanFreshness(input, *scanPath, *outputPath); err != nil {
+		var conversionErr *baseline.ConversionError
+		if errors.As(err, &conversionErr) {
+			writeCLIError(stderr, string(conversionErr.Code), conversionErr.Message, "scan")
+		} else {
+			writeCLIError(stderr, "BASELINE_INPUT_STALE", err.Error(), "scan")
+		}
+		return 3
+	}
 	document, err := baseline.ConvertScan(input)
 	if err != nil {
 		var conversionErr *baseline.ConversionError
@@ -50,8 +63,10 @@ func runBaselineCreate(args []string, stdout, stderr io.Writer) int {
 		}
 		return 3
 	}
-	if err := baseline.SaveAs(*outputPath, document); err != nil {
-		if errors.Is(err, fs.ErrExist) {
+	if err := baseline.SaveAsWithin(input.RepositoryRoot, *outputPath, document); err != nil {
+		if errors.Is(err, baseline.ErrOutputOutsideRoot) {
+			writeCLIError(stderr, "PATH_OUTSIDE_ROOT", err.Error(), "output")
+		} else if errors.Is(err, fs.ErrExist) {
 			writeCLIError(stderr, "BASELINE_OUTPUT_EXISTS", "output file already exists", "output")
 		} else {
 			writeCLIError(stderr, "BASELINE_WRITE_FAILED", err.Error(), "output")
@@ -130,12 +145,27 @@ func loadScanInput(path string) (baseline.ScanInput, error) {
 		SchemaVersion:   report.SchemaVersion,
 		DocumentType:    report.DocumentType,
 		ScanID:          report.ScanID,
+		RepositoryRoot:  report.RepositoryIdentity.Root,
 		RepositoryState: report.RepositoryState,
 		Status:          report.Status,
 		Findings:        findings,
 		Errors:          cloneStrings(report.Errors),
 		ArtifactDigests: cloneStrings(report.ArtifactDigests),
 	}, nil
+}
+
+func validateScanFreshness(input baseline.ScanInput, scanPath, outputPath string) error {
+	if input.RepositoryRoot == "" || input.RepositoryState == "" {
+		return &baseline.ConversionError{Code: baseline.ErrScanStale, Message: "scan repository identity or state is missing"}
+	}
+	current, err := app.CurrentRepositoryStateExcluding(input.RepositoryRoot, scanPath, outputPath)
+	if err != nil {
+		return &baseline.ConversionError{Code: baseline.ErrScanStale, Message: "scan repository state cannot be verified"}
+	}
+	if current != input.RepositoryState {
+		return &baseline.ConversionError{Code: baseline.ErrScanStale, Message: "scan repository state no longer matches the repository"}
+	}
+	return nil
 }
 
 func scanFinding(finding adapter.Finding) baseline.ScanFinding {

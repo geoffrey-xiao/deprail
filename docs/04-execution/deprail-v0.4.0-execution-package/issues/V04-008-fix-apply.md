@@ -3,7 +3,7 @@
 - GitHub Issue: [#332](https://github.com/geoffrey-xiao/deprail/issues/332)
 - Epic: [EPIC-006](../epics/EPIC-006-fix-apply.md)
 - Target: `v0.4.0-preview.2`
-- Status: Backlog
+- Status: Todo; child issues created and tracked in the epic
 - Priority: P0
 - Risk: R3
 - Area: CLI
@@ -27,6 +27,17 @@ No caller-worktree mutation, automatic commit/push/PR/merge, autonomous approval
 - V04-001/V04-002/V04-003: isolation, approval, and mutation boundaries.
 - V04-004/V04-005/V04-006: verification, evidence, and cross-platform semantics.
 - V04-007: trusted baseline generation.
+
+## Child issues
+
+- [#342 — Validate apply plans and approval binding](https://github.com/geoffrey-xiao/deprail/issues/342)
+- [#341 — Implement isolated detached worktree lifecycle](https://github.com/geoffrey-xiao/deprail/issues/341)
+- [#343 — Implement allowlisted adapter mutations](https://github.com/geoffrey-xiao/deprail/issues/343)
+- [#336 — Add bounded verification and rescan orchestration](https://github.com/geoffrey-xiao/deprail/issues/336)
+- [#337 — Classify remediation finding transitions](https://github.com/geoffrey-xiao/deprail/issues/337)
+- [#338 — Implement rollback, discard, and cleanup evidence](https://github.com/geoffrey-xiao/deprail/issues/338)
+- [#339 — Implement apply evidence and deterministic output](https://github.com/geoffrey-xiao/deprail/issues/339)
+- [#340 — Add security and cross-platform apply coverage](https://github.com/geoffrey-xiao/deprail/issues/340)
 
 ## Acceptance criteria
 

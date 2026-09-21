@@ -4,7 +4,7 @@
 
 **Target:** `v0.4.0-preview.2`
 
-**Status:** Backlog
+**Status:** Todo; child issues created for preview.2 implementation
 
 ## Outcome
 
@@ -17,6 +17,19 @@ Includes plan and approval validation, dry-run, canonical source binding, tempor
 ## Dependencies
 
 EPIC-001 through EPIC-005, `deprail fix plan`, the versioned plan/evidence contracts, and baseline generation (#329/#331).
+
+## Child issues
+
+Implementation order is dependency-aware; security and cross-platform validation closes the epic.
+
+1. [#342 — Validate apply plans and approval binding](https://github.com/geoffrey-xiao/deprail/issues/342)
+2. [#341 — Implement isolated detached worktree lifecycle](https://github.com/geoffrey-xiao/deprail/issues/341)
+3. [#343 — Implement allowlisted adapter mutations](https://github.com/geoffrey-xiao/deprail/issues/343)
+4. [#336 — Add bounded verification and rescan orchestration](https://github.com/geoffrey-xiao/deprail/issues/336)
+5. [#337 — Classify remediation finding transitions](https://github.com/geoffrey-xiao/deprail/issues/337)
+6. [#338 — Implement rollback, discard, and cleanup evidence](https://github.com/geoffrey-xiao/deprail/issues/338)
+7. [#339 — Implement apply evidence and deterministic output](https://github.com/geoffrey-xiao/deprail/issues/339)
+8. [#340 — Add security and cross-platform apply coverage](https://github.com/geoffrey-xiao/deprail/issues/340)
 
 ## Acceptance
 

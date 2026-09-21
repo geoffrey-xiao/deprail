@@ -88,7 +88,20 @@ Evidence includes plan digest, source commit, isolated workspace identity, chang
 
 The result has explicit `complete`, `partial`, `failed`, and `cancelled` states. Partial application never becomes success. Successful intermediate evidence is retained, failed operation scope is named, rollback status is explicit, and the original repository remains unchanged.
 
-## 6. Acceptance gate
+## 6. Product and architecture obligations
+
+The implementation must also preserve these existing contracts:
+
+- Expose the product workflow through the reviewed `deprail fix apply` transport contract, including dry-run, approval, verification, and exit behavior.
+- Keep application services responsible for mutation policy; CLI, web, or future MCP transports only translate inputs and render results.
+- Preserve versioned JSON schemas, deterministic stable keys, repository-relative `/` paths, provenance, and content-addressed raw artifacts.
+- Keep external package managers and scanners behind bounded adapter/process ports; domain packages must not import Cobra, shell commands, or scanner-specific types.
+- Preserve local-first behavior, no default source upload, no autonomous commit/merge/publish, and explicit complete/partial/failed outcomes.
+- Keep the first v0.4 slice limited to the ecosystems already supported by v0.3 planning unless a separate compatibility decision approves expansion.
+
+These obligations are acceptance criteria, not implementation details. Any conflict requires an ADR or explicit release-plan change before implementation.
+
+## 7. Acceptance gate
 
 The preview is acceptable only when:
 
@@ -100,7 +113,7 @@ The preview is acceptable only when:
 - Linux, macOS, and Windows semantics are equivalent where supported.
 - Security/architecture review and owner approval are recorded separately.
 
-## 7. Definition of Ready
+## 8. Definition of Ready
 
 Implementation remains blocked until the owner and named reviewer confirm:
 
@@ -111,6 +124,6 @@ Implementation remains blocked until the owner and named reviewer confirm:
 - Required fixtures, hostile-input scenarios, and cross-platform matrix are named.
 - No issue silently expands into v0.5, web, team, MCP, or autonomous mutation scope.
 
-## 8. Rollback and displaced work
+## 9. Rollback and displaced work
 
 If the preview fails, do not mutate the source repository or move the release tag. Preserve evidence, discard isolated workspaces, and publish a corrected immutable preview only after the failed contract is fixed. v0.5 web/history and v0.7 agent write capabilities remain unchanged and deferred.

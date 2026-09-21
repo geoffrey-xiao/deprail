@@ -20,7 +20,6 @@ import (
 	"github.com/geoffrey-xiao/deprail/internal/app"
 	"github.com/geoffrey-xiao/deprail/internal/artifact"
 	"github.com/geoffrey-xiao/deprail/internal/discovery"
-	"github.com/geoffrey-xiao/deprail/internal/normalize"
 	"github.com/geoffrey-xiao/deprail/internal/remediation"
 	"github.com/geoffrey-xiao/deprail/internal/remediation/isolation"
 	"github.com/geoffrey-xiao/deprail/internal/remediation/mutation"
@@ -175,7 +174,7 @@ func runFixApplyContext(ctx context.Context, args []string, stdout, stderr io.Wr
 		return writeApplyResult(result, *format, stdout, stderr)
 	}
 	result.Diagnostics = append(result.Diagnostics, fmt.Sprintf("rescan complete: %s (%d finding(s))", rescan.ScanID, len(rescan.Findings)))
-	transitions, err := verification.Classify([]remediation.ReportFinding{planFinding(plan)}, rescanFindings(rescan), true)
+	transitions, err := verification.Classify([]remediation.ReportFinding{planFinding(plan)}, rescanFindingsForPlan(rescan, plan), true)
 	if err != nil {
 		result.Outcome = "failed"
 		result.Diagnostics = append(result.Diagnostics, "transition classification failed: "+err.Error())
@@ -201,17 +200,18 @@ func planFinding(plan remediation.Plan) remediation.ReportFinding {
 	}
 }
 
-func rescanFindings(report app.ScanReport) []remediation.ReportFinding {
+func rescanFindingsForPlan(report app.ScanReport, plan remediation.Plan) []remediation.ReportFinding {
 	findings := make([]remediation.ReportFinding, 0, len(report.Findings))
 	for _, finding := range report.Findings {
+		key := finding.TargetID
+		if key == "" {
+			key = finding.Component + "@" + finding.Version
+		}
+		if key != plan.FindingIdentity.StableKey {
+			continue
+		}
 		findings = append(findings, remediation.ReportFinding{
-			StableKey: normalize.StableFindingKey(normalize.FindingInput{
-				WorkspaceID:          finding.WorkspaceID,
-				ComponentPURL:        finding.PURL,
-				ComponentVersion:     finding.Version,
-				VulnerabilityID:      finding.TargetID,
-				VulnerabilityAliases: finding.Aliases,
-			}),
+			StableKey:      key,
 			Workspace:      remediation.WorkspaceIdentity{ID: finding.WorkspaceID, Path: finding.WorkspacePath},
 			Component:      remediation.Component{PURL: finding.PURL, Name: finding.Component, Version: finding.Version},
 			Aliases:        append([]string(nil), finding.Aliases...),

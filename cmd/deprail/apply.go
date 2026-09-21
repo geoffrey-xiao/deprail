@@ -9,8 +9,10 @@ import (
 	"io"
 	"os"
 	"os/exec"
+	"os/signal"
 	"path/filepath"
 	"strings"
+	"syscall"
 	"time"
 
 	"github.com/geoffrey-xiao/deprail/internal/remediation"
@@ -31,6 +33,12 @@ type applyResult struct {
 }
 
 func runFixApply(args []string, stdout, stderr io.Writer) int {
+	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
+	defer stop()
+	return runFixApplyContext(ctx, args, stdout, stderr)
+}
+
+func runFixApplyContext(ctx context.Context, args []string, stdout, stderr io.Writer) int {
 	flags := flag.NewFlagSet("fix apply", flag.ContinueOnError)
 	flags.SetOutput(io.Discard)
 	planPath := flags.String("plan", "", "versioned remediation plan")
@@ -56,7 +64,7 @@ func runFixApply(args []string, stdout, stderr io.Writer) int {
 		writeCLIError(stderr, "APPROVAL_INVALID", err.Error(), "approval")
 		return 3
 	}
-	canonical, err := isolation.CanonicalRepositoryRoot(context.Background(), *root)
+	canonical, err := isolation.CanonicalRepositoryRoot(ctx, *root)
 	if err != nil {
 		writeCLIError(stderr, "PATH_OUTSIDE_ROOT", err.Error(), "root")
 		return 3
@@ -80,13 +88,17 @@ func runFixApply(args []string, stdout, stderr io.Writer) int {
 		writeApprovalError(stderr, err)
 		return 3
 	}
-	workspace, err := isolation.Create(context.Background(), canonical, commit)
+	workspace, err := isolation.Create(ctx, canonical, commit)
 	if err != nil {
 		writeCLIError(stderr, "WORKTREE_CREATE_FAILED", err.Error(), "fix apply")
 		return 3
 	}
 	result.Workspace = workspace.Path
-	cleanup := func() error { return workspace.Remove(context.Background()) }
+	cleanup := func() error {
+		cleanupCtx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+		defer cancel()
+		return workspace.Remove(cleanupCtx)
+	}
 	defer cleanup()
 
 	for _, command := range plan.Commands {
@@ -114,7 +126,7 @@ func runFixApply(args []string, stdout, stderr io.Writer) int {
 			_ = cleanup()
 			return writeApplyResult(result, *format, stdout, stderr)
 		}
-		_, err = mutation.Run(context.Background(), mutation.Request{
+		_, err = mutation.Run(ctx, mutation.Request{
 			Path: executable, Args: command.Arguments, Workspace: commandWorkspace, Approved: true,
 			Timeout: 2 * time.Minute, OutputCap: 16 << 20, DenyScripts: true, DenyNetwork: true,
 		})
@@ -132,7 +144,7 @@ func runFixApply(args []string, stdout, stderr io.Writer) int {
 		_ = cleanup()
 		return writeApplyResult(result, *format, stdout, stderr)
 	}
-	_, err = verification.Run(context.Background(), workspace.Path, verificationCommands, 2*time.Minute, 16<<20)
+	_, err = verification.Run(ctx, workspace.Path, verificationCommands, 2*time.Minute, 16<<20)
 	if err != nil {
 		result.Outcome = "failed"
 		result.Diagnostics = append(result.Diagnostics, "verification failed: "+err.Error())

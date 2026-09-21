@@ -61,7 +61,11 @@ func TestSelectCommandsFiltersShellsAndSortsChecks(t *testing.T) {
 	if len(commands) != 2 || commands[0].ID != "build" || commands[1].ID != "test" {
 		t.Fatalf("commands = %#v", commands)
 	}
-	if _, err := SelectCommands([]Command{{ID: "shell", Kind: Test, Path: "/bin/sh", WorkingDirectory: ".", Args: []string{"-c", "echo unsafe"}, Enabled: true}}); err == nil {
+	shellPath, err := filepath.Abs("sh")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if _, err := SelectCommands([]Command{{ID: "shell", Kind: Test, Path: shellPath, WorkingDirectory: ".", Args: []string{"-c", "echo unsafe"}, Enabled: true}}); err == nil {
 		t.Fatal("expected shell rejection")
 	}
 }

@@ -56,6 +56,49 @@ func TestCreateAndRemoveWorktreePreservesSource(t *testing.T) {
 	}
 }
 
+func TestRemovePreservesStateWhenGitCleanupFails(t *testing.T) {
+	path := filepath.Join(t.TempDir(), "worktree")
+	ws := Workspace{Root: t.TempDir(), Path: path, Created: true, verified: true}
+	if err := ws.Remove(context.Background()); err == nil {
+		t.Fatal("expected cleanup failure for non-repository root")
+	}
+	if !ws.Created || !ws.verified || ws.Path != path {
+		t.Fatalf("workspace state was lost after cleanup failure: %#v", ws)
+	}
+}
+
+func TestRemoveAttemptsFilesystemCleanupAfterGitCancellation(t *testing.T) {
+	root := t.TempDir()
+	run := func(args ...string) {
+		t.Helper()
+		if out, err := exec.Command(args[0], args[1:]...).CombinedOutput(); err != nil {
+			t.Fatalf("%v: %v: %s", args, err, out)
+		}
+	}
+	run("git", "-C", root, "init", "-q")
+	file := filepath.Join(root, "manifest.txt")
+	if err := os.WriteFile(file, []byte("before\n"), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	run("git", "-C", root, "add", "manifest.txt")
+	run("git", "-C", root, "-c", "user.name=Test", "-c", "user.email=test@example.invalid", "commit", "-qm", "initial")
+	ws, err := Create(context.Background(), root, "HEAD")
+	if err != nil {
+		t.Fatal(err)
+	}
+	ctx, cancel := context.WithCancel(context.Background())
+	cancel()
+	if err := ws.Remove(ctx); err == nil {
+		t.Fatal("expected cancelled Git cleanup error")
+	}
+	if _, err := os.Stat(filepath.Dir(ws.Path)); !os.IsNotExist(err) {
+		t.Fatalf("workspace parent still exists: %v", err)
+	}
+	if !ws.Created || ws.Path == "" {
+		t.Fatalf("cleanup state was not retained for Git retry: %#v", ws)
+	}
+}
+
 func TestCreateRejectsRepositorySubdirectory(t *testing.T) {
 	root := t.TempDir()
 	run := func(args ...string) {

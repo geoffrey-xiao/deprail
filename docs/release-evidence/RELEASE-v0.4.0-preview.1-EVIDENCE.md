@@ -1,11 +1,11 @@
 # DepRail v0.4.0 Preview.1 Release Evidence Record
 
-**Status:** Release preparation; not approved for publication
+**Status:** Preview published; retrospective and independent architecture/security review pending
 **Release mode:** Preview
 **Target version:** `v0.4.0-preview.1`
 **Release issue:** [#325](https://github.com/geoffrey-xiao/deprail/issues/325)
 **Parent scope:** [#299](https://github.com/geoffrey-xiao/deprail/issues/299)
-**Decision:** Pending owner go/no-go
+**Decision:** Owner-approved preview with documented supply-chain and review gaps
 
 This record is a release-gate index. Unchecked rows are open gaps, not implied passes.
 
@@ -19,11 +19,11 @@ Reusable gate: [`docs/RELEASE-CHECKLIST.md`](../RELEASE-CHECKLIST.md)
 | Latest stable tag | None; latest preview is `v0.3.1-preview.1` |
 | Existing preview tags | `v0.3.1-preview.1`, `v0.3.0-preview.1`, `v0.2.0-preview.4`, `v0.2.0-preview.3`, `v0.2.0-preview.2`, `v0.2.0-preview.1`, `v0.1.0-preview.1` |
 | Release manifest | Not required for this manually run release; manual version/tag/release identity will be recorded here |
-| Release tag | Not created; publication not authorized |
-| DepRail version | Pending release workflow |
+| Release tag | [`v0.4.0-preview.1`](https://github.com/geoffrey-xiao/deprail/releases/tag/v0.4.0-preview.1), immutable tag at `eaf1d4853d13dd8f7233ac0bcc53dea8d824b81a` |
+| DepRail version | `0.4.0-preview.1` in published artifact identity |
 | Release owner | `@geoffrey-xiao` |
 | Architecture/security reviewer | Pending named review |
-| Release workflow | Not runnable as configured; `.github/workflows/release.yml` currently has `build.if: ${{ false }}` |
+| Release workflow | Manual publication; configured CI build job remains disabled (`build.if: ${{ false }}`) |
 
 ## Scope
 
@@ -63,8 +63,8 @@ The current merged slices do not include a user-facing `deprail fix apply` orche
 | Automated verification | Complete for merged preview.1 scope | `make verify` passed on macOS arm64; PR #331 and #333 CI passed on Linux/macOS/Windows |
 | Manual verification | Partial | Scan, baseline, diff, policy-help, and fix-plan workflow passed on macOS arm64; fix apply is deferred to preview.2 |
 | Artifact and supply-chain verification | Partial | Local candidate artifacts built for macOS arm64, Linux amd64, and Windows amd64 with verified SHA-256 checksums; the release CI build job is disabled, so CI-generated SBOM/signatures/provenance are not available |
-| Publication and approval | Blocked | Manual publication would bypass the configured release workflow; owner decision alone does not provide CI-generated supply-chain evidence |
-| Post-release closure | Open | Retrospective cannot be completed before release decision |
+| Publication and approval | Partial | Preview published manually with owner approval; CI-generated signatures/provenance and independent review remain pending |
+| Post-release closure | Open | Retrospective [#334](https://github.com/geoffrey-xiao/deprail/issues/334) is pending owner and architecture/security review |
 
 ## Required next evidence
 
@@ -73,16 +73,17 @@ The current merged slices do not include a user-facing `deprail fix apply` orche
 - [x] Run representative repository scan and baseline/diff smoke; macOS arm64, source `7903612`, binary `/tmp/deprail-v0.4.0-main`, scan complete with 14 findings, baseline create exit `0`, identical diff exit `0`.
 - [x] Reconcile complete `deprail fix apply` scope for preview.1: explicitly deferred to preview.2 under [#332](https://github.com/geoffrey-xiao/deprail/issues/332); no implementation claim is made for preview.1.
 - [x] Build candidate artifacts from `eaf1d48`: `deprail-darwin-arm64` (5,737,698 bytes), `deprail-linux-amd64` (6,165,199 bytes), and `deprail-windows-amd64.exe` (6,174,720 bytes). Checksums are in local-only `local_test/v0.4.0-preview.1/artifacts/SHA256SUMS` and verified with `shasum -a 256 -c`.
-- [x] Record reviewed candidate identity: macOS artifact reports `deprail 0.4.0-preview.1 (tag=unreleased-candidate commit=eaf1d48...)`; final immutable tag remains pending.
+- [x] Record published release identity: `v0.4.0-preview.1` at `eaf1d4853d13dd8f7233ac0bcc53dea8d824b81a`; release assets and checksums verified after download.
 - [ ] Prepare preview notes and rollback procedure.
-- [ ] Enable and review the release workflow build job before publication; current `build.if: ${{ false }}` prevents the `manual-verify` job from running.
-- [ ] Record owner go/no-go decision.
-- [ ] Create and link retrospective after publication.
+- [ ] Enable and review the release workflow build job before the next publication; current `build.if: ${{ false }}` prevents the `manual-verify` job from running.
+- [x] Record owner go/no-go decision: owner approved preview publication with documented gaps; no stable-release claim.
+- [x] Create and link retrospective: [`RETROSPECTIVE-v0.4.0-preview.1.md`](../retrospectives/RETROSPECTIVE-v0.4.0-preview.1.md), tracking issue [#334](https://github.com/geoffrey-xiao/deprail/issues/334).
+- [ ] Complete retrospective [#334](https://github.com/geoffrey-xiao/deprail/issues/334) and record owner/security acceptance.
 
 ## Review and decision
 
-- Owner decision: `[pending]`
-- Decision date: `[pending]`
+- Owner decision: `Go with approved preview gaps`
+- Decision date: `2026-09-21`
 - Architecture/security review: `[pending]`
 - Rollback owner: `[pending]`
 - Rollback procedure: preserve evidence, do not move immutable tags, and publish a new preview only after resolving approved gaps.

@@ -16,7 +16,7 @@ Commands:
   baseline create create a baseline from a complete scan
   diff           compare two scan baselines
   fix plan       produce a read-only remediation plan
-  policy check   evaluate a baseline policy
+  fix apply      validate or apply an approved plan
 
 Output:
   Human output is plain terminal text.
@@ -45,6 +45,8 @@ func writeCommandHelp(w io.Writer, command string) error {
 		text = "Usage: deprail doctor [--format terminal|json]\n\nInspect local tool availability without scanning the repository.\n\nTip: run doctor first when scanner availability is uncertain.\nExample: deprail doctor --format json\n"
 	case "fix plan":
 		text = "Usage: deprail fix plan --report path --finding key [--format terminal|json] [--output path]\n\nProduce a read-only remediation plan; no files are mutated.\n\nTip: obtain the finding key from a completed scan report.\nExample: deprail fix plan --report scan.json --finding FINDING_KEY --format json --output plan.json\n"
+	case "fix apply":
+		text = "Usage: deprail fix apply --plan path --approval path [--root path] [--dry-run] [--format terminal|json]\n\nValidate or apply an approved plan in an isolated worktree.\n\nTip: use --dry-run to validate without consuming approval or mutating files.\nExample: deprail fix apply --plan plan.json --approval approval.json --dry-run --format json\n"
 	case "policy check":
 		text = "Usage: deprail policy check --baseline path [--format json|sarif]\n\nEvaluate a baseline policy and preserve its pass, warn, or block decision.\n\nTip: use SARIF when integrating with a compatible code-scanning workflow.\nExample: deprail policy check --baseline baseline.json --format sarif\n"
 	default:

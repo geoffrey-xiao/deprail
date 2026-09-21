@@ -59,3 +59,15 @@ func TestFixPlanHelpDocumentsOutput(t *testing.T) {
 		t.Fatalf("help missing --output: %q", stdout.String())
 	}
 }
+
+func TestFixApplyHelpDocumentsApprovalAndDryRun(t *testing.T) {
+	var stdout, stderr bytes.Buffer
+	if code := run([]string{"fix", "apply", "--help"}, &stdout, &stderr); code != 0 {
+		t.Fatalf("exit code = %d, stderr=%q", code, stderr.String())
+	}
+	for _, text := range []string{"--plan", "--approval", "--dry-run"} {
+		if !strings.Contains(stdout.String(), text) {
+			t.Fatalf("help missing %q: %q", text, stdout.String())
+		}
+	}
+}

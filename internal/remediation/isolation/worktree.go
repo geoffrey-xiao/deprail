@@ -28,6 +28,26 @@ type Workspace struct {
 
 func (w Workspace) Prepared() bool { return w.Created && w.verified && w.Path != "" }
 
+// Subdirectory returns a verified workspace rooted at a repository-relative
+// subdirectory. It preserves the isolation guarantees of the parent workspace.
+func (w Workspace) Subdirectory(relative string) (Workspace, error) {
+	if !w.Prepared() {
+		return Workspace{}, errors.New("verified isolated workspace is required")
+	}
+	if relative == "" {
+		relative = "."
+	}
+	if filepath.IsAbs(relative) {
+		return Workspace{}, errors.New("workspace subdirectory must be relative")
+	}
+	path := filepath.Clean(filepath.Join(w.Path, filepath.FromSlash(relative)))
+	rel, err := filepath.Rel(w.Path, path)
+	if err != nil || rel == ".." || strings.HasPrefix(rel, ".."+string(filepath.Separator)) {
+		return Workspace{}, errors.New("workspace subdirectory escapes isolated workspace")
+	}
+	return Workspace{Root: w.Root, Path: path, SourceRef: w.SourceRef, Created: true, verified: true}, nil
+}
+
 func Create(ctx context.Context, root, sourceRef string) (Workspace, error) {
 	canonical, err := canonicalDirectory(ctx, root)
 	if err != nil {

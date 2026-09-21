@@ -11,6 +11,9 @@ func RelativePath(path string) (string, error) {
 		return "", errors.New("path must be relative")
 	}
 	portable := strings.ReplaceAll(path, "\\", "/")
+	if strings.HasPrefix(portable, "/") {
+		return "", errors.New("path must be relative")
+	}
 	if len(portable) >= 2 && portable[1] == ':' {
 		return "", errors.New("path must not contain a volume")
 	}

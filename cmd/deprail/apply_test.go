@@ -68,3 +68,21 @@ func TestRescanApplyWorkspaceRejectsMissingScanner(t *testing.T) {
 		t.Fatalf("report = %#v", report)
 	}
 }
+
+func TestApplyTransitionClassificationWithholdsIncompleteResolution(t *testing.T) {
+	plan := remediation.Plan{FindingIdentity: remediation.FindingIdentity{StableKey: "finding"}}
+	complete, err := verification.Classify([]remediation.ReportFinding{planFinding(plan)}, nil, true)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(complete) != 1 || complete[0].State != verification.Resolved {
+		t.Fatalf("complete transitions = %#v", complete)
+	}
+	incomplete, err := verification.Classify([]remediation.ReportFinding{planFinding(plan)}, nil, false)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(incomplete) != 1 || incomplete[0].State != verification.Unknown {
+		t.Fatalf("incomplete transitions = %#v", incomplete)
+	}
+}

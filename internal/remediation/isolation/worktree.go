@@ -60,31 +60,49 @@ func Create(ctx context.Context, root, sourceRef string) (Workspace, error) {
 	return Workspace{Root: canonical, Path: path, SourceRef: commit, Created: true, verified: true}, nil
 }
 
+type CleanupResult struct {
+	GitRemoved        bool
+	FilesystemRemoved bool
+	Retryable         bool
+	Err               error
+}
+
+func (r CleanupResult) Succeeded() bool { return r.Err == nil }
+
 func (w *Workspace) Remove(ctx context.Context) error {
+	return w.RemoveWithEvidence(ctx).Err
+}
+
+func (w *Workspace) RemoveWithEvidence(ctx context.Context) CleanupResult {
 	if w == nil || (!w.Created && w.Path == "") {
-		return nil
+		return CleanupResult{}
 	}
+	result := CleanupResult{Retryable: true}
 	var gitErr error
 	if w.Created {
 		if _, err := runGit(ctx, w.Root, "worktree", "remove", "--force", w.Path); err != nil {
 			gitErr = fmt.Errorf("remove isolated worktree: %w", err)
 		} else {
+			result.GitRemoved = true
 			w.Created = false
 			w.verified = false
 		}
 	}
-	removeErr := os.RemoveAll(filepath.Dir(w.Path))
-	if gitErr == nil && removeErr == nil {
+	if err := os.RemoveAll(filepath.Dir(w.Path)); err != nil {
+		result.Err = fmt.Errorf("remove workspace parent: %w", err)
+	} else {
+		result.FilesystemRemoved = true
+	}
+	if gitErr != nil && result.Err != nil {
+		result.Err = fmt.Errorf("%v; %w", gitErr, result.Err)
+	} else if gitErr != nil {
+		result.Err = gitErr
+	}
+	if result.Err == nil {
+		result.Retryable = false
 		w.Path = ""
-		return nil
 	}
-	if gitErr != nil && removeErr != nil {
-		return fmt.Errorf("%v; remove workspace parent: %w", gitErr, removeErr)
-	}
-	if gitErr != nil {
-		return gitErr
-	}
-	return fmt.Errorf("remove workspace parent: %w", removeErr)
+	return result
 }
 
 func canonicalDirectory(ctx context.Context, root string) (string, error) {

@@ -128,9 +128,9 @@ func runFixApplyContext(ctx context.Context, args []string, stdout, stderr io.Wr
 		recordCleanupOutcome(&result, outcome, cleanup())
 		return writeApplyResult(result, *format, stdout, stderr)
 	}
-	mutated := false
+	mutationAttempted := false
 	operationOutcome := func(err error) string {
-		return applyOperationOutcome(ctx, err, mutated)
+		return applyOperationOutcome(ctx, err, mutationAttempted)
 	}
 
 	for _, command := range plan.Commands {
@@ -149,6 +149,7 @@ func runFixApplyContext(ctx context.Context, args []string, stdout, stderr io.Wr
 		if err != nil {
 			return finish("failed", "mutation executable is unavailable: "+command.Executable)
 		}
+		mutationAttempted = true
 		_, err = mutation.Run(ctx, mutation.Request{
 			Path: executable, Args: command.Arguments, Workspace: commandWorkspace, Approved: true,
 			Timeout: 2 * time.Minute, OutputCap: 16 << 20, DenyScripts: true, DenyNetwork: true,
@@ -156,7 +157,6 @@ func runFixApplyContext(ctx context.Context, args []string, stdout, stderr io.Wr
 		if err != nil {
 			return finish(operationOutcome(err), err.Error())
 		}
-		mutated = true
 	}
 	verificationCommands, err := applyVerificationCommands(plan)
 	if err != nil {

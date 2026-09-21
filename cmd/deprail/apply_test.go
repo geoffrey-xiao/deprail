@@ -6,6 +6,7 @@ import (
 	"runtime"
 	"testing"
 
+	"github.com/geoffrey-xiao/deprail/internal/discovery"
 	"github.com/geoffrey-xiao/deprail/internal/remediation"
 	"github.com/geoffrey-xiao/deprail/internal/remediation/verification"
 )
@@ -54,5 +55,16 @@ func TestApplyVerificationCommandsRejectsMissingTools(t *testing.T) {
 	}}})
 	if err == nil {
 		t.Fatal("expected missing verification tool error")
+	}
+}
+
+func TestRescanApplyWorkspaceRejectsMissingScanner(t *testing.T) {
+	t.Setenv("PATH", t.TempDir())
+	report, err := rescanApplyWorkspace(t.Context(), t.TempDir())
+	if err == nil {
+		t.Fatal("expected missing scanner error")
+	}
+	if report.Status != discovery.Failed || len(report.Errors) != 1 {
+		t.Fatalf("report = %#v", report)
 	}
 }

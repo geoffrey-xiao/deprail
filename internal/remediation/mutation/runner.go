@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"os"
 	"path/filepath"
 	"strings"
 	"time"
@@ -45,12 +46,21 @@ func validate(request Request) error {
 	if request.Path == "" || !filepath.IsAbs(request.Path) {
 		return errors.New("mutation executable must be an absolute path")
 	}
+	resolved, err := filepath.EvalSymlinks(request.Path)
+	if err != nil {
+		return errors.New("mutation executable is unavailable")
+	}
+	info, err := os.Stat(resolved)
+	if err != nil || !info.Mode().IsRegular() {
+		return errors.New("mutation executable must be a regular file")
+	}
+	if !supportedExecutable(filepath.Base(resolved)) {
+		return fmt.Errorf("unsupported mutation executable: %s", filepath.Base(resolved))
+	}
 	if request.Timeout <= 0 || request.OutputCap <= 0 {
 		return errors.New("positive timeout and output cap are required")
 	}
-	if !supportedExecutable(filepath.Base(request.Path)) {
-		return fmt.Errorf("unsupported mutation executable: %s", filepath.Base(request.Path))
-	}
+
 	if !request.DenyScripts || !request.DenyNetwork {
 		return errors.New("scripts and network access must be denied")
 	}

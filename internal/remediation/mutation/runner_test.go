@@ -47,6 +47,21 @@ func TestRunRejectsUnapprovedUnisolatedOrUnsupportedExecution(t *testing.T) {
 	}
 }
 
+func TestRunRejectsNonRegularAllowlistedExecutable(t *testing.T) {
+	workspace := testWorkspace(t)
+	dir := t.TempDir()
+	executable := filepath.Join(dir, "npm")
+	if err := os.Mkdir(executable, 0o700); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := Run(context.Background(), Request{
+		Path: executable, Workspace: workspace, Approved: true,
+		DenyScripts: true, DenyNetwork: true, Timeout: time.Second, OutputCap: 1024,
+	}); err == nil {
+		t.Fatal("expected non-regular executable rejection")
+	}
+}
+
 func TestSecuredArgsAddOfflineAndScriptFlags(t *testing.T) {
 	args, err := securedArgs("/usr/bin/npm", []string{"install"})
 	if err != nil {

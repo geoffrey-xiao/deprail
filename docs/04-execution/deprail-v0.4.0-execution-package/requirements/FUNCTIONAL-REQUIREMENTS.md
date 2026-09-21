@@ -12,3 +12,6 @@
 | FR-008 | Machine output is versioned JSON on stdout; diagnostics and progress are on stderr. | JSON mode emits no banners or progress. |
 | FR-009 | Evidence is redaction-safe and content-addressed; secrets and credential-bearing URLs are not persisted. | Redaction and artifact digest fixtures pass. |
 | FR-010 | Supported behavior is equivalent on Linux, macOS, and Windows for serialized domain meaning. | Cross-platform matrix and manual evidence are complete. |
+| FR-011 | A complete versioned scan can be converted into a validated deterministic baseline by `deprail baseline create`. | Schema-valid output, byte-stability, and `diff`/`policy check` consumption evidence. |
+| FR-012 | Incomplete, failed, malformed, stale, and unsupported scans cannot become trusted baselines. | Failure fixtures, stable diagnostics, non-success exit status, and no output artifact. |
+| FR-013 | Baseline creation is read-only, atomic, restrictive, and non-overwriting by default. | Source-tree digest, interrupted-write, permissions, and existing-output fixtures. |

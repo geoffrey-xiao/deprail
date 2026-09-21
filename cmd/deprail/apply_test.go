@@ -3,6 +3,7 @@ package main
 import (
 	"os"
 	"path/filepath"
+	"runtime"
 	"testing"
 
 	"github.com/geoffrey-xiao/deprail/internal/remediation"
@@ -11,7 +12,11 @@ import (
 
 func TestApplyVerificationCommandsResolvesSupportedTools(t *testing.T) {
 	dir := t.TempDir()
-	tool := filepath.Join(dir, "npm")
+	name := "npm"
+	if runtime.GOOS == "windows" {
+		name = "npm.exe"
+	}
+	tool := filepath.Join(dir, name)
 	data, err := os.ReadFile(os.Args[0])
 	if err != nil {
 		t.Fatal(err)

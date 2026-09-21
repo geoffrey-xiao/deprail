@@ -1,8 +1,8 @@
 # DepRail v0.4.0 Execution Package
 
 **Version:** `v0.4.0-preview.1`
-**Status:** Planning baseline; implementation blocked pending Definition of Ready
-**Parent epic:** [#299](https://github.com/geoffrey-xiao/deprail/issues/299)
+**Status:** Context package draft; implementation remains blocked pending owner review
+**Parent epic:** Not finalized; candidate epic #299 exists for review
 **Plan:** [`docs/03-planning/deprail-development-plan-v0.4.0.md`](../../03-planning/deprail-development-plan-v0.4.0.md)
 
 ## Source order
@@ -24,6 +24,17 @@ v0.4: approved plan -> isolated apply -> verify -> rescan -> patch evidence
 ```
 
 ## Required contracts
+
+The following documents are the normative v0.4 context drafts:
+
+- [`PRD-v0.4.md`](PRD-v0.4.md)
+- [`ARCHITECTURE-v0.4.md`](ARCHITECTURE-v0.4.md)
+- [`requirements/FUNCTIONAL-REQUIREMENTS.md`](requirements/FUNCTIONAL-REQUIREMENTS.md)
+- [`requirements/FAILURE-AND-DATA-CONTRACT.md`](requirements/FAILURE-AND-DATA-CONTRACT.md)
+- [`requirements/TEST-STRATEGY.md`](requirements/TEST-STRATEGY.md)
+- [`requirements/ISOLATION-AND-ROLLBACK.md`](requirements/ISOLATION-AND-ROLLBACK.md)
+
+The contract set covers:
 
 | Contract | Required decision | Evidence |
 | --- | --- | --- |
@@ -57,18 +68,18 @@ v0.4: approved plan -> isolated apply -> verify -> rescan -> patch evidence
 
 ## Definition of Ready checklist
 
-- [ ] Owner and named architecture/security reviewer assigned.
-- [ ] Product, architecture, roadmap, v0.3 evidence, and v0.4 plan reconciled.
-- [ ] Mutation and isolation boundaries approved.
-- [ ] Approval and authorization contract approved.
-- [ ] Atomicity and rollback contract approved.
-- [ ] Package-manager and process limits approved.
-- [ ] Verification discovery and rescan contracts approved.
-- [ ] Patch evidence shape and redaction rules approved.
-- [ ] Failure and partial-failure behavior approved.
-- [ ] Fixtures and cross-platform evidence plan approved.
-- [ ] Issue contracts, milestone, Project view, and reviewer assignments ready.
-- [ ] Explicit exclusions recorded.
+The v0.4 Definition of Ready and ADR-0002 approval are already recorded in
+[`tracking/MASTER-CHECKLIST.md`](tracking/MASTER-CHECKLIST.md). This package
+does not reset those completed records.
+
+The supplemental context review required before implementation is:
+
+- [ ] PRD and architecture context accepted.
+- [ ] Functional requirements accepted.
+- [ ] Failure/data and redaction contract accepted.
+- [ ] Test strategy and cross-platform evidence plan accepted.
+- [ ] Child issue contracts derived from the accepted documents.
+- [ ] Owner and named architecture/security reviewer confirm the complete package.
 
 ## No implementation authorization
 

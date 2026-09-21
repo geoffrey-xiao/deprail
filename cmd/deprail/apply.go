@@ -9,13 +9,16 @@ import (
 	"io"
 	"os"
 	"os/exec"
+	"os/signal"
 	"path/filepath"
 	"strings"
+	"syscall"
 	"time"
 
 	"github.com/geoffrey-xiao/deprail/internal/remediation"
 	"github.com/geoffrey-xiao/deprail/internal/remediation/isolation"
 	"github.com/geoffrey-xiao/deprail/internal/remediation/mutation"
+	"github.com/geoffrey-xiao/deprail/internal/remediation/verification"
 )
 
 type applyResult struct {
@@ -30,6 +33,12 @@ type applyResult struct {
 }
 
 func runFixApply(args []string, stdout, stderr io.Writer) int {
+	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
+	defer stop()
+	return runFixApplyContext(ctx, args, stdout, stderr)
+}
+
+func runFixApplyContext(ctx context.Context, args []string, stdout, stderr io.Writer) int {
 	flags := flag.NewFlagSet("fix apply", flag.ContinueOnError)
 	flags.SetOutput(io.Discard)
 	planPath := flags.String("plan", "", "versioned remediation plan")
@@ -55,7 +64,7 @@ func runFixApply(args []string, stdout, stderr io.Writer) int {
 		writeCLIError(stderr, "APPROVAL_INVALID", err.Error(), "approval")
 		return 3
 	}
-	canonical, err := isolation.CanonicalRepositoryRoot(context.Background(), *root)
+	canonical, err := isolation.CanonicalRepositoryRoot(ctx, *root)
 	if err != nil {
 		writeCLIError(stderr, "PATH_OUTSIDE_ROOT", err.Error(), "root")
 		return 3
@@ -79,13 +88,17 @@ func runFixApply(args []string, stdout, stderr io.Writer) int {
 		writeApprovalError(stderr, err)
 		return 3
 	}
-	workspace, err := isolation.Create(context.Background(), canonical, commit)
+	workspace, err := isolation.Create(ctx, canonical, commit)
 	if err != nil {
 		writeCLIError(stderr, "WORKTREE_CREATE_FAILED", err.Error(), "fix apply")
 		return 3
 	}
 	result.Workspace = workspace.Path
-	cleanup := func() error { return workspace.Remove(context.Background()) }
+	cleanup := func() error {
+		cleanupCtx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+		defer cancel()
+		return workspace.Remove(cleanupCtx)
+	}
 	defer cleanup()
 
 	for _, command := range plan.Commands {
@@ -113,7 +126,7 @@ func runFixApply(args []string, stdout, stderr io.Writer) int {
 			_ = cleanup()
 			return writeApplyResult(result, *format, stdout, stderr)
 		}
-		_, err = mutation.Run(context.Background(), mutation.Request{
+		_, err = mutation.Run(ctx, mutation.Request{
 			Path: executable, Args: command.Arguments, Workspace: commandWorkspace, Approved: true,
 			Timeout: 2 * time.Minute, OutputCap: 16 << 20, DenyScripts: true, DenyNetwork: true,
 		})
@@ -124,10 +137,44 @@ func runFixApply(args []string, stdout, stderr io.Writer) int {
 			return writeApplyResult(result, *format, stdout, stderr)
 		}
 	}
+	verificationCommands, err := applyVerificationCommands(plan)
+	if err != nil {
+		result.Outcome = "failed"
+		result.Diagnostics = append(result.Diagnostics, "verification unavailable: "+err.Error())
+		_ = cleanup()
+		return writeApplyResult(result, *format, stdout, stderr)
+	}
+	_, err = verification.Run(ctx, workspace.Path, verificationCommands, 2*time.Minute, 16<<20)
+	if err != nil {
+		result.Outcome = "failed"
+		result.Diagnostics = append(result.Diagnostics, "verification failed: "+err.Error())
+		_ = cleanup()
+		return writeApplyResult(result, *format, stdout, stderr)
+	}
+	result.Diagnostics = append(result.Diagnostics, fmt.Sprintf("verification complete: %d command(s)", len(verificationCommands)))
 	result.Outcome = "applied"
-	result.Diagnostics = append(result.Diagnostics, "verification, rescan, transition classification, and durable evidence are pending orchestration")
 	_ = cleanup()
 	return writeApplyResult(result, *format, stdout, stderr)
+}
+
+func applyVerificationCommands(plan remediation.Plan) ([]verification.Command, error) {
+	commands := make([]verification.Command, 0, len(plan.Verification))
+	for _, item := range plan.Verification {
+		executable, err := exec.LookPath(item.Command.Executable)
+		if err != nil {
+			return nil, fmt.Errorf("%s: %w", item.ID, err)
+		}
+		commands = append(commands, verification.Command{
+			ID:               item.ID,
+			Kind:             verification.Test,
+			Path:             executable,
+			Args:             append([]string(nil), item.Command.Arguments...),
+			WorkingDirectory: item.Command.WorkingDirectory,
+			Reason:           item.Reason,
+			Enabled:          true,
+		})
+	}
+	return commands, nil
 }
 
 func writeApprovalError(stderr io.Writer, err error) {

@@ -68,7 +68,13 @@ func Run(ctx context.Context, workspace string, commands []Command, timeout time
 		if relErr != nil || relative == ".." || strings.HasPrefix(relative, ".."+string(filepath.Separator)) {
 			return results, fmt.Errorf("verification %q working directory escapes workspace", command.ID)
 		}
-		result, runErr := process.Run(ctx, process.Request{Path: command.Path, Args: command.Args, Dir: resolvedDir, Timeout: timeout, OutputCap: outputCap})
+		environment := map[string]string{
+			"HOME":        root,
+			"TEMP":        root,
+			"TMP":         root,
+			"USERPROFILE": root,
+		}
+		result, runErr := process.Run(ctx, process.Request{Path: command.Path, Args: command.Args, Dir: resolvedDir, Env: environment, Timeout: timeout, OutputCap: outputCap})
 		results = append(results, Result{Command: command, Process: result, Err: runErr})
 		if runErr != nil {
 			return results, fmt.Errorf("verification %q failed: %w", command.ID, runErr)

@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"os"
+	"path"
 	"path/filepath"
 	"strings"
 	"time"
@@ -33,18 +34,45 @@ func trustedTool(path string) bool {
 }
 
 // ValidateCommandSpec validates a plan-level command before approval.
-func ValidateCommandSpec(path string, args []string) error {
-	base := strings.ToLower(filepath.Base(path))
+func ValidateCommandSpec(executable string, args []string) error {
+	if filepath.Base(executable) != executable || strings.ContainsAny(executable, `/\:`) {
+		return fmt.Errorf("verification executable must be a bare supported tool name: %q", executable)
+	}
+	base := strings.ToLower(executable)
 	if _, ok := supportedTools[base]; !ok {
-		return fmt.Errorf("unsupported verification executable %q", path)
+		return fmt.Errorf("unsupported verification executable %q", executable)
 	}
 	if base == "node" || base == "node.exe" {
-		if len(args) != 2 || args[0] != "--check" || filepath.IsAbs(args[1]) {
+		if len(args) != 2 || args[0] != "--check" {
 			return errors.New("node verification must be exactly: node --check <relative-file>")
 		}
-		clean := filepath.Clean(args[1])
-		if clean != args[1] || clean == "." || clean == ".." || strings.HasPrefix(clean, ".."+string(filepath.Separator)) {
+		input := args[1]
+		clean := path.Clean(input)
+		if input == "" || strings.Contains(input, `\`) || filepath.IsAbs(input) || clean != input || clean == "." || clean == ".." || strings.HasPrefix(clean, "../") {
 			return errors.New("node verification input must remain repository-relative")
+		}
+	}
+	return nil
+}
+
+// ValidateCommandInWorkspace resolves Node syntax-check inputs before execution.
+func ValidateCommandInWorkspace(command Command, workspace string) error {
+	if err := ValidateCommandSpec(filepath.Base(command.Path), command.Args); err != nil {
+		return err
+	}
+	if strings.HasPrefix(strings.ToLower(filepath.Base(command.Path)), "node") {
+		root, err := filepath.EvalSymlinks(workspace)
+		if err != nil {
+			return fmt.Errorf("resolve verification workspace: %w", err)
+		}
+		input := filepath.Join(root, filepath.FromSlash(command.WorkingDirectory), filepath.FromSlash(command.Args[1]))
+		resolved, err := filepath.EvalSymlinks(input)
+		if err != nil {
+			return fmt.Errorf("resolve Node verification input: %w", err)
+		}
+		relative, err := filepath.Rel(root, resolved)
+		if err != nil || relative == ".." || strings.HasPrefix(relative, ".."+string(filepath.Separator)) {
+			return errors.New("Node verification input escapes workspace")
 		}
 	}
 	return nil

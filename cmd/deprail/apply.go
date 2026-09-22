@@ -162,6 +162,15 @@ func runFixApplyContext(ctx context.Context, args []string, stdout, stderr io.Wr
 	if stateErr != nil {
 		return finish("failed", "capture before state failed: "+stateErr.Error())
 	}
+	verificationCommands, err := applyVerificationCommands(plan)
+	if err != nil {
+		return finish("failed", "verification unavailable: "+err.Error())
+	}
+	for _, command := range verificationCommands {
+		if err := verification.ValidateCommandInWorkspace(command, workspace.Path); err != nil {
+			return finish("failed", "verification unavailable: "+err.Error())
+		}
+	}
 	mutationAttempted := false
 	operationOutcome := func(err error) string {
 		return applyOperationOutcome(ctx, err, mutationAttempted)
@@ -193,12 +202,11 @@ func runFixApplyContext(ctx context.Context, args []string, stdout, stderr io.Wr
 			return finish(operationOutcome(err), err.Error())
 		}
 	}
-	verificationCommands, err := applyVerificationCommands(plan)
+	verificationResults, err := verification.Run(ctx, workspace.Path, verificationCommands, 2*time.Minute, 16<<20)
 	if err != nil {
 		evidenceState.VerificationStatus = "failed"
 		return finish(operationOutcome(err), "verification unavailable: "+err.Error())
 	}
-	verificationResults, err := verification.Run(ctx, workspace.Path, verificationCommands, 2*time.Minute, 16<<20)
 	for index, verificationResult := range verificationResults {
 		evidenceState.Commands = append(evidenceState.Commands, applyEvidenceCommand(fmt.Sprintf("verification:%d", index), verificationResult.Command.Path, verificationResult.Process))
 	}

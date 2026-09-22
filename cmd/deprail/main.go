@@ -391,6 +391,13 @@ func loadVerificationCommands(path string) ([]remediation.Verification, error) {
 	if err := decoder.Decode(&input); err != nil {
 		return nil, err
 	}
+	var trailing any
+	if err := decoder.Decode(&trailing); err != io.EOF {
+		if err == nil {
+			return nil, errors.New("verification input contains trailing JSON")
+		}
+		return nil, err
+	}
 	if len(input.Verification) == 0 {
 		return nil, errors.New("verification input must contain at least one command")
 	}

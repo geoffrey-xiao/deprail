@@ -28,7 +28,6 @@ func testTool(t *testing.T) string {
 	}
 	return path
 }
-
 func TestValidateCommandSpecRestrictsNodeAndAllowlist(t *testing.T) {
 	if err := ValidateCommandSpec("node", []string{"--check", "verify.js"}); err != nil {
 		t.Fatal(err)
@@ -39,11 +38,30 @@ func TestValidateCommandSpecRestrictsNodeAndAllowlist(t *testing.T) {
 	}{
 		{"node", []string{"-e", "process.exit(0)"}},
 		{"node", []string{"--check", "../outside.js"}},
+		{"/tmp/node", []string{"--check", "verify.js"}},
 		{"make", []string{"test"}},
 	} {
 		if err := ValidateCommandSpec(test.path, test.args); err == nil {
 			t.Fatalf("accepted unsafe command %q %#v", test.path, test.args)
 		}
+	}
+}
+
+func TestValidateCommandInWorkspaceRejectsSymlinkEscape(t *testing.T) {
+	if runtime.GOOS == "windows" {
+		t.Skip("symlink fixture requires platform support")
+	}
+	workspace := t.TempDir()
+	outside := t.TempDir()
+	if err := os.WriteFile(filepath.Join(outside, "verify.js"), []byte("const outside = true;\n"), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.Symlink(filepath.Join(outside, "verify.js"), filepath.Join(workspace, "verify.js")); err != nil {
+		t.Fatal(err)
+	}
+	err := ValidateCommandInWorkspace(Command{Path: "/usr/bin/node", Args: []string{"--check", "verify.js"}, WorkingDirectory: "."}, workspace)
+	if err == nil {
+		t.Fatal("expected symlink escape to be rejected")
 	}
 }
 func TestRunExecutesSelectedCommandsInWorkspace(t *testing.T) {

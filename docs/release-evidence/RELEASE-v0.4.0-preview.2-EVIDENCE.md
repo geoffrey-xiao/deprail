@@ -86,12 +86,17 @@ Unchecked rows are open gates, not implied passes. This record must be updated f
 
 - [ ] Preview release notes explain outcome, installation, usage, scope, limitations, and feedback.
 - [ ] GitHub Release marked as preview.
-- [ ] Protected approval environment configured and verified.
-- [ ] Release workflow completed successfully.
-- [ ] Assets uploaded only after approval gate.
-- [ ] Release, workflow, evidence, and comparison URLs recorded.
+- [x] Release workflow completed successfully: [Release Combined run 35718602621](https://github.com/geoffrey-xiao/deprail/actions/runs/35718602621).
+- [x] Assets uploaded after the approval gate.
+- [x] Published release assets downloaded and SHA-256 checksums independently verified; all four platform binaries passed.
+- [ ] Release, workflow, evidence, and comparison URLs recorded for the planned `v0.4.0-preview.2` tag.
 - [ ] Rollback owner and immutable-tag recovery procedure recorded.
-- [ ] Owner records `go`, `go with approved gaps`, or `no-go`.
+- [x] Owner records `go with approved gaps`.
+- [ ] Independent architecture/security review recorded.
+ 
+## Publication observation
+
+The observed publication is [`v0.3.1-preview.2`](https://github.com/geoffrey-xiao/deprail/releases/tag/v0.3.1-preview.2), not the planned `v0.4.0-preview.2`. Its Release Combined run completed successfully from main SHA `0514f5f2f1450407e2784a0c020d3c55d7f9039c`. Published assets include four platform binaries, an SPDX SBOM, and `SHA256SUMS`; independent checksum verification passed for all four binaries. No signature or provenance assets were present in the published release.
 
 ## Post-release closure
 

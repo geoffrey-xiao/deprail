@@ -45,6 +45,9 @@ func TestJavaScriptAdapterPlansDeterministicallyFromOfflineEvidence(t *testing.T
 	if first.Commands[0].Executable != "npm" || first.Commands[0].WorkingDirectory != "." || first.Commands[0].Arguments[0] != "install" {
 		t.Fatalf("commands = %#v", first.Commands)
 	}
+	if len(first.Verification) != 0 {
+		t.Fatalf("verification = %#v; package scripts must not be auto-executed", first.Verification)
+	}
 	second, err := adapter.Plan(context.Background(), request)
 	if err != nil {
 		t.Fatal(err)

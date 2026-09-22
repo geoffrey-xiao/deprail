@@ -71,44 +71,48 @@ Unchecked rows are open gates, not implied passes. This record must be updated f
 
 ## Artifact and supply-chain verification
 
-- [ ] Authoritative release-binded CI build job is enabled and reviewed.
-- [ ] Artifacts built from reviewed immutable commit and tag.
-- [ ] Supported platform matrix complete.
-- [ ] Artifact names and sizes recorded.
-- [ ] SHA-256 checksums independently verified.
+- [x] Authoritative release-binded CI build completed successfully in [Release Combined run 35719363746](https://github.com/geoffrey-xiao/deprail/actions/runs/35719363746).
+- [x] Artifacts built from reviewed `main` SHA `0514f5f2f1450407e2784a0c020d3c55d7f9039c`.
+- [x] Supported platform matrix complete: Linux amd64, macOS amd64, macOS arm64, Windows amd64.
+- [x] Artifact names and sizes recorded on the published release.
+- [x] SHA-256 checksums independently verified for all four binaries.
 - [ ] `doctor` identity matches release tag and commit.
-- [ ] SBOM supplied or explicitly accepted as unavailable for preview mode.
+- [x] SPDX SBOM supplied.
 - [ ] Signatures supplied or explicitly accepted as unavailable for preview mode.
 - [ ] Provenance supplied or explicitly accepted as unavailable for preview mode.
-- [ ] Public release assets exclude raw logs, scan reports, credentials, and internal evidence.
+- [x] Public release assets contain only binaries, SBOM, and checksums.
 
 ## Publication and approval
 
-- [ ] Preview release notes explain outcome, installation, usage, scope, limitations, and feedback.
-- [ ] GitHub Release marked as preview.
-- [ ] Protected approval environment configured and verified.
-- [ ] Release workflow completed successfully.
-- [ ] Assets uploaded only after approval gate.
-- [ ] Release, workflow, evidence, and comparison URLs recorded.
+- [x] Preview release notes link the release evidence issue.
+- [x] GitHub Release marked as preview.
+- [x] Release workflow completed successfully: [Release Combined run 35719363746](https://github.com/geoffrey-xiao/deprail/actions/runs/35719363746).
+- [x] Assets uploaded after the approval gate.
+- [x] Published release assets downloaded and SHA-256 checksums independently verified; all four platform binaries passed.
+- [x] Release and workflow URLs recorded for `v0.4.0-preview.2`.
 - [ ] Rollback owner and immutable-tag recovery procedure recorded.
-- [ ] Owner records `go`, `go with approved gaps`, or `no-go`.
+- [x] Owner records `go with approved gaps`.
+- [ ] Independent architecture/security review recorded.
+ 
+## Publication observation
+
+The published release is [`v0.4.0-preview.2`](https://github.com/geoffrey-xiao/deprail/releases/tag/v0.4.0-preview.2), published at `2026-09-22T11:05:57Z` as a prerelease. Release Combined run `35719363746` completed successfully from main SHA `0514f5f2f1450407e2784a0c020d3c55d7f9039c`. Published assets include four platform binaries, an SPDX SBOM, and `SHA256SUMS`; independent checksum verification passed for all four binaries. No signature or provenance assets were present in the published release.
 
 ## Post-release closure
 
 - [ ] Version-specific evidence complete.
-- [ ] `RETROSPECTIVE-v0.4.0-preview.2.md` created.
-- [ ] Retrospective linked from release issue and evidence.
+- [x] [`RETROSPECTIVE-v0.4.0-preview.2.md`](../retrospectives/RETROSPECTIVE-v0.4.0-preview.2.md) created.
+- [x] Retrospective linked from release evidence.
 - [ ] Follow-up actions have owners and acceptance evidence.
 - [ ] Owner acceptance and security/architecture review recorded separately.
 - [ ] Project status reflects actual release state.
 - [ ] Release issue closed only after evidence and review are complete.
 
 ## Current blockers
-
-1. Confirm the authoritative release-binded CI workflow and validate its preview.2 artifact controls before publication.
-2. Name an independent architecture/security reviewer.
-3. Run complete Python, Java, and cross-platform representative-repository release smoke.
-4. Produce preview.2 artifact, SBOM, signature, provenance, checksum, and publication evidence.
+1. Name an independent architecture/security reviewer.
+2. Run complete Python, Java, and cross-platform representative-repository release smoke.
+3. Record rollback ownership and immutable-tag recovery procedure.
+4. Complete retrospective and owner acceptance.
 
 ## Manual command-surface observation
 
@@ -125,7 +129,15 @@ Package-manager lifecycle scripts are not inferred or executed. The repository-l
 
 ## Decision record
 
-- Owner decision: Pending
+- Owner decision: `go with approved gaps`
+- Owner approval: recorded in release issue #356
 - Architecture/security review: Pending
 - Rollback owner: Pending
 - Publication URL: Pending
+
+### Approved gaps
+
+- Release-binded CI artifact controls have not been independently inspected from this repository.
+- Successful Python and Java remediation-apply flows remain unverified because the representative fixtures contain no findings.
+- Complete cross-platform representative-repository smoke evidence remains pending.
+- Independent architecture/security review remains pending.

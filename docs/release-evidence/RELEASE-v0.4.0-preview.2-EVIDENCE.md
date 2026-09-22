@@ -125,7 +125,15 @@ Package-manager lifecycle scripts are not inferred or executed. The repository-l
 
 ## Decision record
 
-- Owner decision: Pending
+- Owner decision: `go with approved gaps`
+- Owner approval: recorded in release issue #356
 - Architecture/security review: Pending
 - Rollback owner: Pending
 - Publication URL: Pending
+
+### Approved gaps
+
+- Release-binded CI artifact controls have not been independently inspected from this repository.
+- Successful Python and Java remediation-apply flows remain unverified because the representative fixtures contain no findings.
+- Complete cross-platform representative-repository smoke evidence remains pending.
+- Independent architecture/security review remains pending.

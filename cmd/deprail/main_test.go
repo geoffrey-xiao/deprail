@@ -414,3 +414,18 @@ func writeTestFile(t *testing.T, path, contents string) {
 		t.Fatal(err)
 	}
 }
+func TestLoadVerificationCommandsRequiresStrictNonEmptyInput(t *testing.T) {
+	path := filepath.Join(t.TempDir(), "verification.json")
+	if err := os.WriteFile(path, []byte(`{"verification":[]}`), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := loadVerificationCommands(path); err == nil {
+		t.Fatal("expected empty verification input to be rejected")
+	}
+	if err := os.WriteFile(path, []byte(`{"verifications":[]}`), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := loadVerificationCommands(path); err == nil {
+		t.Fatal("expected unknown verification field to be rejected")
+	}
+}

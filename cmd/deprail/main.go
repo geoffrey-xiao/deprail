@@ -315,18 +315,12 @@ func runFixPlan(args []string, stdout, stderr io.Writer) int {
 	}
 	var explicitVerification []remediation.Verification
 	if *verificationPath != "" {
-		input, err := loadApplyJSON[struct {
-			Verification []remediation.Verification `json:"verification"`
-		}](*verificationPath)
+		loaded, err := loadVerificationCommands(*verificationPath)
 		if err != nil {
 			writeCLIError(stderr, "CONFIG_INVALID", err.Error(), "verification")
 			return 2
 		}
-		explicitVerification = input.Verification
-		if err := remediation.ValidateVerificationCommands(explicitVerification); err != nil {
-			writeCLIError(stderr, "CONFIG_INVALID", err.Error(), "verification")
-			return 2
-		}
+		explicitVerification = loaded
 	}
 	if *output != "" {
 		if err := app.ValidatePlanOutput(*report, *output, *root); err != nil && errors.Is(err, remediation.ErrUnsafePath) {
@@ -376,11 +370,31 @@ func runFixPlan(args []string, stdout, stderr io.Writer) int {
 	} else {
 		outputErr = presenter.WritePlanTerminal(stdout, plan)
 	}
+
 	if outputErr != nil {
 		writeCLIError(stderr, "OUTPUT_WRITE_FAILED", outputErr.Error(), "stdout")
 		return 3
 	}
 	return 0
+}
+func loadVerificationCommands(path string) ([]remediation.Verification, error) {
+	file, err := os.Open(filepath.Clean(path))
+	if err != nil {
+		return nil, err
+	}
+	defer file.Close()
+	var input struct {
+		Verification []remediation.Verification `json:"verification"`
+	}
+	decoder := json.NewDecoder(io.LimitReader(file, 16<<20))
+	decoder.DisallowUnknownFields()
+	if err := decoder.Decode(&input); err != nil {
+		return nil, err
+	}
+	if len(input.Verification) == 0 {
+		return nil, errors.New("verification input must contain at least one command")
+	}
+	return input.Verification, nil
 }
 
 func runDoctor(args []string, stdout, stderr io.Writer) int {

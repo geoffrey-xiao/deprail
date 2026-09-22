@@ -32,6 +32,24 @@ func trustedTool(path string) bool {
 	return ok
 }
 
+// ValidateCommandSpec validates a plan-level command before approval.
+func ValidateCommandSpec(path string, args []string) error {
+	base := strings.ToLower(filepath.Base(path))
+	if _, ok := supportedTools[base]; !ok {
+		return fmt.Errorf("unsupported verification executable %q", path)
+	}
+	if base == "node" || base == "node.exe" {
+		if len(args) != 2 || args[0] != "--check" || filepath.IsAbs(args[1]) {
+			return errors.New("node verification must be exactly: node --check <relative-file>")
+		}
+		clean := filepath.Clean(args[1])
+		if clean != args[1] || clean == "." || clean == ".." || strings.HasPrefix(clean, ".."+string(filepath.Separator)) {
+			return errors.New("node verification input must remain repository-relative")
+		}
+	}
+	return nil
+}
+
 // Run executes selected verification commands in the isolated workspace. Results
 // before the first failure are retained; no later command is started after a
 // failure, timeout, cancellation, or output-limit error.

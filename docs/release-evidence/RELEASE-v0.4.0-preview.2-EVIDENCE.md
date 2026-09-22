@@ -71,7 +71,7 @@ Unchecked rows are open gates, not implied passes. This record must be updated f
 
 ## Artifact and supply-chain verification
 
-- [ ] Release workflow build job is enabled and reviewed.
+- [ ] Authoritative release-binded CI build job is enabled and reviewed.
 - [ ] Artifacts built from reviewed immutable commit and tag.
 - [ ] Supported platform matrix complete.
 - [ ] Artifact names and sizes recorded.
@@ -105,7 +105,7 @@ Unchecked rows are open gates, not implied passes. This record must be updated f
 
 ## Current blockers
 
-1. Repair and validate the disabled release workflow before preview.2 publication.
+1. Confirm the authoritative release-binded CI workflow and validate its preview.2 artifact controls before publication.
 2. Name an independent architecture/security reviewer.
 3. Run complete Python, Java, and cross-platform representative-repository release smoke.
 4. Produce preview.2 artifact, SBOM, signature, provenance, checksum, and publication evidence.
@@ -121,7 +121,7 @@ The merged `main` binary exposes `deprail fix apply`. On Darwin arm64, an explic
 - finding transition `resolved`;
 - cleanup status `succeeded`.
 
-Package-manager lifecycle scripts are not inferred or executed. The complete release gate remains open for the blockers listed above.
+Package-manager lifecycle scripts are not inferred or executed. The repository-local release workflows are not the authoritative publication path for this release; the complete release gate remains open for the release-binded CI and the blockers listed above.
 
 ## Decision record
 

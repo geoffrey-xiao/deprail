@@ -127,6 +127,19 @@ func TestValidateCommandWorkspaceCoversAuthorizedPaths(t *testing.T) {
 	}
 }
 
+func TestValidateVerificationCommandsRejectsShellExecution(t *testing.T) {
+	tests := []Verification{
+		{ID: "shell", Command: Command{Executable: "sh", Arguments: []string{"-c", "touch pwned"}, WorkingDirectory: "."}},
+		{ID: "flag", Command: Command{Executable: "node", Arguments: []string{"-c", "process.exit(0)"}, WorkingDirectory: "."}},
+		{ID: "escape", Command: Command{Executable: "node", Arguments: nil, WorkingDirectory: "../outside"}},
+	}
+	for _, verification := range tests {
+		if err := ValidateVerificationCommands([]Verification{verification}); err == nil {
+			t.Fatalf("verification %#v was accepted", verification)
+		}
+	}
+}
+
 func TestValidateAcceptsExplicitNoRecommendation(t *testing.T) {
 	plan := testPlan()
 	plan.Recommendation = nil

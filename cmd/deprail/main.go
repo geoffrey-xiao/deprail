@@ -306,11 +306,27 @@ func runFixPlan(args []string, stdout, stderr io.Writer) int {
 	finding := flags.String("finding", "", "finding stable key")
 	root := flags.String("root", "", "repository root")
 	repositoryState := flags.String("repository-state", "", "current repository state")
+	verificationPath := flags.String("verification", "", "explicit verification command JSON")
 	output := flags.String("output", "", "write JSON plan atomically to an external file")
 	format := flags.String("format", "terminal", "output format: terminal or json")
 	if err := flags.Parse(args); err != nil || *report == "" || *finding == "" || (*format != "terminal" && *format != "json") || len(flags.Args()) != 0 {
-		writeCLIError(stderr, "CONFIG_INVALID", "fix plan requires --report and --finding and supports terminal or json output", "fix plan")
+		writeCLIError(stderr, "CONFIG_INVALID", "fix plan requires --report and --finding and supports --verification, terminal or json output", "fix plan")
 		return 2
+	}
+	var explicitVerification []remediation.Verification
+	if *verificationPath != "" {
+		input, err := loadApplyJSON[struct {
+			Verification []remediation.Verification `json:"verification"`
+		}](*verificationPath)
+		if err != nil {
+			writeCLIError(stderr, "CONFIG_INVALID", err.Error(), "verification")
+			return 2
+		}
+		explicitVerification = input.Verification
+		if err := remediation.ValidateVerificationCommands(explicitVerification); err != nil {
+			writeCLIError(stderr, "CONFIG_INVALID", err.Error(), "verification")
+			return 2
+		}
 	}
 	if *output != "" {
 		if err := app.ValidatePlanOutput(*report, *output, *root); err != nil && errors.Is(err, remediation.ErrUnsafePath) {
@@ -319,7 +335,7 @@ func runFixPlan(args []string, stdout, stderr io.Writer) int {
 		}
 	}
 	writeStartNotice(*format, stderr, "Planning remediation...")
-	plan, err := app.Plan(context.Background(), *report, *finding, *root, app.PlanOptions{CurrentRepositoryState: *repositoryState})
+	plan, err := app.Plan(context.Background(), *report, *finding, *root, app.PlanOptions{CurrentRepositoryState: *repositoryState, Verification: explicitVerification})
 	if err != nil {
 		var reportErr *remediation.ReportError
 		if errors.As(err, &reportErr) {

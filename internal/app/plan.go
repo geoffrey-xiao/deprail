@@ -27,6 +27,7 @@ var (
 type PlanOptions struct {
 	CurrentRepositoryState string
 	Adapters               []remediation.PlanningAdapter
+	Verification           []remediation.Verification
 }
 
 func Plan(ctx context.Context, reportPath, findingKey, repositoryRoot string, options PlanOptions) (remediation.Plan, error) {
@@ -130,6 +131,13 @@ func Plan(ctx context.Context, reportPath, findingKey, repositoryRoot string, op
 	if err := remediation.ValidatePlanningEvidence(evidence); err != nil {
 		return remediation.Plan{}, err
 	}
+	verification := evidence.Verification
+	if options.Verification != nil {
+		if err := remediation.ValidateVerificationCommands(options.Verification); err != nil {
+			return remediation.Plan{}, err
+		}
+		verification = options.Verification
+	}
 	canonicalReport := report
 	remediation.CanonicalizeReport(&canonicalReport)
 	canonicalData, err := json.Marshal(canonicalReport)
@@ -137,7 +145,7 @@ func Plan(ctx context.Context, reportPath, findingKey, repositoryRoot string, op
 		return remediation.Plan{}, fmt.Errorf("canonicalize normalized scan report: %w", err)
 	}
 	reportDigest := sha256.Sum256(canonicalData)
-	plan := remediation.Plan{SchemaVersion: remediation.SchemaVersion, CreatedFrom: remediation.CreatedFrom{ReportDigest: hex.EncodeToString(reportDigest[:]), SourceScanID: resolved.Report.SourceScanID, Scanner: "osv-scanner", RepositoryState: resolved.Report.RepositoryState}, RepositoryIdentity: request.Repository, WorkspaceIdentity: request.Workspace, FindingIdentity: request.Finding, Component: request.Component, CurrentState: remediation.CurrentState{Direct: directCandidate(evidence), Manifest: firstFile(evidence, "manifest"), Lockfile: firstFile(evidence, "lockfile"), Vulnerable: true}, Candidates: evidence.Candidates, AffectedFiles: evidence.AffectedFiles, Commands: evidence.Commands, Risks: evidence.Risks, Assumptions: evidence.Assumptions, Verification: evidence.Verification, Rollback: remediation.Rollback{Steps: []string{"restore manifest and lockfile changes"}}, Provenance: remediation.Provenance{ArtifactDigests: resolved.Report.ArtifactDigests, Sources: []string{"normalized-scan-report", adapter.Name()}}}
+	plan := remediation.Plan{SchemaVersion: remediation.SchemaVersion, CreatedFrom: remediation.CreatedFrom{ReportDigest: hex.EncodeToString(reportDigest[:]), SourceScanID: resolved.Report.SourceScanID, Scanner: "osv-scanner", RepositoryState: resolved.Report.RepositoryState}, RepositoryIdentity: request.Repository, WorkspaceIdentity: request.Workspace, FindingIdentity: request.Finding, Component: request.Component, CurrentState: remediation.CurrentState{Direct: directCandidate(evidence), Manifest: firstFile(evidence, "manifest"), Lockfile: firstFile(evidence, "lockfile"), Vulnerable: true}, Candidates: evidence.Candidates, AffectedFiles: evidence.AffectedFiles, Commands: evidence.Commands, Risks: evidence.Risks, Assumptions: evidence.Assumptions, Verification: verification, Rollback: remediation.Rollback{Steps: []string{"restore manifest and lockfile changes"}}, Provenance: remediation.Provenance{ArtifactDigests: resolved.Report.ArtifactDigests, Sources: []string{"normalized-scan-report", adapter.Name()}}}
 	plan.Canonicalize()
 	plan.PlanID = remediation.StablePlanID(plan)
 	if err := plan.Validate(); err != nil {

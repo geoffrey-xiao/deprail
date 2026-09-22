@@ -4,11 +4,11 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
-	"sort"
-	"time"
-
 	"github.com/geoffrey-xiao/deprail/internal/adapter"
 	"github.com/geoffrey-xiao/deprail/internal/process"
+	"path/filepath"
+	"sort"
+	"time"
 )
 
 type Scanner struct {
@@ -46,7 +46,16 @@ func (s Scanner) Execute(ctx context.Context, plan adapter.Plan) (adapter.RawRes
 	}
 	target := plan.Targets[0]
 	args := append([]string{}, s.Args...)
-	args = append(args, "scan", "source", "--format", "json", target.RelativePath)
+	args = append(args, "scan", "source", "--format", "json")
+	lockfile, lockfileErr := targetLockfile(s.Dir, target)
+	if lockfileErr != nil {
+		return adapter.RawResult{}, lockfileErr
+	}
+	if lockfile != "" {
+		args = append(args, "--lockfile", lockfile)
+	} else {
+		args = append(args, target.RelativePath)
+	}
 	result, err := process.Run(ctx, process.Request{Path: s.Path, Args: args, Dir: s.Dir, Timeout: s.Timeout, OutputCap: s.OutputCap})
 	if err != nil {
 		raw := adapter.RawResult{Stdout: result.Stdout, Stderr: result.Stderr, ExitCode: result.ExitCode}
@@ -57,6 +66,56 @@ func (s Scanner) Execute(ctx context.Context, plan adapter.Plan) (adapter.RawRes
 		return raw, processToAdapterError(err)
 	}
 	return adapter.RawResult{Stdout: result.Stdout, Stderr: result.Stderr, ExitCode: result.ExitCode}, nil
+}
+
+func targetLockfile(root string, target adapter.Target) (string, error) {
+	for _, file := range target.PackageFiles {
+		if !isSupportedLockfile(file) {
+			continue
+		}
+		if filepath.IsAbs(filepath.FromSlash(file)) || filepath.Clean(filepath.FromSlash(file)) == ".." || filepath.IsAbs(filepath.FromSlash(target.RelativePath)) {
+			return "", &adapter.Error{Code: adapter.ErrInvalidPlan, Message: "lockfile path must be relative to the scanner root"}
+		}
+		canonicalRoot, err := filepath.EvalSymlinks(root)
+		if err != nil {
+			return "", &adapter.Error{Code: adapter.ErrInvalidPlan, Message: "scanner root is not canonical"}
+		}
+		candidate := filepath.Join(canonicalRoot, filepath.FromSlash(file))
+		relative, err := filepath.Rel(canonicalRoot, candidate)
+		if err != nil || relative == ".." || len(relative) > 3 && relative[:3] == ".."+string(filepath.Separator) {
+			return "", &adapter.Error{Code: adapter.ErrInvalidPlan, Message: "lockfile path escapes the scanner root"}
+		}
+		resolved, err := filepath.EvalSymlinks(candidate)
+		if err != nil {
+			return "", &adapter.Error{Code: adapter.ErrInvalidPlan, Message: "lockfile path cannot be resolved"}
+		}
+		resolvedRelative, err := filepath.Rel(canonicalRoot, resolved)
+		if err != nil || resolvedRelative == ".." || len(resolvedRelative) > 3 && resolvedRelative[:3] == ".."+string(filepath.Separator) {
+			return "", &adapter.Error{Code: adapter.ErrInvalidPlan, Message: "lockfile path escapes the scanner root"}
+		}
+		workspaceRelative, err := filepath.Rel(canonicalRoot, filepath.Join(canonicalRoot, filepath.FromSlash(target.RelativePath)))
+		if err != nil {
+			return "", &adapter.Error{Code: adapter.ErrInvalidPlan, Message: "workspace path is invalid"}
+		}
+		if workspaceRelative != "." {
+			lockfileRelative, err := filepath.Rel(filepath.Join(canonicalRoot, workspaceRelative), resolved)
+			if err != nil || lockfileRelative == ".." || len(lockfileRelative) > 3 && lockfileRelative[:3] == ".."+string(filepath.Separator) {
+				continue
+			}
+		}
+		return filepath.ToSlash(resolvedRelative), nil
+	}
+	return "", nil
+}
+
+func isSupportedLockfile(file string) bool {
+	switch filepath.Base(filepath.FromSlash(file)) {
+	case "package-lock.json", "npm-shrinkwrap.json", "pnpm-lock.yaml", "yarn.lock",
+		"requirements.txt", "uv.lock", "poetry.lock", "pom.xml", "gradle.lockfile":
+		return true
+	default:
+		return false
+	}
 }
 
 type rawResult struct {

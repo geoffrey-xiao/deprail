@@ -4,6 +4,7 @@ import (
 	"context"
 	"os"
 	"path/filepath"
+	"runtime"
 	"strings"
 	"testing"
 	"time"
@@ -88,6 +89,72 @@ func TestScannerUsesV2SourceCommand(t *testing.T) {
 	}
 	if !strings.HasPrefix(string(raw.Stdout), `{"results":[]}`) {
 		t.Fatalf("stdout = %q", raw.Stdout)
+	}
+}
+
+func TestScannerUsesDetectedLockfile(t *testing.T) {
+	root := t.TempDir()
+	if err := os.WriteFile(filepath.Join(root, "package-lock.json"), []byte(`{"lockfileVersion":3}`), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	scanner := Scanner{Path: os.Args[0], Dir: root, Args: []string{"-test.run=TestScannerHelper", "mode=lockfile"}, Timeout: time.Second, OutputCap: 1024}
+	raw, err := scanner.Execute(context.Background(), adapter.Plan{Targets: []adapter.Target{{
+		WorkspaceID: "root", RelativePath: ".", Ecosystem: "npm", PackageFiles: []string{"package-lock.json", "package.json"},
+	}}})
+	if err != nil {
+		t.Fatalf("execute: %v", err)
+	}
+	if !strings.HasPrefix(string(raw.Stdout), `{"results":[]}`) {
+		t.Fatalf("stdout = %q", raw.Stdout)
+	}
+}
+
+func TestScannerRejectsEscapingLockfile(t *testing.T) {
+	root := t.TempDir()
+	scanner := Scanner{Path: "missing", Dir: root, Timeout: time.Second, OutputCap: 1024}
+	_, err := scanner.Execute(context.Background(), adapter.Plan{Targets: []adapter.Target{{
+		WorkspaceID: "root", RelativePath: ".", Ecosystem: "npm", PackageFiles: []string{"../outside/package-lock.json"},
+	}}})
+	if !adapter.IsCode(err, adapter.ErrInvalidPlan) {
+		t.Fatalf("error = %v, want invalid plan", err)
+	}
+}
+
+func TestScannerRejectsSymlinkedLockfileEscape(t *testing.T) {
+	if runtime.GOOS == "windows" {
+		t.Skip("symlink permissions vary on Windows")
+	}
+	root := t.TempDir()
+	outside := t.TempDir()
+	if err := os.WriteFile(filepath.Join(outside, "package-lock.json"), []byte(`{"lockfileVersion":3}`), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.Symlink(filepath.Join(outside, "package-lock.json"), filepath.Join(root, "package-lock.json")); err != nil {
+		t.Fatal(err)
+	}
+	scanner := Scanner{Path: "missing", Dir: root, Timeout: time.Second, OutputCap: 1024}
+	_, err := scanner.Execute(context.Background(), adapter.Plan{Targets: []adapter.Target{{
+		WorkspaceID: "root", RelativePath: ".", Ecosystem: "npm", PackageFiles: []string{"package-lock.json"},
+	}}})
+	if !adapter.IsCode(err, adapter.ErrInvalidPlan) {
+		t.Fatalf("error = %v, want invalid plan", err)
+	}
+}
+
+func TestScannerSkipsSharedRootLockfileForChildWorkspace(t *testing.T) {
+	root := t.TempDir()
+	if err := os.WriteFile(filepath.Join(root, "pnpm-lock.yaml"), []byte("lockfileVersion: 9\n"), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	lockfile, err := targetLockfile(root, adapter.Target{
+		WorkspaceID: "packages-a", RelativePath: "packages/a", Ecosystem: "npm",
+		PackageFiles: []string{"pnpm-lock.yaml", "packages/a/package.json"},
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if lockfile != "" {
+		t.Fatalf("lockfile = %q, want shared root lockfile skipped for child workspace", lockfile)
 	}
 }
 

@@ -135,6 +135,22 @@ func TestScannerHelper(t *testing.T) {
 			}
 		}
 		os.Exit(8)
+	case "lockfile":
+		want := []string{"scan", "source", "--format", "json", "--lockfile", "package-lock.json"}
+		for i := range len(os.Args) - len(want) + 1 {
+			match := true
+			for j := range want {
+				if os.Args[i+j] != want[j] {
+					match = false
+					break
+				}
+			}
+			if match {
+				_, _ = os.Stdout.WriteString(`{"results":[]}`)
+				return
+			}
+		}
+		os.Exit(8)
 	case "vulnerable":
 		_, _ = os.Stdout.WriteString(`{"results":[{"packages":[{"package":{"name":"lodash","version":"4.17.20"},"vulnerabilities":[{"id":"GHSA-test","aliases":["CVE-test"],"database_specific":{"severity":"HIGH"},"severity":[{"score":"CVSS:3.1/AV:N"}],"affected":[{"ranges":[{"events":[{"introduced":"0"},{"fixed":"4.17.21"}]}]}]}]}]}]}`)
 		os.Exit(1)

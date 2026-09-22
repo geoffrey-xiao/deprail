@@ -307,6 +307,13 @@ func runScannerHelper() {
 	}
 	targetArg := os.Args[len(os.Args)-1]
 	target := targetArg
+	for index, arg := range os.Args[1:] {
+		if arg == "--lockfile" && index+2 <= len(os.Args)-1 {
+			targetArg = os.Args[index+2]
+			target = filepath.Dir(targetArg)
+			break
+		}
+	}
 	if !filepath.IsAbs(target) {
 		target = filepath.Join(cwd, target)
 	}

@@ -29,6 +29,23 @@ func testTool(t *testing.T) string {
 	return path
 }
 
+func TestValidateCommandSpecRestrictsNodeAndAllowlist(t *testing.T) {
+	if err := ValidateCommandSpec("node", []string{"--check", "verify.js"}); err != nil {
+		t.Fatal(err)
+	}
+	for _, test := range []struct {
+		path string
+		args []string
+	}{
+		{"node", []string{"-e", "process.exit(0)"}},
+		{"node", []string{"--check", "../outside.js"}},
+		{"make", []string{"test"}},
+	} {
+		if err := ValidateCommandSpec(test.path, test.args); err == nil {
+			t.Fatalf("accepted unsafe command %q %#v", test.path, test.args)
+		}
+	}
+}
 func TestRunExecutesSelectedCommandsInWorkspace(t *testing.T) {
 	workspace := t.TempDir()
 	tool := testTool(t)

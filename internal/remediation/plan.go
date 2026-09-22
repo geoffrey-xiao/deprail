@@ -228,13 +228,8 @@ func (p Plan) Validate() error {
 			return err
 		}
 	}
-	for _, verification := range p.Verification {
-		if verification.ID == "" {
-			return errors.New("verification ID is required")
-		}
-		if err := validateCommand(verification.Command); err != nil {
-			return fmt.Errorf("verification %q: %w", verification.ID, err)
-		}
+	if err := ValidateVerificationCommands(p.Verification); err != nil {
+		return err
 	}
 	return nil
 }
@@ -395,6 +390,35 @@ func validateCommand(command Command) error {
 	}
 	if err := validateRelativePath(command.WorkingDirectory); err != nil {
 		return fmt.Errorf("command working directory: %w", err)
+	}
+	return nil
+}
+
+// ValidateVerificationCommands rejects shell-oriented commands before they enter
+// a plan. Package-manager lifecycle scripts are intentionally not inferred.
+func ValidateVerificationCommands(values []Verification) error {
+	seen := make(map[string]struct{}, len(values))
+	for _, value := range values {
+		if value.ID == "" {
+			return errors.New("verification ID is required")
+		}
+		if _, exists := seen[value.ID]; exists {
+			return fmt.Errorf("verification ID is duplicated: %q", value.ID)
+		}
+		seen[value.ID] = struct{}{}
+		if err := validateCommand(value.Command); err != nil {
+			return fmt.Errorf("verification %q: %w", value.ID, err)
+		}
+		base := strings.ToLower(path.Base(strings.ReplaceAll(value.Command.Executable, "\\", "/")))
+		switch base {
+		case "sh", "bash", "zsh", "fish", "cmd", "cmd.exe", "powershell", "powershell.exe", "pwsh", "pwsh.exe":
+			return fmt.Errorf("verification %q must not invoke a shell", value.ID)
+		}
+		for _, arg := range value.Command.Arguments {
+			if arg == "-c" || arg == "/c" || arg == "-Command" {
+				return fmt.Errorf("verification %q must not invoke a shell", value.ID)
+			}
+		}
 	}
 	return nil
 }

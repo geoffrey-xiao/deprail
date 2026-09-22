@@ -306,11 +306,21 @@ func runFixPlan(args []string, stdout, stderr io.Writer) int {
 	finding := flags.String("finding", "", "finding stable key")
 	root := flags.String("root", "", "repository root")
 	repositoryState := flags.String("repository-state", "", "current repository state")
+	verificationPath := flags.String("verification", "", "explicit verification command JSON")
 	output := flags.String("output", "", "write JSON plan atomically to an external file")
 	format := flags.String("format", "terminal", "output format: terminal or json")
 	if err := flags.Parse(args); err != nil || *report == "" || *finding == "" || (*format != "terminal" && *format != "json") || len(flags.Args()) != 0 {
-		writeCLIError(stderr, "CONFIG_INVALID", "fix plan requires --report and --finding and supports terminal or json output", "fix plan")
+		writeCLIError(stderr, "CONFIG_INVALID", "fix plan requires --report and --finding and supports --verification, terminal or json output", "fix plan")
 		return 2
+	}
+	var explicitVerification []remediation.Verification
+	if *verificationPath != "" {
+		loaded, err := loadVerificationCommands(*verificationPath)
+		if err != nil {
+			writeCLIError(stderr, "CONFIG_INVALID", err.Error(), "verification")
+			return 2
+		}
+		explicitVerification = loaded
 	}
 	if *output != "" {
 		if err := app.ValidatePlanOutput(*report, *output, *root); err != nil && errors.Is(err, remediation.ErrUnsafePath) {
@@ -319,7 +329,7 @@ func runFixPlan(args []string, stdout, stderr io.Writer) int {
 		}
 	}
 	writeStartNotice(*format, stderr, "Planning remediation...")
-	plan, err := app.Plan(context.Background(), *report, *finding, *root, app.PlanOptions{CurrentRepositoryState: *repositoryState})
+	plan, err := app.Plan(context.Background(), *report, *finding, *root, app.PlanOptions{CurrentRepositoryState: *repositoryState, Verification: explicitVerification})
 	if err != nil {
 		var reportErr *remediation.ReportError
 		if errors.As(err, &reportErr) {
@@ -360,11 +370,31 @@ func runFixPlan(args []string, stdout, stderr io.Writer) int {
 	} else {
 		outputErr = presenter.WritePlanTerminal(stdout, plan)
 	}
+
 	if outputErr != nil {
 		writeCLIError(stderr, "OUTPUT_WRITE_FAILED", outputErr.Error(), "stdout")
 		return 3
 	}
 	return 0
+}
+func loadVerificationCommands(path string) ([]remediation.Verification, error) {
+	file, err := os.Open(filepath.Clean(path))
+	if err != nil {
+		return nil, err
+	}
+	defer file.Close()
+	var input struct {
+		Verification []remediation.Verification `json:"verification"`
+	}
+	decoder := json.NewDecoder(io.LimitReader(file, 16<<20))
+	decoder.DisallowUnknownFields()
+	if err := decoder.Decode(&input); err != nil {
+		return nil, err
+	}
+	if len(input.Verification) == 0 {
+		return nil, errors.New("verification input must contain at least one command")
+	}
+	return input.Verification, nil
 }
 
 func runDoctor(args []string, stdout, stderr io.Writer) int {

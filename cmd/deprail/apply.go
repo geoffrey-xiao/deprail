@@ -78,6 +78,12 @@ func runFixApplyContext(ctx context.Context, args []string, stdout, stderr io.Wr
 		writeCLIError(stderr, "PLAN_INVALID", err.Error(), "plan")
 		return 3
 	}
+	for _, item := range plan.Verification {
+		if err := verification.ValidateCommandSpec(item.Command.Executable, item.Command.Arguments); err != nil {
+			writeCLIError(stderr, "PLAN_INVALID", fmt.Sprintf("verification %q: %v", item.ID, err), "plan")
+			return 3
+		}
+	}
 	approval, err := loadApplyJSON[remediation.Approval](*approvalPath)
 	if err != nil {
 		writeCLIError(stderr, "APPROVAL_INVALID", err.Error(), "approval")

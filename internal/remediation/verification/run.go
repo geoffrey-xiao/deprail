@@ -20,7 +20,7 @@ type Result struct {
 
 var supportedTools = map[string]struct{}{
 	"gradle": {}, "gradle.bat": {}, "mvn": {}, "mvn.cmd": {},
-	"npm": {}, "npm.cmd": {}, "npm.exe": {}, "pip": {}, "pip3": {}, "pip.exe": {},
+	"node": {}, "node.exe": {}, "npm": {}, "npm.cmd": {}, "npm.exe": {}, "pip": {}, "pip3": {}, "pip.exe": {},
 	"pnpm": {}, "pnpm.cmd": {}, "python": {}, "python3": {}, "python.exe": {},
 	"uv": {}, "uv.exe": {}, "yarn": {}, "yarn.cmd": {},
 }
@@ -30,6 +30,24 @@ var ErrNoCommands = errors.New("no verification commands are available")
 func trustedTool(path string) bool {
 	_, ok := supportedTools[strings.ToLower(filepath.Base(path))]
 	return ok
+}
+
+// ValidateCommandSpec validates a plan-level command before approval.
+func ValidateCommandSpec(path string, args []string) error {
+	base := strings.ToLower(filepath.Base(path))
+	if _, ok := supportedTools[base]; !ok {
+		return fmt.Errorf("unsupported verification executable %q", path)
+	}
+	if base == "node" || base == "node.exe" {
+		if len(args) != 2 || args[0] != "--check" || filepath.IsAbs(args[1]) {
+			return errors.New("node verification must be exactly: node --check <relative-file>")
+		}
+		clean := filepath.Clean(args[1])
+		if clean != args[1] || clean == "." || clean == ".." || strings.HasPrefix(clean, ".."+string(filepath.Separator)) {
+			return errors.New("node verification input must remain repository-relative")
+		}
+	}
+	return nil
 }
 
 // Run executes selected verification commands in the isolated workspace. Results

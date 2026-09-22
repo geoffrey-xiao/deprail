@@ -104,21 +104,22 @@ Unchecked rows are open gates, not implied passes. This record must be updated f
 
 ## Current blockers
 
-1. Implement and review user-facing `deprail fix apply` under #332.
+1. Review and merge explicit verification-command support under #332/#362.
 2. Repair and validate the disabled release workflow before preview.2 publication.
 3. Name an independent architecture/security reviewer.
-4. Run complete manual representative-repository and cross-platform release smoke.
+4. Run complete Python, Java, and cross-platform representative-repository release smoke.
 5. Produce preview.2 artifact, SBOM, signature, provenance, checksum, and publication evidence.
 
 ## Manual command-surface observation
 
-On the readiness branch, running:
+The current implementation exposes `deprail fix apply` and accepts explicit verification commands through `fix plan --verification <path>`. On Darwin arm64, a direct `node --check verify.js` command was approved and executed in the isolated worktree:
 
-```bash
-"$BIN" fix apply --help
-```
+- real apply exit `0`;
+- verification and rescan complete;
+- finding transition `resolved`;
+- cleanup status `succeeded`.
 
-returned exit `2` with `CONFIG_INVALID: fix: fix requires the plan subcommand`. This confirms the current reviewed binary exposes `fix plan` but not user-facing `fix apply`. The apply-flow section remains `NOT AVAILABLE / NOT VERIFIED`; no apply release gate is passed.
+Package-manager lifecycle scripts are not inferred or executed. This is evidence for the explicit-command path only; the full release gate remains open.
 
 ## Decision record
 

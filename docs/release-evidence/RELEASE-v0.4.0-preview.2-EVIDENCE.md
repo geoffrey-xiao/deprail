@@ -24,8 +24,9 @@ Unchecked rows are open gates, not implied passes. This record must be updated f
 | Rollback, discard, cleanup evidence | #345 | #353 | Merged; issue closed | Linux/macOS/Windows CI passed; structured cleanup result |
 | Apply evidence and deterministic output | #347 | #354 | Merged; issue closed | Linux/macOS/Windows CI passed; atomic redaction-safe store |
 | Security and cross-platform apply coverage | #346 | #355 | Merged; issue closed | Linux/macOS/Windows CI passed; shell-metacharacter coverage |
-| OSV-Scanner 2.6.0 lockfile compatibility and path boundaries | #356 / #379 | #378 | Merged as `4bbb39d`; issue closed | Linux/macOS/Windows CI passed; lockfile, traversal, symlink, and shared-workspace regression coverage |
-| User-facing `deprail fix apply` orchestration | #332 | — | Open; Project Todo | Required before preview.2 publication |
+| OSV-Scanner 2.6.0 lockfile compatibility and path boundaries | #356 / #379 | #378 | Merged as `89c1ab7`; issue closed | Linux/macOS/Windows CI passed; lockfile, traversal, symlink, and shared-workspace regression coverage |
+| Explicit approved verification commands | #381 | #382 | Merged as `a38d3e8`; issue closed | Linux/macOS/Windows CI passed; shell/path/input-boundary coverage; Darwin explicit apply smoke passed |
+| User-facing `deprail fix apply` orchestration | #332 | #359, #382 | Parent closed; verification follow-up merged | Isolated apply, evidence, and explicit verification coverage; complete release smoke still pending |
 
 ## Release identity
 
@@ -104,21 +105,23 @@ Unchecked rows are open gates, not implied passes. This record must be updated f
 
 ## Current blockers
 
-1. Implement and review user-facing `deprail fix apply` under #332.
-2. Repair and validate the disabled release workflow before preview.2 publication.
-3. Name an independent architecture/security reviewer.
-4. Run complete manual representative-repository and cross-platform release smoke.
-5. Produce preview.2 artifact, SBOM, signature, provenance, checksum, and publication evidence.
+1. Repair and validate the disabled release workflow before preview.2 publication.
+2. Name an independent architecture/security reviewer.
+3. Run complete Python, Java, and cross-platform representative-repository release smoke.
+4. Produce preview.2 artifact, SBOM, signature, provenance, checksum, and publication evidence.
 
 ## Manual command-surface observation
 
-On the readiness branch, running:
+The merged `main` binary exposes `deprail fix apply`. On Darwin arm64, an explicit `node --check verify.js` command was approved and executed in the isolated worktree:
 
-```bash
-"$BIN" fix apply --help
-```
+- `go test ./...` — exit `0`;
+- `fix apply --help` — exit `0`;
+- real apply — exit `0`, `outcome: applied`;
+- verification and rescan complete;
+- finding transition `resolved`;
+- cleanup status `succeeded`.
 
-returned exit `2` with `CONFIG_INVALID: fix: fix requires the plan subcommand`. This confirms the current reviewed binary exposes `fix plan` but not user-facing `fix apply`. The apply-flow section remains `NOT AVAILABLE / NOT VERIFIED`; no apply release gate is passed.
+Package-manager lifecycle scripts are not inferred or executed. The complete release gate remains open for the blockers listed above.
 
 ## Decision record
 

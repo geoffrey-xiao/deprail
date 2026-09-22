@@ -88,7 +88,7 @@ func (Adapter) Plan(ctx context.Context, request remediation.PlanningRequest) (r
 		return remediation.PlanningEvidence{State: remediation.AdapterUnknown, Reason: "no non-vulnerable candidate version is available in retained evidence", Candidates: candidates, AffectedFiles: files, Commands: []remediation.Command{}, Risks: risks, Assumptions: []remediation.Assumption{}, Verification: []remediation.Verification{}}, nil
 	}
 	command := remediation.Command{Executable: manager, Arguments: commandArguments(manager, owner, candidates), WorkingDirectory: request.Workspace.Path}
-	return remediation.PlanningEvidence{State: remediation.AdapterSupported, Candidates: candidates, AffectedFiles: files, Commands: []remediation.Command{command}, Risks: risks, Assumptions: []remediation.Assumption{}, Verification: verificationCommands(manifest, request.Workspace.Path)}, nil
+	return remediation.PlanningEvidence{State: remediation.AdapterSupported, Candidates: candidates, AffectedFiles: files, Commands: []remediation.Command{command}, Risks: risks, Assumptions: []remediation.Assumption{}, Verification: []remediation.Verification{}}, nil
 }
 
 type packageManifest struct {
@@ -96,7 +96,6 @@ type packageManifest struct {
 	DevDependencies      map[string]string `json:"devDependencies"`
 	PeerDependencies     map[string]string `json:"peerDependencies"`
 	OptionalDependencies map[string]string `json:"optionalDependencies"`
-	Scripts              map[string]string `json:"scripts"`
 }
 
 func readManifest(path string) (packageManifest, error) {
@@ -283,17 +282,6 @@ func commandArguments(manager, name string, candidates []remediation.Candidate) 
 	default:
 		return []string{"install", spec}
 	}
-}
-
-func verificationCommands(manifest packageManifest, workspace string) []remediation.Verification {
-	if strings.TrimSpace(manifest.Scripts["test"]) == "" {
-		return []remediation.Verification{}
-	}
-	return []remediation.Verification{{
-		ID:      "npm-test",
-		Command: remediation.Command{Executable: "npm", Arguments: []string{"test"}, WorkingDirectory: workspace},
-		Reason:  "run the workspace test script after dependency mutation",
-	}}
 }
 
 func emptyEvidence(state remediation.AdapterState, reason string) remediation.PlanningEvidence {

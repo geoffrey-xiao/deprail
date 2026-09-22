@@ -4,11 +4,11 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
-	"sort"
-	"time"
-
 	"github.com/geoffrey-xiao/deprail/internal/adapter"
 	"github.com/geoffrey-xiao/deprail/internal/process"
+	"path/filepath"
+	"sort"
+	"time"
 )
 
 type Scanner struct {
@@ -46,7 +46,12 @@ func (s Scanner) Execute(ctx context.Context, plan adapter.Plan) (adapter.RawRes
 	}
 	target := plan.Targets[0]
 	args := append([]string{}, s.Args...)
-	args = append(args, "scan", "source", "--format", "json", target.RelativePath)
+	args = append(args, "scan", "source", "--format", "json")
+	if lockfile := targetLockfile(target); lockfile != "" {
+		args = append(args, "--lockfile", lockfile)
+	} else {
+		args = append(args, target.RelativePath)
+	}
 	result, err := process.Run(ctx, process.Request{Path: s.Path, Args: args, Dir: s.Dir, Timeout: s.Timeout, OutputCap: s.OutputCap})
 	if err != nil {
 		raw := adapter.RawResult{Stdout: result.Stdout, Stderr: result.Stderr, ExitCode: result.ExitCode}
@@ -57,6 +62,17 @@ func (s Scanner) Execute(ctx context.Context, plan adapter.Plan) (adapter.RawRes
 		return raw, processToAdapterError(err)
 	}
 	return adapter.RawResult{Stdout: result.Stdout, Stderr: result.Stderr, ExitCode: result.ExitCode}, nil
+}
+
+func targetLockfile(target adapter.Target) string {
+	for _, file := range target.PackageFiles {
+		switch filepath.Base(filepath.FromSlash(file)) {
+		case "package-lock.json", "npm-shrinkwrap.json", "pnpm-lock.yaml", "yarn.lock",
+			"requirements.txt", "uv.lock", "poetry.lock", "pom.xml", "gradle.lockfile":
+			return filepath.ToSlash(file)
+		}
+	}
+	return ""
 }
 
 type rawResult struct {

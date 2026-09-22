@@ -91,6 +91,19 @@ func TestScannerUsesV2SourceCommand(t *testing.T) {
 	}
 }
 
+func TestScannerUsesDetectedLockfile(t *testing.T) {
+	scanner := Scanner{Path: os.Args[0], Args: []string{"-test.run=TestScannerHelper", "mode=lockfile"}, Timeout: time.Second, OutputCap: 1024}
+	raw, err := scanner.Execute(context.Background(), adapter.Plan{Targets: []adapter.Target{{
+		WorkspaceID: "root", RelativePath: ".", Ecosystem: "npm", PackageFiles: []string{"package-lock.json", "package.json"},
+	}}})
+	if err != nil {
+		t.Fatalf("execute: %v", err)
+	}
+	if !strings.HasPrefix(string(raw.Stdout), `{"results":[]}`) {
+		t.Fatalf("stdout = %q", raw.Stdout)
+	}
+}
+
 func TestScannerExecutesFromRequestedRoot(t *testing.T) {
 	root := t.TempDir()
 	canonicalRoot, err := filepath.EvalSymlinks(root)

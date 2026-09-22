@@ -23,7 +23,7 @@ Unchecked rows are open gates, not implied passes. This record must be updated f
 | Finding transition classification | #339 | #352 | Merged; issue closed | Linux/macOS/Windows CI passed; unchanged/residual distinction |
 | Rollback, discard, cleanup evidence | #345 | #353 | Merged; issue closed | Linux/macOS/Windows CI passed; structured cleanup result |
 | Apply evidence and deterministic output | #347 | #354 | Merged; issue closed | Linux/macOS/Windows CI passed; atomic redaction-safe store |
-| Security and cross-platform apply coverage | #346 | #355 | Merged; issue closed | Linux/macOS/Windows CI passed; shell-metacharacter coverage |
+| OSV-Scanner 2.6.0 lockfile compatibility and path boundaries | #356 / #379 | #378 | Merged as `4bbb39d`; issue closed | Linux/macOS/Windows CI passed; lockfile, traversal, symlink, and shared-workspace regression coverage |
 | User-facing `deprail fix apply` orchestration | #332 | — | Open; Project Todo | Required before preview.2 publication |
 
 ## Release identity
@@ -108,6 +108,16 @@ Unchecked rows are open gates, not implied passes. This record must be updated f
 3. Name an independent architecture/security reviewer.
 4. Run complete manual representative-repository and cross-platform release smoke.
 5. Produce preview.2 artifact, SBOM, signature, provenance, checksum, and publication evidence.
+
+## Manual command-surface observation
+
+On the readiness branch, running:
+
+```bash
+"$BIN" fix apply --help
+```
+
+returned exit `2` with `CONFIG_INVALID: fix: fix requires the plan subcommand`. This confirms the current reviewed binary exposes `fix plan` but not user-facing `fix apply`. The apply-flow section remains `NOT AVAILABLE / NOT VERIFIED`; no apply release gate is passed.
 
 ## Decision record
 

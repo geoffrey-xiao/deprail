@@ -45,6 +45,9 @@ func TestJavaScriptAdapterPlansDeterministicallyFromOfflineEvidence(t *testing.T
 	if first.Commands[0].Executable != "npm" || first.Commands[0].WorkingDirectory != "." || first.Commands[0].Arguments[0] != "install" {
 		t.Fatalf("commands = %#v", first.Commands)
 	}
+	if len(first.Verification) != 1 || first.Verification[0].ID != "npm-test" || first.Verification[0].Command.Executable != "npm" || first.Verification[0].Command.Arguments[0] != "test" {
+		t.Fatalf("verification = %#v", first.Verification)
+	}
 	second, err := adapter.Plan(context.Background(), request)
 	if err != nil {
 		t.Fatal(err)

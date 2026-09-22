@@ -33,7 +33,8 @@ func TestPlanBuildsReadOnlyJavaScriptPlanFromReport(t *testing.T) {
 	if err := os.WriteFile(path, data, 0o600); err != nil {
 		t.Fatal(err)
 	}
-	plan, err := Plan(context.Background(), path, "finding-1", root, PlanOptions{})
+	explicit := []remediation.Verification{{ID: "node-check", Command: remediation.Command{Executable: "node", Arguments: []string{"--check", "verify.js"}, WorkingDirectory: "."}}}
+	plan, err := Plan(context.Background(), path, "finding-1", root, PlanOptions{Verification: explicit})
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -42,6 +43,9 @@ func TestPlanBuildsReadOnlyJavaScriptPlanFromReport(t *testing.T) {
 	}
 	if plan.Component.Name != "lodash" || len(plan.Commands) != 1 || plan.Commands[0].WorkingDirectory != plan.WorkspaceIdentity.Path {
 		t.Fatalf("plan = %#v", plan)
+	}
+	if len(plan.Verification) != 1 || plan.Verification[0].ID != "node-check" {
+		t.Fatalf("verification = %#v", plan.Verification)
 	}
 }
 

@@ -24,7 +24,7 @@ Unchecked rows are open gates, not implied passes. This record must be updated f
 | Rollback, discard, cleanup evidence | #345 | #353 | Merged; issue closed | Linux/macOS/Windows CI passed; structured cleanup result |
 | Apply evidence and deterministic output | #347 | #354 | Merged; issue closed | Linux/macOS/Windows CI passed; atomic redaction-safe store |
 | Security and cross-platform apply coverage | #346 | #355 | Merged; issue closed | Linux/macOS/Windows CI passed; shell-metacharacter coverage |
-| OSV-Scanner 2.6.0 lockfile compatibility and path boundaries | #356 / #379 | #378 | Merged as `4bbb39d`; issue closed | Linux/macOS/Windows CI passed; lockfile, traversal, symlink, and shared-workspace regression coverage |
+| OSV-Scanner 2.6.0 lockfile compatibility and path boundaries | #356 / #379 | #378 | Merged as `89c1ab7`; issue closed | Linux/macOS/Windows CI passed; lockfile, traversal, symlink, and shared-workspace regression coverage |
 | User-facing `deprail fix apply` orchestration | #332 | — | Open; Project Todo | Required before preview.2 publication |
 
 ## Release identity

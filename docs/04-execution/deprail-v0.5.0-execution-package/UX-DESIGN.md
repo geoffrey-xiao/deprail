@@ -19,6 +19,28 @@ User preference: shadcn/ui style. Proposed characteristics, pending design revie
 
 This brief does not select package versions, copy generated components, or approve a dependency. The design gate must compare using shadcn/ui source components, compatible accessible primitives, or a small project-owned layer against React/Vite embedding, license, maintenance, build, and accessibility needs.
 
+### Draft visual proposal (unapproved)
+
+PNG previews and editable SVG sources:
+
+- Scan history, desktop: [`history-desktop.png`](design/ux/history-desktop.png) ([SVG](design/ux/history-desktop.svg)).
+- Scan history, narrow layout: [`history-mobile.png`](design/ux/history-mobile.png) ([SVG](design/ux/history-mobile.svg)).
+- Scan detail, desktop: [`scan-detail-desktop.png`](design/ux/scan-detail-desktop.png) ([SVG](design/ux/scan-detail-desktop.svg)).
+- Loading, empty, and recovery states: [`state-patterns.png`](design/ux/state-patterns.png) ([SVG](design/ux/state-patterns.svg)).
+
+These are proposal artifacts, not accepted schemas or implementation authorization. All names, IDs, counts, timestamps, and finding examples are synthetic. Routes, exact response fields, ordering, page size, pagination behavior, finding-detail depth, and component dependencies remain open for the API/UX review.
+
+- Proposed client navigation: `/history` and `/history/{historyEntryID}`; the history entry remains addressable, and both the visible back link and browser Back return to the list. This does not define an API route.
+- Desktop history remains a flat scan-entry table with repository context in the first column; narrow layouts use stacked scan cards. Each row/card is one link to `/history/{historyEntryID}`. The repository label and a visible focus treatment expose the detail navigation; the visible back link and browser Back return to history.
+- A project-level expandable table was considered but deferred for v0.5. It could help users browse repeated scans per repository, but FR-502 and the proposed `GET /api/v1/scans` page scan entries; no stable project-group identity or bounded group/child-pagination contract is approved. Grouping risks splitting a project’s scans across pages and adds nested-table keyboard/screen-reader complexity. Revisit only with user evidence and an explicit data/API contract update.
+- The detail proposal places operation outcome before report completeness and keeps workspaces, findings, provenance, and diagnostics distinct. The cancelled/complete example is intentionally adversarial: `complete` describes the returned report, not successful completion of the operation.
+- The state board distinguishes loading, empty history, store unavailable, incompatible/corrupt storage, missing or mismatched raw artifacts, and stale selection. Retry is shown only for a safe read; no destructive recovery control is proposed.
+- The mockups use system UI fonts and local vector shapes only; no remote fonts, icons, or images are required. The shadcn/ui direction remains a visual reference, not a dependency or component-source decision.
+- Repository-controlled strings must render as inert text. Review cases include a label such as `<script>alert(1)</script>` and a long path; text wraps or truncates without changing meaning or causing horizontal page overflow.
+
+Exact color tokens and dependency/build decisions require owner and independent UX/security review. Contrast, keyboard, screen-reader, responsive, and reduced-motion acceptance remain to be verified on the eventual implementation surface.
+
+
 ## 3. Information architecture (proposal)
 
 1. **Scan History** — primary route; paginated saved scans, status and summary filters only if justified by user research.
@@ -97,4 +119,4 @@ The design reviewer must attach or link:
 - Representative untrusted-data rendering examples.
 - Owner and independent reviewer acceptance, separately recorded.
 
-No design files, screenshots, or prototypes are asserted complete by this contract.
+These linked PNG/SVG mockups are first-pass design drafts; they do not complete the UX evidence package until the response/state map, component and dependency decisions, accessibility review, owner acceptance, and independent review are recorded.

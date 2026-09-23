@@ -1,0 +1,120 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1440" height="1200" viewBox="0 0 1440 1200" role="img" aria-labelledby="title desc">
+  <title id="title">DepRail scan detail — desktop draft</title>
+  <desc id="desc">Illustrative scan detail page showing a cancelled operation separately from a complete returned report. All records are synthetic.</desc>
+  <defs>
+    <style>
+      text { font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; fill: #111827; }
+      .muted { fill: #475569; }
+      .soft { fill: #64748b; }
+      .small { font-size: 13px; }
+      .body { font-size: 15px; }
+      .label { font-size: 12px; font-weight: 650; letter-spacing: .04em; }
+      .heading { font-size: 30px; font-weight: 700; letter-spacing: -.02em; }
+      .border { stroke: #dbe2ea; stroke-width: 1; }
+    </style>
+  </defs>
+  <rect width="1440" height="1200" fill="#f6f8fb"/>
+  <rect width="1440" height="72" fill="#ffffff"/>
+  <path d="M0 71.5H1440" stroke="#e2e8f0"/>
+  <rect x="144" y="16" width="40" height="40" rx="12" fill="#14243a"/>
+  <path d="M164 24l11 5v8c0 8-5 13-11 16-6-3-11-8-11-16v-8z" fill="none" stroke="#ffffff" stroke-width="2"/>
+  <path d="M159 37l4 4 7-8" fill="none" stroke="#93c5fd" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+  <text x="196" y="39" font-size="18" font-weight="720">DepRail</text>
+  <text x="266" y="39" class="small muted">Local console</text>
+  <rect x="1115" y="22" width="142" height="28" rx="14" fill="#eff6ff" stroke="#bfdbfe"/>
+  <circle cx="1132" cy="36" r="4" fill="#1d4ed8"/>
+  <text x="1144" y="40" font-size="12" font-weight="650" fill="#1e40af">LOCAL ONLY</text>
+  <text x="1282" y="40" class="small muted">On this device</text>
+
+  <g transform="translate(160 112)">
+    <text y="0" class="small muted">‹  Back to scan history</text>
+    <text y="57" class="heading">atlas-api</text>
+    <text y="84" class="body muted">History entry h_01JQ8W9K2M  ·  source scan s_84b2…</text>
+    <text x="1120" y="57" text-anchor="end" class="small muted">Illustrative data</text>
+
+    <rect x="0" y="112" width="548" height="126" rx="12" fill="#ffffff" stroke="#dbe2ea"/>
+    <text x="24" y="142" class="label muted">OPERATION OUTCOME</text>
+    <rect x="24" y="158" width="114" height="32" rx="16" fill="#fef3c7"/>
+    <circle cx="43" cy="174" r="5" fill="#92400e"/>
+    <text x="57" y="179" font-size="15" font-weight="680" fill="#78350f">Cancelled</text>
+    <text x="24" y="216" class="small muted">Execution outcome is recorded as Cancelled.</text>
+
+    <rect x="572" y="112" width="548" height="126" rx="12" fill="#ffffff" stroke="#dbe2ea"/>
+    <text x="596" y="142" class="label muted">REPORT COMPLETENESS</text>
+    <rect x="596" y="158" width="105" height="32" rx="16" fill="#dcfce7"/>
+    <circle cx="615" cy="174" r="5" fill="#166534"/>
+    <text x="629" y="179" font-size="15" font-weight="680" fill="#14532d">Complete</text>
+    <text x="596" y="216" class="small muted">Status from the returned report; separate from outcome.</text>
+
+    <rect x="0" y="254" width="1120" height="62" rx="10" fill="#fffbeb" stroke="#fcd34d"/>
+    <circle cx="27" cy="285" r="10" fill="#fef3c7" stroke="#b45309"/>
+    <text x="27" y="290" text-anchor="middle" font-size="14" font-weight="750" fill="#78350f">!</text>
+    <text x="48" y="279" class="body" font-weight="680" fill="#78350f">Cancelled operation</text>
+    <text x="48" y="300" class="small" fill="#78350f">The report's completeness is preserved; it does not change the operation outcome to Completed.</text>
+
+    <g transform="translate(0 338)">
+      <rect x="0" y="0" width="352" height="82" rx="10" fill="#ffffff" stroke="#dbe2ea"/>
+      <text x="20" y="29" class="label muted">FINDINGS</text>
+      <text x="20" y="61" font-size="25" font-weight="700">12</text>
+      <text x="81" y="60" class="small muted">in returned report</text>
+      <rect x="368" y="0" width="352" height="82" rx="10" fill="#ffffff" stroke="#dbe2ea"/>
+      <text x="388" y="29" class="label muted">WORKSPACES</text>
+      <text x="388" y="61" font-size="25" font-weight="700">2</text>
+      <text x="425" y="60" class="small muted">reported scopes</text>
+      <rect x="736" y="0" width="384" height="82" rx="10" fill="#ffffff" stroke="#dbe2ea"/>
+      <text x="756" y="29" class="label muted">STARTED</text>
+      <text x="756" y="59" class="body" font-weight="650">Apr 17, 2026 · 10:42 AM</text>
+    </g>
+
+    <rect x="0" y="442" width="728" height="438" rx="12" fill="#ffffff" stroke="#dbe2ea"/>
+    <text x="24" y="478" font-size="17" font-weight="680">Findings</text>
+    <text x="24" y="502" class="small muted">Stable identifiers and package details from the saved report.</text>
+    <rect x="1" y="524" width="726" height="44" fill="#f8fafc"/>
+    <text x="24" y="552" class="label muted">SEVERITY</text>
+    <text x="154" y="552" class="label muted">PACKAGE / FINDING</text>
+    <text x="553" y="552" class="label muted">WORKSPACE</text>
+    <path d="M1 568H727" class="border"/>
+    <rect x="24" y="586" width="76" height="25" rx="12" fill="#fee2e2"/>
+    <circle cx="38" cy="598" r="3.5" fill="#991b1b"/>
+    <text x="48" y="602" font-size="12" font-weight="680" fill="#7f1d1d">Critical</text>
+    <text x="154" y="597" class="body" font-weight="620">pkg:example/auth@1.2.0</text>
+    <text x="154" y="618" class="small muted">VULN-EXAMPLE-01 · illustrative</text>
+    <text x="553" y="603" class="small">services/api</text>
+    <path d="M24 634H704" class="border"/>
+    <rect x="24" y="652" width="76" height="25" rx="12" fill="#ffedd5"/>
+    <circle cx="38" cy="664" r="3.5" fill="#9a3412"/>
+    <text x="48" y="668" font-size="12" font-weight="680" fill="#7c2d12">High</text>
+    <text x="154" y="663" class="body" font-weight="620">pkg:example/crypto@2.0.1</text>
+    <text x="154" y="684" class="small muted">VULN-EXAMPLE-02 · illustrative</text>
+    <text x="553" y="669" class="small">services/worker</text>
+    <path d="M24 700H704" class="border"/>
+    <rect x="24" y="718" width="91" height="25" rx="12" fill="#fef3c7"/>
+    <circle cx="38" cy="730" r="3.5" fill="#92400e"/>
+    <text x="48" y="734" font-size="12" font-weight="680" fill="#78350f">Moderate</text>
+    <text x="154" y="729" class="body" font-weight="620">pkg:example/parser@0.8.0</text>
+    <text x="154" y="750" class="small muted">VULN-EXAMPLE-03 · illustrative</text>
+    <text x="553" y="735" class="small">services/api</text>
+    <path d="M24 766H704" class="border"/>
+    <text x="24" y="808" class="small muted">Showing 3 of 12 findings</text>
+    <text x="704" y="808" text-anchor="end" class="small" font-weight="650" fill="#1d4ed8">View all findings  →</text>
+    <text x="24" y="848" class="small soft">Finding fields and detail depth remain subject to the approved API contract.</text>
+
+    <rect x="752" y="442" width="368" height="196" rx="12" fill="#ffffff" stroke="#dbe2ea"/>
+    <text x="776" y="478" font-size="17" font-weight="680">Workspace scope</text>
+    <text x="776" y="512" class="body" font-weight="620">services/api</text>
+    <text x="776" y="533" class="small muted">Java · manifest scope</text>
+    <text x="776" y="566" class="body" font-weight="620">services/worker</text>
+    <text x="776" y="587" class="small muted">Go · manifest scope</text>
+    <text x="776" y="617" class="small" font-weight="650" fill="#1d4ed8">View workspace details  →</text>
+
+    <rect x="752" y="654" width="368" height="226" rx="12" fill="#ffffff" stroke="#dbe2ea"/>
+    <text x="776" y="690" font-size="17" font-weight="680">Provenance</text>
+    <text x="776" y="725" class="small muted">Scanner</text>
+    <text x="776" y="746" class="body" font-weight="620">OSV-Scanner · 2.x</text>
+    <text x="776" y="775" class="small muted">Database</text>
+    <text x="776" y="796" class="body" font-weight="620">Recorded version · illustrative</text>
+    <text x="776" y="825" class="small muted">Raw artifact</text>
+    <text x="776" y="846" class="body" font-weight="620" fill="#166534">Available · digest verified</text>
+    <text x="0" y="922" class="small soft">Draft visual reference · sample data is synthetic · exact fields, routes, and API wording remain unapproved.</text>
+  </g>
+</svg>

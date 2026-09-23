@@ -1,0 +1,131 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1440" height="1160" viewBox="0 0 1440 1160" role="img" aria-labelledby="title desc">
+  <title id="title">DepRail history loading, empty, and failure states — draft</title>
+  <desc id="desc">Six illustrative console states and an untrusted repository-label example. Data is synthetic.</desc>
+  <defs>
+    <style>
+      text { font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; fill: #111827; }
+      .muted { fill: #475569; }
+      .soft { fill: #64748b; }
+      .small { font-size: 13px; }
+      .body { font-size: 14px; }
+      .label { font-size: 11px; font-weight: 650; letter-spacing: .04em; }
+      .border { stroke: #dbe2ea; stroke-width: 1; }
+      .title { font-size: 17px; font-weight: 680; }
+    </style>
+  </defs>
+  <rect width="1440" height="1160" fill="#f6f8fb"/>
+  <rect width="1440" height="72" fill="#ffffff"/>
+  <path d="M0 71.5H1440" stroke="#e2e8f0"/>
+  <rect x="144" y="16" width="40" height="40" rx="12" fill="#14243a"/>
+  <path d="M164 24l11 5v8c0 8-5 13-11 16-6-3-11-8-11-16v-8z" fill="none" stroke="#ffffff" stroke-width="2"/>
+  <path d="M159 37l4 4 7-8" fill="none" stroke="#93c5fd" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+  <text x="196" y="39" font-size="18" font-weight="720">DepRail</text>
+  <text x="266" y="39" class="small muted">Local console</text>
+  <rect x="1115" y="22" width="142" height="28" rx="14" fill="#eff6ff" stroke="#bfdbfe"/>
+  <circle cx="1132" cy="36" r="4" fill="#1d4ed8"/>
+  <text x="1144" y="40" font-size="12" font-weight="650" fill="#1e40af">LOCAL ONLY</text>
+  <text x="1282" y="40" class="small muted">On this device</text>
+
+  <text x="160" y="127" class="small muted">DepRail  /  Design reference</text>
+  <text x="160" y="177" font-size="29" font-weight="720" letter-spacing="-.02em">Loading, empty, and recovery states</text>
+  <text x="160" y="207" class="body muted">An empty result is not a loading, storage, compatibility, integrity, or stale-selection error.</text>
+  <text x="1280" y="177" text-anchor="end" class="small muted">Draft · synthetic examples</text>
+
+  <!-- Loading -->
+  <g transform="translate(100 242)">
+    <rect width="370" height="348" rx="12" fill="#ffffff" stroke="#dbe2ea"/>
+    <text x="22" y="36" class="label muted">01 · LOADING</text>
+    <text x="22" y="73" class="title">Loading saved scans</text>
+    <text x="22" y="99" class="small muted">Status is announced; no invented percentage.</text>
+    <rect x="22" y="122" width="326" height="62" rx="9" fill="#f8fafc" stroke="#e2e8f0"/>
+    <rect x="38" y="138" width="118" height="10" rx="5" fill="#cbd5e1"/>
+    <rect x="38" y="157" width="200" height="8" rx="4" fill="#e2e8f0"/>
+    <rect x="280" y="140" width="52" height="20" rx="10" fill="#e2e8f0"/>
+    <rect x="22" y="197" width="326" height="62" rx="9" fill="#f8fafc" stroke="#e2e8f0"/>
+    <rect x="38" y="213" width="132" height="10" rx="5" fill="#cbd5e1"/>
+    <rect x="38" y="232" width="184" height="8" rx="4" fill="#e2e8f0"/>
+    <rect x="280" y="215" width="52" height="20" rx="10" fill="#e2e8f0"/>
+    <circle cx="30" cy="293" r="5" fill="#1d4ed8"/>
+    <text x="44" y="298" class="small muted">Loading history…</text>
+  </g>
+
+  <!-- Empty -->
+  <g transform="translate(535 242)">
+    <rect width="370" height="348" rx="12" fill="#ffffff" stroke="#dbe2ea"/>
+    <text x="22" y="36" class="label muted">02 · EMPTY</text>
+    <circle cx="185" cy="126" r="34" fill="#eff6ff"/>
+    <path d="M172 116h26v22h-26z M178 110h14v6" fill="none" stroke="#1d4ed8" stroke-width="2" stroke-linejoin="round"/>
+    <text x="185" y="190" text-anchor="middle" class="title">No saved scans yet</text>
+    <text x="185" y="219" text-anchor="middle" class="small muted">This only describes local history.</text>
+    <text x="185" y="239" text-anchor="middle" class="small muted">It does not mean a scan succeeded or failed.</text>
+    <rect x="49" y="274" width="272" height="42" rx="8" fill="#f8fafc" stroke="#e2e8f0"/>
+    <text x="185" y="300" text-anchor="middle" class="small" font-weight="620">Existing scan workflows remain in the CLI.</text>
+  </g>
+
+  <!-- Store unavailable -->
+  <g transform="translate(970 242)">
+    <rect width="370" height="348" rx="12" fill="#ffffff" stroke="#dbe2ea"/>
+    <text x="22" y="36" class="label muted">03 · STORE UNAVAILABLE</text>
+    <rect x="22" y="66" width="326" height="116" rx="9" fill="#fef2f2" stroke="#fecaca"/>
+    <circle cx="48" cy="96" r="11" fill="#fee2e2" stroke="#991b1b"/>
+    <text x="48" y="101" text-anchor="middle" font-size="15" font-weight="750" fill="#7f1d1d">!</text>
+    <text x="70" y="94" class="body" font-weight="680" fill="#7f1d1d">History is unavailable</text>
+    <text x="38" y="125" class="small" fill="#7f1d1d">The local store could not be opened.</text>
+    <text x="38" y="147" class="small" fill="#7f1d1d">No history is shown as an empty result.</text>
+    <rect x="22" y="202" width="112" height="38" rx="8" fill="#1d4ed8"/>
+    <text x="78" y="226" text-anchor="middle" class="small" font-weight="680" fill="#ffffff">Try again</text>
+    <text x="22" y="278" class="small muted">Retry is read-only; no reset or deletion is offered.</text>
+  </g>
+
+  <!-- Unsupported schema -->
+  <g transform="translate(100 624)">
+    <rect width="370" height="348" rx="12" fill="#ffffff" stroke="#dbe2ea"/>
+    <text x="22" y="36" class="label muted">04 · VERSION / CORRUPTION</text>
+    <rect x="22" y="66" width="326" height="116" rx="9" fill="#fffbeb" stroke="#fcd34d"/>
+    <circle cx="48" cy="96" r="11" fill="#fef3c7" stroke="#92400e"/>
+    <text x="48" y="101" text-anchor="middle" font-size="15" font-weight="750" fill="#78350f">!</text>
+    <text x="70" y="94" class="body" font-weight="680" fill="#78350f">History needs attention</text>
+    <text x="38" y="125" class="small" fill="#78350f">The saved data is incompatible or unreadable.</text>
+    <text x="38" y="147" class="small" fill="#78350f">Existing data is not silently reset.</text>
+    <text x="22" y="218" class="small muted">Show a stable error code and recovery guidance.</text>
+    <text x="22" y="240" class="small muted">Never suggest deleting the database as a first step.</text>
+    <text x="22" y="294" class="small soft">Exact recovery options follow the approved data contract.</text>
+  </g>
+
+  <!-- Artifact integrity -->
+  <g transform="translate(535 624)">
+    <rect width="370" height="348" rx="12" fill="#ffffff" stroke="#dbe2ea"/>
+    <text x="22" y="36" class="label muted">05 · MISSING / INVALID ARTIFACT</text>
+    <text x="22" y="76" class="title">atlas-api</text>
+    <text x="22" y="98" class="small muted">History entry h_01JQ8W9K2M · metadata preserved</text>
+    <rect x="22" y="120" width="326" height="98" rx="9" fill="#fef2f2" stroke="#fecaca"/>
+    <text x="38" y="149" class="body" font-weight="680" fill="#7f1d1d">Raw evidence unavailable</text>
+    <text x="38" y="173" class="small" fill="#7f1d1d">Artifact is missing or its digest does not match.</text>
+    <text x="38" y="194" class="small" fill="#7f1d1d">No empty report is substituted.</text>
+    <text x="22" y="253" class="small muted">Outcome, completeness, and diagnostics stay visible.</text>
+    <text x="22" y="275" class="small muted">The error is tied to the affected artifact only.</text>
+  </g>
+
+  <!-- Stale selection -->
+  <g transform="translate(970 624)">
+    <rect width="370" height="348" rx="12" fill="#ffffff" stroke="#dbe2ea"/>
+    <text x="22" y="36" class="label muted">06 · NOT FOUND / STALE SELECTION</text>
+    <circle cx="185" cy="116" r="27" fill="#f1f5f9"/>
+    <path d="M176 107l18 18m0-18l-18 18" stroke="#475569" stroke-width="2.5" stroke-linecap="round"/>
+    <text x="185" y="172" text-anchor="middle" class="title">Scan entry not found</text>
+    <text x="185" y="201" text-anchor="middle" class="small muted">It may have been removed or is no longer available.</text>
+    <rect x="94" y="232" width="182" height="42" rx="8" fill="#1d4ed8"/>
+    <text x="185" y="258" text-anchor="middle" class="small" font-weight="680" fill="#ffffff">Back to scan history</text>
+    <text x="185" y="306" text-anchor="middle" class="small muted">Browser Back remains a safe navigation path.</text>
+  </g>
+
+  <rect x="100" y="996" width="1240" height="88" rx="10" fill="#ffffff" stroke="#dbe2ea"/>
+  <text x="122" y="1022" class="label muted">UNTRUSTED REPOSITORY TEXT · RENDER AS TEXT, NEVER MARKUP</text>
+  <text x="122" y="1056" class="small muted">Example label</text>
+  <rect x="224" y="1036" width="360" height="30" rx="6" fill="#f8fafc" stroke="#cbd5e1"/>
+  <text x="236" y="1056" font-size="12" fill="#334155" font-family="SFMono-Regular, Menlo, Consolas, monospace">&lt;script&gt;alert(1)&lt;/script&gt;</text>
+  <text x="614" y="1056" class="small muted">Long values wrap or truncate; they never become paths or executable content.</text>
+
+
+  <text x="100" y="1130" class="small soft">Draft visual reference · no state is represented by color alone · synthetic example data.</text>
+</svg>

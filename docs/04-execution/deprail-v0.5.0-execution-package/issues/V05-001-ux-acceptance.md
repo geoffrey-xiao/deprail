@@ -3,7 +3,7 @@
 
 - Epic: [EPIC-001 / #390](https://github.com/geoffrey-xiao/deprail/issues/390)
 - Target: `v0.5.0`
-- Status: Todo; planning/design deliverable
+- Status: Review; draft mockups are in [PR #398](https://github.com/geoffrey-xiao/deprail/pull/398) and UX acceptance remains pending
 - Type: docs
 - Area: docs
 - Priority: P0
@@ -31,6 +31,8 @@ Inputs: PRD, architecture, UX draft, FR-501–FR-511, API/error proposals, and p
 ## Required verification and evidence
 
 Attach workflow assumptions, history/detail/empty/error wireframes or prototype, route/back-forward behavior, response-to-state map, component/dependency decision with license/build ownership, accessibility/responsive checklist, and representative untrusted repository values. Verify that all required status states are represented without color-only signaling.
+
+- Link PNG previews and editable SVG sources for desktop/narrow history, scan detail, and the required loading, empty, and failure states from `UX-DESIGN.md`.
 
 ## Acceptance criteria
 

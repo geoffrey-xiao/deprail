@@ -4,22 +4,27 @@
 
 ## 1. Data integrity invariants
 
-- A stored scan refers to one stable scan identity and preserves the source report's explicit outcome, report/schema version, tool/scanner/database provenance, and artifact digest references required by existing contracts.
-- Persistence must not convert a failed/partial/cancelled scan to complete, or a missing/invalid report to empty-success.
+- A stored history entry has a unique, stable `historyEntryID` for that scan-operation occurrence. It is the history primary key and API resource identifier; it is not derived solely from repository state.
+- Preserve the source report's `ScanReport.ScanID` separately as `sourceScanID`. Current `ScanReport.ScanID` is derived from repository state and repeated runs can legitimately share it; never use it as a unique history key or silently change its existing meaning.
+- A history entry separately records an operation outcome (`completed`, `failed`, or `cancelled`) and, when a report exists, its unchanged report completeness (`complete`, `partial`, or `failed`). A cancelled operation is not a new `ScanReport.Status` value.
+- A cancelled operation may carry a partial report returned by the current scan API. The history/UI must retain the operation outcome as Cancelled and must not present the report's pre-cancellation completeness as proof that the run completed. If no trustworthy report exists, do not synthesize an empty report.
+- The report preserves its report/schema version, tool/scanner/database provenance, and artifact digest references required by existing contracts.
+- Persistence must not convert a failed/partial report to complete, or a missing/invalid report to empty-success.
 - The history index and referenced raw artifacts are separate resources. Dangling/missing artifacts and digest mismatches are explicit, scoped errors; do not silently delete metadata or invent evidence.
-- Writes are atomic at the documented transaction boundary. Duplicate ingestion/idempotency and conflict behavior must be chosen before implementation.
+- Writes are atomic at the documented transaction boundary. Assign a history ID once per operation occurrence; define retry/idempotency behavior separately and never deduplicate entries solely by `sourceScanID`.
 - No source files, credentials, complete process environments, or unrelated repository contents are stored by default.
-- Exact stored fields, payload-size thresholds, artifact retention/reference counting, and history capture trigger require an approved schema/ADR.
+- Exact stored fields, ID generation/ingestion idempotency, payload-size thresholds, artifact retention/reference counting, and history capture trigger require an approved schema/ADR.
 
 ## 2. State vocabulary
 
-Keep scan outcome distinct from history/API operation outcome:
+Keep three concepts distinct:
 
-- Scan: `complete`, `partial`, `failed`, or `cancelled` as current product contracts require.
-- History operation: success, unavailable, invalid/incompatible, corrupt, integrity-failed, full/limit-exceeded, conflict, or cancelled/timeout as defined by final error contract.
-- API request: success, client validation/not-found, unsupported version, rate/size bound, unavailable, internal failure, or cancellation/timeout.
+- Report completeness: `complete`, `partial`, or `failed`, matching the current v1alpha contract. Do not add `cancelled` to the existing report schema without a separately approved schema change.
+- History operation outcome: `completed` when the scan operation returns without an operation error, `cancelled` when its error is cancellation, or `failed` for another fatal operation error. A completed operation may still have a `partial` or `failed` report; neither axis is inferred from the other.
+- History resource identity: unique `historyEntryID` for this operation occurrence; `sourceScanID` preserves the existing report identity and may repeat across distinct runs.
+- API request outcome: transport/application success or a typed request failure/cancellation. Cancelling a read request does not rewrite persisted history or scan-report state.
 
-These labels are semantic states, not finalized wire codes. Stable error codes and HTTP status mapping must be cross-walked with [`ERROR-MODEL.md`](ERROR-MODEL.md) and the existing v0.3/v0.4 error contracts before implementation.
+These are semantic states, not finalized wire codes. Stable error codes and HTTP status mapping must be cross-walked with [`ERROR-MODEL.md`](ERROR-MODEL.md) and the exact prior versioned contracts before implementation.
 
 ## 3. Failure matrix (proposed)
 
@@ -38,7 +43,8 @@ These labels are semantic states, not finalized wire codes. Stable error codes a
 | Digest mismatch | Integrity failure at scoped read | No trust in corrupted bytes; no mutation of source artifact |
 | Malformed stored report | Explicit invalid-record result scoped to scan | Do not expose malformed content as valid report |
 | Request oversized/malformed | Client error; bounded work | Reject before expensive parsing/DB query |
-| API timeout/cancel | Explicit operation outcome | No incomplete response described as complete |
+| Cancelled scan operation | History entry records `operationOutcome=cancelled`; any returned report keeps its existing status | Never present the report's retained pre-cancellation completeness as proof of a completed run |
+| API timeout/request cancellation | Explicit request outcome; no fabricated complete response | Must not rewrite a stored history entry or `ScanReport.Status` |
 | UI assets missing/version mismatch | Explicit console unavailable/error | CLI remains usable |
 | Shutdown during query/write | Cancel/drain according to accepted transaction model | Durable commit or rollback; no ambiguous “saved” result |
 

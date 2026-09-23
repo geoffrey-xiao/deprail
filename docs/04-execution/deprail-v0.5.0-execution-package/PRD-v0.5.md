@@ -10,9 +10,9 @@
 
 ## 1. Product outcome
 
-A local DepRail user can review retained completed scan history in an embedded browser console, open a selected scan, and understand its findings, workspaces, completeness, and provenance. The browser is a presentation client over shared application services. Existing CLI scan behavior remains useful without opening the browser or depending on history storage unless an approved compatibility decision changes that boundary.
+A local DepRail user can review retained scan-operation history in an embedded browser console, open a selected history entry, and understand its findings, workspaces, report completeness, execution outcome, and provenance. The browser is a presentation client over shared application services. Existing CLI scan behavior remains useful without opening the browser or depending on history storage unless an approved compatibility decision changes that boundary.
 
-The history is local-only. A scan that is partial, failed, cancelled, or not durably recorded must not be presented as a complete, successful historical result. The v0.5 proposal does not trigger scans or mutate repositories from the browser.
+History is local-only. Each stored operation has a unique history-entry identity; its source report identity may repeat across operations. A cancelled operation is not a cancelled `ScanReport`: report completeness remains `complete`, `partial`, or `failed`, while the history operation outcome records `cancelled`. The console must never present a returned pre-cancellation report as proof that the operation completed successfully.
 
 ## 2. Source reconciliation
 
@@ -25,18 +25,18 @@ The history is local-only. A scan that is partial, failed, cancelled, or not dur
 ## 3. User jobs
 
 - Find a previous scan without reopening its repository or rerunning the scanner.
-- Distinguish complete results from partial, failed, cancelled, or unavailable history.
+- Distinguish report completeness (`complete|partial|failed`) from operation outcomes (`completed|failed|cancelled`) and unavailable history.
 - Inspect findings and workspace context while preserving scanner/tool/database provenance.
 - Understand when history is unavailable, migration failed, or a stored artifact cannot be read.
 - Continue using CLI scan and machine-readable output independently of the web console.
 
 ## 4. Proposed scope
 
-- Persist an explicitly selected set of normalized scan reports and stable references to existing raw artifacts in local SQLite-backed history.
-- List and inspect saved scans with bounded, deterministic pagination/ordering and stable scan identity.
+- Persist an explicitly selected set of scan-operation history entries, each with a unique history-entry ID, optional unchanged normalized report, and stable references to existing raw artifacts.
+- List and inspect saved entries with bounded, deterministic pagination/ordering; retain `ScanReport.ScanID` separately as source provenance, not as the unique history key.
 - Provide an embedded local web console for history and scan details through the same application services used by CLI/core.
 - Provide a minimal local REST API for only the console workflows accepted by UX; read-only in v0.5 unless a reviewed decision justifies a narrow mutation.
-- Preserve scan completeness, diagnostics, workspace and finding relationships, and provenance through persistence, API, and UI.
+- Preserve report completeness, operation outcome, diagnostics, workspace and finding relationships, and provenance as distinct fields through persistence, API, and UI.
 - Version local storage/API contracts, document data location and lifecycle, and provide tested non-destructive migration/recovery semantics.
 - Package frontend static assets with the Go application and verify representative local workflows on supported platforms.
 
@@ -63,9 +63,9 @@ No endpoint or database schema is approved by this PRD. [`API-DESIGN.md`](API-DE
 
 ## 8. Observable acceptance criteria (proposed)
 
-- AC-501: Given saved scans, the console lists them in deterministic order with identity, time, status, and enough summary information to distinguish a complete scan from an incomplete one.
-- AC-502: Selecting a saved scan shows its findings/workspaces and preserves accepted provenance; unavailable artifacts are reported explicitly rather than replaced by empty data.
-- AC-503: A partial, failed, or cancelled scan remains visibly distinct at the list and detail surfaces; zero findings on an incomplete scan are never described as a clean scan.
+- AC-501: Given saved history entries, the console lists them in deterministic order with unique entry identity, time, operation outcome, report completeness when present, and enough summary information to distinguish completed from incomplete work.
+- AC-502: Selecting a history entry by its unique ID shows its findings/workspaces and preserves accepted provenance; unavailable artifacts are reported explicitly rather than replaced by empty data.
+- AC-503: A report remains `complete`, `partial`, or `failed` under the existing schema. Cancellation is represented separately as the operation outcome; a cancelled run cannot be shown as a completed clean scan even if its returned report retains pre-cancellation completeness.
 - AC-504: An empty history has an intentional empty state distinct from API/storage failure.
 - AC-505: Storage or migration failure is typed and actionable; no failed write is presented as a durable history record.
 - AC-506: Oversized, malformed, unsupported, and stale API inputs fail without unintended filesystem access or data disclosure.

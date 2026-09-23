@@ -12,12 +12,16 @@
 | v0.6 roadmap | Team service, identity, RBAC, exceptions, PostgreSQL later | PRD exclusions | No v0.6 scope in v0.5 endpoints/UI |
 | v0.5 development plan §6 | UX and API design gates precede implementation | [`UX-DESIGN.md`](UX-DESIGN.md), [`API-DESIGN.md`](API-DESIGN.md), README DoR | Owner and independent reviewer approval before implementation issue creation |
 | v0.5 development plan §8 | Failures and compatibility remain explicit | Failure/data and compatibility matrices | Failures do not become empty success; CLI regression |
+| [`v0.1 scan error model`](../deprail-v0.1-execution-package/requirements/ERROR-MODEL.md) and [`v0.2 scan error model`](../deprail-v0.2-execution-package/requirements/ERROR-MODEL.md) | v0.1 enumerates established scan codes; v0.2 reinforces required result behavior and redaction | v0.5 [`requirements/ERROR-MODEL.md`](requirements/ERROR-MODEL.md) | Preserve scan codes/meanings; new history/API categories require separate approval and crosswalk |
+| [`v0.3.1 cancellation error model`](../deprail-v0.3.1-execution-package/requirements/ERROR-MODEL.md) | Cancellation remains an explicit user-visible terminal operation state; this does not extend `ScanReport.Status` | v0.5 failure/data, API, UX contracts | Keep `operationOutcome=cancelled` distinct from report completeness |
+| [`v0.3 remediation error model`](../deprail-v0.3-execution-package/requirements/ERROR-MODEL.md) | Remediation-plan errors only; not authoritative for scan/API error codes | v0.5 [`requirements/ERROR-MODEL.md`](requirements/ERROR-MODEL.md) | Do not infer v0.5 scan behavior from remediation-specific codes |
+| v0.4 requirements | No `requirements/ERROR-MODEL.md` exists in the v0.4 package; its available requirements do not replace v0.1/v0.2 scan codes | v0.5 [`requirements/ERROR-MODEL.md`](requirements/ERROR-MODEL.md) | Name and review the actual contract instead of citing a nonexistent v0.4 error model |
 | v0.4 closeout #356 | Outstanding release follow-ups remain open and require disposition | Plan §1, package README | Each gap assigned/carried/deferred; no assumed completion |
 
 ## Unresolved decisions
 
-1. Is scan history captured automatically during CLI scan or through an explicit local workflow?
-2. Which scan report fields are stored/indexed, and how are raw content-addressed artifacts referenced/retained?
+1. What uniquely identifies a history entry across repeated runs with the same `ScanReport.ScanID`, and how are ingestion retries made idempotent without deduplicating distinct runs?
+2. How is history captured, and which optional report fields and raw content-addressed artifacts are stored/referenced/retained?
 3. What is the data root, permission model, retention/deletion and export behavior?
 4. What migration, transaction/concurrency, backup, disk-full, corruption and interrupted-write contract is accepted?
 5. Which API resource shape, endpoint pagination, error codes, version policy and payload limits are required by approved UX?

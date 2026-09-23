@@ -33,13 +33,13 @@ Navigation must include a persistent product identity and a clear return-to-hist
 
 1. Open the local console.
 2. See a paginated ordered list, or an explicit empty-history state.
-3. Identify a scan using its stable identity, timestamp, root label approved by the data contract, status, finding count, and concise source/tool summary.
-4. Select a row/card to open details; preserve the selected scan in browser navigation/back behavior.
+3. Identify an entry using its unique history-entry identity, timestamp, root label approved by the data contract, execution outcome, report completeness when present, finding count, and concise source/tool summary. Repeated runs may share a source scan ID but remain separate entries.
+4. Select a row/card to open details by `historyEntryID`; preserve the selected entry in browser navigation/back behavior.
 
 ### Inspect scan detail
 
-1. See scan outcome at top: Complete, Partial, Failed, or Cancelled; do not infer status from finding count.
-2. See stable scan identity, completion/start time if available, repository/workspace summary, scanner/tool/database provenance, and diagnostics.
+1. See execution outcome at top: Completed, Failed, or Cancelled. If a report exists, show its completeness separately as Complete, Partial, or Failed; a cancelled execution must never appear as a completed clean scan because its report retained an earlier completeness value.
+2. See unique history-entry identity, source `ScanReport.ScanID`, completion/start time if available, repository/workspace summary, scanner/tool/database provenance, and diagnostics.
 3. Review finding summary and findings with stable identifiers and key fields; open details without losing current context.
 4. If a raw artifact is unavailable or unverifiable, show that explicitly and do not fabricate missing evidence.
 
@@ -55,10 +55,11 @@ Navigation must include a persistent product identity and a clear return-to-hist
 | --- | --- |
 | Initial loading | Stable skeleton/progress label; no invented percentage. |
 | Empty history | Clear no-saved-scans message plus safe next step; distinct from error. |
-| Complete, zero findings | Clearly complete scan, zero findings; no ambiguity. |
-| Complete, findings | Finding count/severity summary and details navigation. |
-| Partial | Persistent warning label; explain omitted/incomplete scope and show diagnostics. |
-| Failed/cancelled | Explicit outcome and cause/reference where safe; never “clean.” |
+| Completed operation, complete report, zero findings | Clearly show completed execution and zero findings; no ambiguity. |
+| Completed operation, complete report, findings | Finding count/severity summary and details navigation. |
+| Partial report, any operation outcome | Persistent warning label; explain omitted/incomplete scope and show diagnostics while retaining the separate execution outcome. |
+| Failed execution/report | Explicitly distinguish execution failure from report completeness; never “clean.” |
+| Cancelled execution | Show Cancelled as the operation outcome, separately from any returned report completeness; never treat it as a completed scan. |
 | API/storage unavailable | Error state distinct from empty; retry/action only when safe. |
 | Migration/storage corruption | Explain history availability and recovery path without suggesting destructive reset. |
 | Missing artifact | Preserve report metadata; disclose evidence unavailable/integrity failure. |

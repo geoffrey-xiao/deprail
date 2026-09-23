@@ -5,8 +5,8 @@
 | Surface | Compatibility commitment | Required evidence / open decision |
 | --- | --- | --- |
 | CLI commands and exit codes | Preserve existing command, stdout/stderr, JSON purity, error-code, and exit-code contracts unless a reviewed additive/compatibility decision says otherwise. | Regression suite with history absent, unavailable, and enabled; approval for any behavior change. |
-| Scan report schema | Preserve current versioned report meaning, stable keys, ordering, provenance, and complete/partial/failed distinctions. | Current schema validation and storage/API roundtrip; no implicit schema conversion. |
-| Persisted history schema | New local format; exact version and supported migrations TBD. | ADR names source versions, forward path, backup/recovery and downgrade policy before implementation. |
+| Scan report schema | Preserve current versioned report meaning, stable keys, ordering, provenance, and completeness enum (`complete`, `partial`, `failed`). Cancellation is not added to `ScanReport.Status` in v0.5. | Validate the unchanged report schema; verify cancellation is represented outside the report and cannot be shown as completed based on retained completeness. |
+| Persisted history schema | New local format with a unique `historyEntryID` distinct from source `ScanReport.ScanID`; exact version and supported migrations TBD. | ADR defines ID generation, ingestion retry/idempotency, source-version fields, forward path, backup/recovery, and downgrade policy. |
 | Local API | New versioned contract; draft URL version `/api/v1` is a proposal. No compatibility promise until OpenAPI is accepted. | OpenAPI 3.1 validation, additive/breaking policy, client/version mismatch behavior. |
 | Embedded web client | Shipped with matching binary; exact supported browsers TBD. | Package smoke on selected browsers/OS, UI/API version skew test, no external CDN/font/analytics. |
 | Web frontend toolchain | React/TypeScript/Vite per architecture; exact pinned versions and shadcn/ui component/primitives strategy TBD. | Lockfile, license and dependency review, clean build, bundle/startup budget. |

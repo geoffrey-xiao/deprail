@@ -2,9 +2,9 @@
 
 **Status:** Draft; acceptance requires owner and independent architecture/security review.
 
-## FR-501 — Preserve prior scan identity and outcome
+## FR-501 — Preserve history and report identities
 
-A stored history entry retains a stable scan identity, source/tool provenance required by the current report contract, and its explicit outcome. The application must not infer `complete` from an empty finding list or successful database write.
+Each stored history entry has a unique, stable `historyEntryID`. Preserve the source report's `ScanReport.ScanID` as `sourceScanID`; it may repeat across runs and is never used as the history primary key. Preserve existing report schema, provenance, and report completeness without rewriting it to manufacture an operation outcome.
 
 ## FR-502 — Browse bounded scan history
 
@@ -12,11 +12,11 @@ The local console can request and display an explicitly bounded, deterministical
 
 ## FR-503 — Inspect a saved scan
 
-The user can select a saved scan and inspect the approved detail set, including completeness, workspace scope, finding summaries, provenance, and diagnostics. A missing raw artifact/digest mismatch is visibly reported and never silently replaced with fabricated or empty evidence.
+The user can select a saved history entry by its unique entry ID and inspect the approved detail set, including operation outcome, report completeness when present, workspace scope, finding summaries, provenance, and diagnostics. A missing raw artifact/digest mismatch is visibly reported and never silently replaced with fabricated or empty evidence.
 
 ## FR-504 — Preserve incomplete states
 
-Complete, partial, failed, and cancelled outcomes remain distinguishable in persistence, API responses, lists, details, and accessible announcements. Zero findings on a partial/failed/cancelled scan must not be represented as a clean result.
+Report completeness (`complete|partial|failed`) and history operation outcome (`completed|failed|cancelled`) remain distinct in persistence, API responses, lists, details, and accessible announcements. A cancelled operation must not appear as a completed clean scan even when its returned report retains `complete`; zero findings on an incomplete report must not be represented as clean.
 
 ## FR-505 — Optional local console
 

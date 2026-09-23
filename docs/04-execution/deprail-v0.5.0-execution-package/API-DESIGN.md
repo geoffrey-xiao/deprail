@@ -11,8 +11,8 @@ An OpenAPI 3.1 document with JSON Schema-compatible examples and validation is a
 
 ## 2. Proposed resource model (unapproved)
 
-- **ScanSummary:** stable scan ID, recorded time, root display label under privacy contract, outcome (`complete|partial|failed|cancelled`), finding/workspace counts, and minimal provenance summary.
-- **ScanDetail:** summary plus scan contract/version, diagnostics, workspaces, and stable links/identifiers for findings and artifacts.
+- **HistoryEntrySummary:** unique `historyEntryID` per stored operation, recorded time, `sourceScanID` from the existing report, `operationOutcome` (`completed|failed|cancelled`), optional `reportStatus` (`complete|partial|failed`), root display label under privacy contract, counts, and minimal provenance summary.
+- **HistoryEntryDetail:** summary plus scan contract/version, optional report, diagnostics, workspaces, and stable links/identifiers for findings and artifacts.
 - **WorkspaceSummary:** stable workspace ID, repository-relative path, ecosystem/manager metadata permitted by the data contract, and workspace completeness.
 - **FindingSummary:** stable finding key, package identity, aliases, severity/source as available, affected workspace/path context, fixed-version data, and evidence references subject to existing report schema.
 - **ApiError:** stable API error code, concise safe message, retryability only when meaningful, request/correlation ID if approved, and no stack trace/secrets/raw paths by default.
@@ -24,16 +24,16 @@ Existing report schemas govern nested finding/report meaning. Do not invent new 
 | Method and path | Purpose | Proposed result | Write? |
 | --- | --- | --- | --- |
 | `GET /api/v1/health` | Local service readiness/schema version | Bounded readiness response; no environment dump | No |
-| `GET /api/v1/scans` | List saved history | Ordered page of ScanSummary plus opaque continuation token | No |
-| `GET /api/v1/scans/{scanID}` | Load one scan detail | ScanDetail or typed not-found/integrity error | No |
-| `GET /api/v1/scans/{scanID}/workspaces` | Load bounded workspace list if not embedded | Ordered page of WorkspaceSummary | No |
-| `GET /api/v1/scans/{scanID}/findings` | Load bounded finding list if not embedded | Ordered page of FindingSummary | No |
+| `GET /api/v1/scans` | List saved history | Ordered page of HistoryEntrySummary plus opaque continuation token | No |
+| `GET /api/v1/scans/{historyEntryID}` | Load one history entry | HistoryEntryDetail or typed not-found/integrity error | No |
+| `GET /api/v1/scans/{historyEntryID}/workspaces` | Load bounded workspace list if not embedded | Ordered page of WorkspaceSummary | No |
+| `GET /api/v1/scans/{historyEntryID}/findings` | Load bounded finding list if not embedded | Ordered page of FindingSummary | No |
 
 Only include separate child collection endpoints if UX/resource size needs justify them. Avoid parallel duplicate ways to fetch the same data. No `POST /scan`, delete, export/upload, policy mutation, remediation, approval, or exception endpoint is proposed.
 
 ## 4. Query and deterministic ordering proposal
 
-- List order should be explicit and stable (candidate: recorded timestamp descending, stable scan ID as tie-breaker); final semantics require approval.
+- List order should be explicit and stable (candidate: recorded timestamp descending, unique `historyEntryID` as tie-breaker); final semantics require approval.
 - Pagination must be bounded, opaque to clients, and stable under concurrent insertion. Prefer a cursor over unbounded offset paging if the chosen storage/index contract supports it.
 - Maximum page size, filter allowlist, cursor version/expiry, and behavior when records are deleted between pages are open contract fields; never accept arbitrary SQL/order expressions.
 - Query values and path identifiers are validated. Unknown filters/fields fail clearly rather than being silently ignored.
@@ -41,9 +41,9 @@ Only include separate child collection endpoints if UX/resource size needs justi
 ## 5. Response and error semantics
 
 - Responses carry an explicit API/schema version according to the reviewed OpenAPI design; avoid redundant ad hoc version markers if URL versioning is sufficient.
-- Existing complete/partial/failed/cancelled scan states remain unchanged end-to-end.
+- Existing report completeness values (`complete`, `partial`, `failed`) remain unchanged end-to-end. Cancellation is an execution outcome on the history entry, not a `ScanReport.Status` value or report-schema extension.
 - Empty scan history is a successful empty page. Store unavailable, migration rejected, unsupported version, corrupt row, artifact digest mismatch, or timeout are explicit non-success responses.
-- A missing scan resource is distinct from a scan whose report has zero findings.
+- A missing history entry is distinct from an entry whose optional report has zero findings.
 - Use consistent JSON error envelope and HTTP status mapping; candidate codes in [`requirements/ERROR-MODEL.md`](requirements/ERROR-MODEL.md) must be cross-walked with existing stable contracts before implementation. No new stable code is finalized here.
 - User-visible errors are redacted and actionable; server diagnostics never include credentials, full environment, or untrusted raw content.
 

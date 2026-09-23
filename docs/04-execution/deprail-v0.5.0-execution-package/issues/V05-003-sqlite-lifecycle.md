@@ -26,7 +26,7 @@ No SQL schema migration code, SQLite driver selection/install, store adapter, de
 
 ## Inputs, outputs, and failure behavior
 
-Inputs: `ARCHITECTURE-v0.5.md`, `FAILURE-AND-DATA-CONTRACT.md`, compatibility/security requirements, existing report/artifact contracts, and the accepted history workflow. Outputs: a decision record and proposed versioned schema/lifecycle specification. Storage open/lock/full/corrupt, migration interruption, artifact loss/digest mismatch, and unsupported schema must remain explicit failures; failed history persistence must not rewrite scan outcome or report completeness.
+Inputs: `ARCHITECTURE-v0.5.md`, `FAILURE-AND-DATA-CONTRACT.md`, compatibility/security requirements, existing report/artifact contracts, and the accepted history workflow. Outputs: the proposed [ADR-0004](../../../adr/ADR-0004-local-scan-history.md) and versioned schema/lifecycle specification. These are review drafts; numeric bounds and owner acceptance of unbounded-growth risk remain DoR gates. Storage open/lock/full/corrupt, migration interruption, artifact loss/digest mismatch, and unsupported schema must remain explicit failures; failed history persistence must not rewrite scan outcome or report completeness.
 
 ## Required verification and evidence
 

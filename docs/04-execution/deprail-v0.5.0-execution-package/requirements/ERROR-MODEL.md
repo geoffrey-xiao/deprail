@@ -35,22 +35,24 @@ The final code set may merge/remove candidate categories only after the correspo
 
 ## 3. Candidate HTTP mapping (not approved)
 
-The OpenAPI design must assign status codes consistently. Candidate mapping only:
+The table recommends one candidate HTTP status per API error category to make the draft deterministic. These mappings remain unapproved until the OpenAPI contract is reviewed.
 
-| Category | Candidate HTTP status |
+| Category | Recommended candidate HTTP status |
 | --- | ---: |
-| Invalid path/query/content type | 400 |
-| Request too large | 413 |
-| Unsupported API version | 400 or 404, selected and documented in OpenAPI |
-| Origin/Host rejected | 403 |
-| Scan history item missing | 404 |
-| Store unavailable/locked | 503 or 409, based on bounded conflict semantics |
-| Integrity failure/corrupt record | 500 or 422, based on whether resource itself is invalid; must not leak raw data |
-| Deadline exceeded | 504 |
-| Read request cancelled | Client cancellation behavior documented; no persistent scan outcome change and no fabricated response |
-| Unexpected internal failure | 500 with redacted safe message and stable request reference |
+| Invalid path, query, content type, or unknown filter (`API_REQUEST_INVALID`) | 400 |
+| Request exceeds an approved bound (`API_REQUEST_TOO_LARGE`) | 413 |
+| Unsupported API version (`API_VERSION_UNSUPPORTED`) | 404 |
+| Unsupported method (`API_METHOD_UNSUPPORTED`) | 405 |
+| Host or origin rejected (`API_ORIGIN_REJECTED`) | 403 |
+| History entry missing (`HISTORY_ENTRY_NOT_FOUND`) | 404 |
+| Store unavailable/locked, unsupported schema, or migration failure | 503 |
+| Corrupt store/report or required artifact missing/digest mismatch | 500 |
+| Server-side request deadline (`API_TIMEOUT`) | 504 |
+| Unexpected internal failure | 500 |
 
-Final status/code mapping must be singular and testable; avoid multiple statuses for the same equivalent error absent a documented distinction. Do not expose DB driver messages, SQL, stack traces, filesystem absolute paths, credentials, or untrusted input verbatim.
+`API_CANCELLED` describes a cancelled read request; when the client has disconnected, stop work and return no fabricated response. `API_LISTENER_UNAVAILABLE` is a startup failure, not an HTTP response. `HISTORY_WRITE_FAILED` is not reachable through the proposed read-only API and must remain a distinct application/CLI persistence outcome. Mixed integrity cases (trustworthy metadata with unavailable evidence) still need one explicit OpenAPI representation.
+
+Do not expose DB driver messages, SQL, stack traces, filesystem absolute paths, credentials, or untrusted input verbatim. The recommended statuses and their mapping to existing stable error contracts require owner and independent architecture/security review before acceptance.
 
 ## 4. Error envelope proposal
 

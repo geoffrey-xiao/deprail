@@ -76,3 +76,21 @@ The design package must include an OpenAPI 3.1 file, schemas/examples, contract 
 - [ ] API/CLI shared-service boundary and no-mutation scope are explicit.
 - [ ] Compatibility and UI/API asset-version behavior are approved.
 - [ ] Owner and independent reviewer accept the API contract before API implementation issues are created.
+
+## 9. Recommended draft profile (unapproved)
+
+The following recommendations make the candidate API reviewable. They do not approve an OpenAPI contract, numeric limits, listener behavior, or runtime implementation.
+
+| Decision | Draft recommendation | Rationale and remaining evidence |
+| --- | --- | --- |
+| Read surface | Keep the listed endpoints `GET`-only; reject request bodies and unsupported methods. Do not add scan, delete, export, or mutation routes. | Matches the read-only v0.5 scope. |
+| History representation | Return bounded summaries from the history list. Return one entry's operation/report metadata and diagnostics from detail; use separately paged workspace/finding collections rather than embedding unbounded child lists. | Keeps the list bounded and supports the UX states; validate fields and representative payload sizes in OpenAPI examples. |
+| Artifact access | Do not expose raw artifact bytes or arbitrary artifact paths through the browser API. Return only approved evidence references and explicit missing/integrity outcomes. | Preserves the artifact-store boundary and prevents filesystem disclosure. |
+| Ordering and pagination | Order by recorded timestamp descending, then `historyEntryID` descending; use an opaque keyset cursor bound to the API version and ordering. | Gives a deterministic tie-breaker and avoids offset drift under new history inserts. Cursor encoding, expiry, deletion behavior, and numeric page limits remain unapproved. |
+| Versioning | Keep `/api/v1` as the candidate version boundary; do not repeat a response-level schema version unless embedding another independently versioned contract requires it. | Avoids redundant version fields while preserving an explicit transport version. |
+| Local boundary | Retain loopback-only and same-origin serving as the candidate baseline; reject unexpected Host/Origin values, do not enable CORS or trust forwarded headers, and make no external network requests. | A local listener is still reachable by local processes and hostile browser origins; exact validation, port/lifecycle, DNS-rebinding, and authentication/token decisions require security review. |
+| Bounds and cancellation | Require finite request, response, page, concurrency, and deadline bounds; propagate cancellation without changing saved scan outcome or report completeness. | The actual numeric limits must follow payload and platform evidence; none is selected here. |
+| Errors | Use the single candidate HTTP mapping in [`requirements/ERROR-MODEL.md`](requirements/ERROR-MODEL.md); preserve typed history/API codes and never substitute an empty success. | The mappings remain proposals until the OpenAPI source, mixed-integrity cases, and compatibility crosswalk are reviewed. |
+| Error envelope | Prefer only `code` and a safe `message`; omit `requestId` unless a stable correlation use case is approved. | Avoids adding a field without a demonstrated consumer contract. |
+
+Still unresolved before an OpenAPI artifact can be accepted: exact response fields and examples, numeric bounds, cursor format/lifetime, mixed artifact-integrity responses, local authentication, port selection and process lifecycle, and the crosswalk to existing report/error schemas. The independent-review and Definition of Ready gates remain unchanged.

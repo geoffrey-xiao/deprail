@@ -37,6 +37,8 @@ This package translates the proposed v0.5 release outcome into reviewable UX, AP
 - [`requirements/COMPATIBILITY-MATRIX.md`](requirements/COMPATIBILITY-MATRIX.md) — compatibility commitments and unresolved decisions.
 - [`requirements/TEST-STRATEGY.md`](requirements/TEST-STRATEGY.md) — contract, migration, UI, integration, and platform evidence.
 
+- [`epics/README.md`](epics/README.md) and [`issues/README.md`](issues/README.md) — EPIC-001 / #390 and its planning-only subissue contracts.
+
 ## Release boundary
 
 v0.4: approved remediation plan → isolated apply → verification → rescan → patch evidence.
@@ -56,6 +58,10 @@ The v0.5 proposal is local-first and read-only from the browser. It does not add
 7. Owner and independent reviewer separately approve the complete Definition of Ready.
 
 UX and API design may iterate in parallel only after their shared resource concepts are reconciled. No runtime implementation issue may be created or started before these gates pass. This package does not create implementation issues or mark any gate complete.
+
+## Owner-directed planning-ticket exception
+
+The owner directed creation of a v0.5 planning epic and design/readiness subissues without waiting for an independent reviewer. This exception applies only to those planning tickets: no independent review is claimed, the design contracts remain drafts, and runtime implementation remains blocked until the Definition of Ready and separate human-review requirements are satisfied. The owner also confirmed that the five open v0.4 follow-ups remain tracked in [#356](https://github.com/geoffrey-xiao/deprail/issues/356), not carried into v0.5; none is thereby completed or closed.
 
 ## Definition of Ready
 

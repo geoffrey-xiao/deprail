@@ -13,6 +13,7 @@
 | Preparation issue | [#387](https://github.com/geoffrey-xiao/deprail/issues/387) |
 | Target milestone | [`v0.5.0`](https://github.com/geoffrey-xiao/deprail/milestone/11) |
 | Project view | [Release · v0.5.0](https://github.com/orgs/geoffrey-xiao/projects/1/views/6) |
+| Execution package | [`deprail-v0.5.0-execution-package/README.md`](../04-execution/deprail-v0.5.0-execution-package/README.md) |
 | Owner | `@geoffrey-xiao` |
 | Independent reviewer | To be named; required before Definition of Ready approval |
 
@@ -26,7 +27,7 @@ The planning hierarchy is normative in this order:
 2. Architecture: [`../02-architecture/deprail-architecture-and-tech-stack-v1.md`](../02-architecture/deprail-architecture-and-tech-stack-v1.md).
 3. Whole-project roadmap: [`deprail-roadmap-v1.md`](deprail-roadmap-v1.md).
 4. This v0.5 release plan.
-5. A v0.5 execution package, requirements, and reviewed issue contracts to be prepared after plan review.
+5. The draft [`v0.5 execution package`](../04-execution/deprail-v0.5.0-execution-package/README.md), requirements, and reviewed issue contracts. The package remains unapproved; implementation stays blocked until the design gates and Definition of Ready pass.
 
 The roadmap sets v0.5's outcome as a local web application and scan history. Product and architecture specify an embedded React/TypeScript/Vite console, SQLite local storage, and a local REST API, while keeping web as a collaboration/presentation layer over shared application services. v0.6 team services, identity, and PostgreSQL are later roadmap work. This plan selects that bounded v0.5 outcome; it does not authorize hosted services or an expanded collaboration product.
 

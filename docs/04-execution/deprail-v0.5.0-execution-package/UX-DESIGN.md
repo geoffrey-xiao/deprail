@@ -30,10 +30,11 @@ PNG previews and editable SVG sources:
 
 These are proposal artifacts, not accepted schemas or implementation authorization. All names, IDs, counts, timestamps, and finding examples are synthetic. Routes, exact response fields, ordering, page size, pagination behavior, finding-detail depth, and component dependencies remain open for the API/UX review.
 
-- Proposed client navigation: `/history` and `/history/{historyEntryID}`; the history entry remains addressable, and both the visible back link and browser Back return to the list. This does not define an API route.
-- Desktop history remains a flat scan-entry table with repository context in the first column; narrow layouts use stacked scan cards. Each row/card is one link to `/history/{historyEntryID}`. The repository label and a visible focus treatment expose the detail navigation; the visible back link and browser Back return to history.
+- Proposed client navigation: `/history` and `/history/{historyEntryID}`; both routes are directly addressable. This does not define an API route.
+- Desktop history remains a flat scan-entry table with repository context in the first column; narrow layouts use stacked scan cards. Each row/card is one link to `/history/{historyEntryID}`. The visible back link and browser Back return to history.
+- Browser Forward restores the selected detail route if the entry remains available. A direct or stale ID that is no longer present shows the not-found state with a safe history link. Restoring page, cursor, or filter selection is deferred until the API pagination and URL-state contracts are approved; no server route or persistence behavior is implied.
 - A project-level expandable table was considered but deferred for v0.5. It could help users browse repeated scans per repository, but FR-502 and the proposed `GET /api/v1/scans` page scan entries; no stable project-group identity or bounded group/child-pagination contract is approved. Grouping risks splitting a project’s scans across pages and adds nested-table keyboard/screen-reader complexity. Revisit only with user evidence and an explicit data/API contract update.
-- The detail proposal places operation outcome before report completeness and keeps workspaces, findings, provenance, and diagnostics distinct. The cancelled/complete example is intentionally adversarial: `complete` describes the returned report, not successful completion of the operation.
+- The detail proposal places operation outcome before report completeness and keeps workspaces, findings, provenance, and diagnostics distinct. The cancelled/complete example is intentionally adversarial: `complete` describes the returned report, not successful completion of the operation. The desktop and narrow history samples also show a completed operation with a failed report; findings are unavailable rather than presented as zero.
 - The state board distinguishes loading, empty history, store unavailable, incompatible/corrupt storage, missing or mismatched raw artifacts, and stale selection. Retry is shown only for a safe read; no destructive recovery control is proposed.
 - The mockups use system UI fonts and local vector shapes only; no remote fonts, icons, or images are required. The shadcn/ui direction remains a visual reference, not a dependency or component-source decision.
 - Repository-controlled strings must render as inert text. Review cases include a label such as `<script>alert(1)</script>` and a long path; text wraps or truncates without changing meaning or causing horizontal page overflow.
@@ -45,9 +46,9 @@ Exact color tokens and dependency/build decisions require owner and independent 
 
 1. **Scan History** — primary route; paginated saved scans, status and summary filters only if justified by user research.
 2. **Scan Detail** — selected scan metadata, completeness/diagnostics, finding summary, workspace list, findings, and provenance.
-3. **About/Local data help** — data location and operational guidance only if the owner accepts the UX scope; no account/team settings.
+3. **About/Local data help — recommendation, pending owner decision:** include a static, read-only view explaining local-only operation and pointing to approved data-location guidance. Do not expose absolute host paths or offer reset, delete, or export controls.
 
-Navigation must include a persistent product identity and a clear return-to-history path. Do not show controls for unsupported team, publish, exception-management, agent-write, or remediation capabilities.
+Navigation includes a persistent product identity and a clear return-to-history path. Do not show controls for unsupported team, publish, exception-management, agent-write, or remediation capabilities. The owner must accept or exclude About/Local data help before UX acceptance; if excluded, retain a concise local-only note on history. Exact data location remains deferred until its storage contract is approved.
 
 ## 4. Primary workflows
 
@@ -89,34 +90,62 @@ Navigation must include a persistent product identity and a clear return-to-hist
 
 Text labels and aria status announcements convey state. Color alone is never sufficient.
 
-## 6. Component mapping (illustrative)
+### API response-to-state map (proposal)
 
-Final components follow the design-system decision. Candidate primitives include: page header, breadcrumbs/back link, status badge, summary card, table/list, pagination, filter control, tabs only if they improve scan detail comprehension, alert/banner, empty state, skeleton, tooltip, and a finding detail panel. Prefer semantic HTML/table patterns for tabular data. Dialogs are not the default for primary scan detail navigation because they impair deep linking and keyboard/screen-reader orientation.
+The endpoint names and error codes below are candidates from `API-DESIGN.md` and `requirements/ERROR-MODEL.md`. HTTP status mapping and wire schemas remain unapproved; this map defines the intended user-visible distinction, not a frozen transport contract.
 
-Use shadcn/ui-style composition without adopting a component just to match a screenshot. Avoid heavy charting for v0.5 unless reviewed user research establishes a specific need; trend analytics are not part of the current proposal.
+| Response or condition | Required UI state and behavior |
+| --- | --- |
+| Initial `GET /api/v1/scans` request | Loading skeleton with an announced loading label; no invented progress percentage. |
+| Successful history page with no entries | Empty history only after a successful response; never use this state for a request or storage failure. |
+| Successful history page with entries | Render each unique history entry. Show operation outcome separately from optional report completeness. For `completed` + `failed`, label the report `Failed` and do not show zero findings as a clean result. |
+| `HISTORY_UNAVAILABLE` | Store-unavailable state; explain that history could not be read and offer only safe read retry. |
+| `HISTORY_SCHEMA_UNSUPPORTED`, `HISTORY_MIGRATION_FAILED`, or `HISTORY_CORRUPT` | Compatibility/recovery state; preserve existing data and do not suggest reset or deletion. |
+| `HISTORY_ENTRY_NOT_FOUND` | Stale-selection state with a return-to-history link; do not substitute another entry. |
+| `HISTORY_ARTIFACT_MISSING` or `HISTORY_ARTIFACT_DIGEST_MISMATCH` | Keep trustworthy metadata if permitted, disclose unavailable/unverified evidence, and never substitute an empty artifact or report. |
+| `API_REQUEST_INVALID`, `API_REQUEST_TOO_LARGE`, `API_VERSION_UNSUPPORTED`, `API_METHOD_UNSUPPORTED`, or `API_ORIGIN_REJECTED` | Explicit safe request/compatibility error; never render empty history. |
+| `API_TIMEOUT` or `API_CANCELLED` on a read | End the loading state with a request-level message. Do not rewrite the saved operation outcome or report completeness. |
+
+The screen presents `operationOutcome` (`completed|failed|cancelled`) and, when a report exists, `reportStatus` (`complete|partial|failed`) as independent values. Candidate codes do not replace the approved error contract, and an error response is never treated as a successful empty page.
+
+## 6. Component and implementation direction (proposal; not approved)
+
+The visual direction is shadcn/ui-inspired, not a commitment to install shadcn/ui or copy generated components. The conservative design baseline is a small project-owned layer built from semantic HTML and CSS; no new runtime dependency is selected or authorized here.
+
+| Decision area | Proposed direction | Approval/build boundary |
+| --- | --- | --- |
+| Primitives | Native links, buttons, headings, lists, semantic tables, status text, alerts, skeletons, and pagination; use links for history-to-detail navigation. Avoid dialogs for primary detail navigation. | Verify keyboard and assistive-technology behavior on the actual browser surface. |
+| Component ownership | Hand-authored components and styles belong to DepRail and are reviewed in the repository. | If shadcn/ui source or another library is later preferred, record copied-source ownership, package/version, license, maintenance, and bundle impact before adoption. |
+| Dependencies | No third-party component, icon, chart, or font dependency is selected by this UX proposal. | Any runtime package remains subject to owner and independent review; this document does not approve installation. |
+| Tokens | Project-owned CSS custom properties for background, foreground, border, muted, primary, destructive, warning, success, and focus states. | Exact palette, spacing, type scale, and contrast values remain design-review decisions. |
+| Icons and fonts | System font stack and local/inline SVG icons; no remote fonts, images, CDN, or analytics. | Keep assets local and review any future dependency or license change. |
+| Embedded build | React, TypeScript, and Vite static output embedded in the Go application, consistent with the architecture baseline. | `web/` is the source ownership boundary; package manager, pinned versions, embed path/tool, and bundle/startup budget remain execution-package decisions. |
+
+The proposal preserves the requested shadcn/ui visual characteristics without freezing a library or implementation. Owner and independent UX/security review must approve the actual design-system, dependency, and build decisions before runtime work.
 
 ## 7. Accessibility and responsive acceptance
 
-- All navigation, filters, pagination, and finding actions are reachable by keyboard and have a logical focus order.
-- Visible focus indicator persists in all themes and states; focus is restored predictably after navigation/close.
-- Headings and landmarks express the page structure; controls have programmatic labels; tables identify column headers.
-- Dynamic loading/error/status updates are announced without repeatedly interrupting assistive technology.
-- Text, icons, charts, and focus states meet the agreed contrast threshold; status is not color-only.
-- At 320 CSS px width, essential status, identity, finding information, and navigation remain available without page-level horizontal scrolling; wide tables use an intentional responsive pattern.
-- Reduced-motion preferences are respected; animation is nonessential.
-- Test screen-reader names/status in a supported browser/OS combination and document scope and remaining gaps.
+- All navigation, filters, pagination, and finding actions are keyboard reachable with a logical focus order; visible focus remains clear in every state.
+- The history-to-detail flow works with keyboard only: focus a row/card link, open detail, use the visible return link, then browser Back and Forward. Focus returns to a predictable location.
+- Headings and landmarks express page structure; controls have programmatic labels; tables identify column headers; links have distinguishable names.
+- Loading, errors, cancellation, and status changes are announced without repeatedly interrupting assistive technology. Outcome and report completeness are both conveyed in text.
+- Proposed contrast target is WCAG 2.2 AA: at least 4.5:1 for normal text, 3:1 for large text, and 3:1 for meaningful UI/focus indicators. Verify all interactive and status states; this target remains subject to design review.
+- At 320 CSS px width and 200% zoom, essential status, identity, findings information, and navigation remain available without page-level horizontal scrolling; wide tables use an intentional responsive pattern.
+- Reduced-motion preferences are respected; movement is nonessential and disabled or simplified when `prefers-reduced-motion` is enabled.
+- Repository-controlled strings remain inert text. Review markup-like labels such as `<script>alert(1)</script>`, long paths, Unicode, and direction-control characters; they must not become executable markup, navigation targets, or misleading visual labels.
+- Select and document the supported browser/OS and screen-reader combination in the compatibility/test plan. Record the environment and observed gaps; a static mockup is not accessibility verification.
+
+Color alone never communicates status. PNG/SVG inspection can verify layout and represented states only; keyboard, screen-reader, contrast, reduced-motion, and hostile-text acceptance require the actual browser surface before implementation is accepted.
 
 ## 8. UX evidence package required before implementation
 
-The design reviewer must attach or link:
+The design package links the draft history, detail, empty/loading/recovery wireframes and editable sources above. Before UX acceptance, the owner and design reviewer must review and record:
 
-- User/workflow assumptions and scope decisions.
-- Low- or high-fidelity page wireframes/prototype for history, detail, empty and error states; no code scaffold is needed.
-- Route/navigation and browser back/forward behavior.
-- Interaction/state inventory mapped to API response and failure cases.
-- Token/component proposal with shadcn/ui adoption/dependency and code ownership decision.
-- Responsive breakpoints and keyboard/accessibility review.
-- Representative untrusted-data rendering examples.
-- Owner and independent reviewer acceptance, separately recorded.
+- User/workflow assumptions and scope decisions, including the About/Local data help decision.
+- History/detail navigation, direct-route behavior, and browser back/forward behavior, including stale-selection recovery.
+- The response-to-state map from API success, candidate errors, and report/operation values to visible UI states.
+- The component/dependency, code ownership, icon/font, token, and embedded-build proposal, with every unapproved choice clearly marked.
+- Responsive breakpoints, keyboard flow, focus behavior, contrast target, screen-reader names/status, reduced-motion behavior, and hostile-data cases.
+- Owner and independent reviewer acceptance separately; neither is implied by a merged design PR.
 
-These linked PNG/SVG mockups are first-pass design drafts; they do not complete the UX evidence package until the response/state map, component and dependency decisions, accessibility review, owner acceptance, and independent review are recorded.
+The SVG/PNG examples are synthetic proposal artifacts. They do not approve an API, dependency, storage behavior, visual system, or runtime implementation, and they do not replace browser accessibility evidence.

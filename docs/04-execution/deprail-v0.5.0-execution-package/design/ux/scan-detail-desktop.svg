@@ -104,7 +104,7 @@
     <text x="776" y="512" class="body" font-weight="620">services/api</text>
     <text x="776" y="533" class="small muted">Java · manifest scope</text>
     <text x="776" y="566" class="body" font-weight="620">services/worker</text>
-    <text x="776" y="587" class="small muted">Go · manifest scope</text>
+    <text x="776" y="587" class="small muted">JavaScript · npm workspace</text>
     <text x="776" y="617" class="small" font-weight="650" fill="#1d4ed8">View workspace details  →</text>
 
     <rect x="752" y="654" width="368" height="226" rx="12" fill="#ffffff" stroke="#dbe2ea"/>

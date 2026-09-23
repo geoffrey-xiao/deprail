@@ -58,9 +58,9 @@ Whether scans are automatically recorded, how existing reports enter history, an
 
 ## 4. Persistence proposal (unapproved)
 
-SQLite is the roadmap/architecture choice for local indexed history; raw scanner artifacts remain in the existing content-addressed artifact store. SQLite should hold the smallest useful query/index metadata and a schema-validated normalized scan representation or stable reference to it, with digest and provenance linkage. The final choice requires an ADR and size/performance evidence.
+The proposed v1 schema uses one `history_entries` row per explicitly selected operation, versioned v1alpha project/report snapshots, denormalized list summaries, and separate artifact-digest references; raw content-addressed artifacts remain external. See the [unapproved schema contract](requirements/FAILURE-AND-DATA-CONTRACT.md#4-proposed-persisted-schema-v1-unapproved) and [ADR-0004](../../adr/ADR-0004-local-scan-history.md). The API projection remains separate from the persistence representation.
 
-The ADR must decide: canonical data directory; DB filename and permission model; WAL/journal/concurrency behavior; single-writer/multiple-reader strategy; transaction scope; report/blob size boundaries; artifact retention and dangling references; migration direction; backup/recovery; retention/deletion/export; disk-full/corruption behavior; process locking; and behavior when persistence is unavailable. No destructive migration, replacement, network sync, or implicit retention limit is approved by this draft.
+Proposed [ADR-0004](../../adr/ADR-0004-local-scan-history.md) recommends a per-user data root, owner-only permissions, WAL with one serialized writer, transactional history/reference writes, forward-only `user_version` migrations, validated pre-migration backups, no automatic retention/deletion, and explicit persistence failures separate from scan outcomes. These are draft recommendations, not approved implementation requirements. Numeric payload/store bounds, busy timeout, driver/build strategy, and cross-platform recovery evidence remain open. No destructive migration, replacement, network sync, or implicit retention limit is approved.
 
 ## 5. Local HTTP trust boundary (unapproved)
 

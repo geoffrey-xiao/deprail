@@ -131,7 +131,7 @@ Before API implementation, the reviewed OpenAPI contract and security review mus
 
 ## 7. Dependencies and sequencing
 
-- **#387** owns preparation, contract reconciliation, the plan/execution package, named review, and Definition of Ready. It is currently `Todo` in the `v0.5.0` Project view.
+- **#387** owns preparation, contract reconciliation, the plan/execution package, named review, and Definition of Ready. Its Project Status is `Review` while planning PR #389 is open; this workflow state does not approve the plan or authorize implementation.
 - **#356** is still open for v0.4.0-preview.2 closeout. Its remaining items must receive explicit dispositions and owners; v0.5 cannot claim those gates complete.
 - Product, architecture, and roadmap contracts remain prerequisites. This plan does not supersede them.
 - UX flows/resource assumptions must be reconciled before the UX and API packages are finalized. After that shared prerequisite, UX and API design may proceed in parallel.

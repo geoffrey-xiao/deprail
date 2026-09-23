@@ -4,6 +4,7 @@
 - Date: 2026-09-23
 - Owners: `@geoffrey-xiao`
 - Related issues: [#391 V05-003](https://github.com/geoffrey-xiao/deprail/issues/391); [#396 V05-002](https://github.com/geoffrey-xiao/deprail/issues/396)
+- Related pull request: [#407](https://github.com/geoffrey-xiao/deprail/pull/407) (draft)
 - Independent reviewer: Not assigned by owner direction; independent architecture/security review remains required before acceptance or runtime authorization.
 
 ## Context

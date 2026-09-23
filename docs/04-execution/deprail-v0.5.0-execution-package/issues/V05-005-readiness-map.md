@@ -1,7 +1,7 @@
 # V05-005: Assemble the Execution Package and Readiness Map
 - GitHub Issue: [#392](https://github.com/geoffrey-xiao/deprail/issues/392)
 
-- Epic: [EPIC-007 / #390](https://github.com/geoffrey-xiao/deprail/issues/390)
+- Epic: [EPIC-001 / #390](https://github.com/geoffrey-xiao/deprail/issues/390)
 - Target: `v0.5.0`
 - Status: Todo; planning/design deliverable
 - Type: decision

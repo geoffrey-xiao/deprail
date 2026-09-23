@@ -37,7 +37,7 @@ This package translates the proposed v0.5 release outcome into reviewable UX, AP
 - [`requirements/COMPATIBILITY-MATRIX.md`](requirements/COMPATIBILITY-MATRIX.md) — compatibility commitments and unresolved decisions.
 - [`requirements/TEST-STRATEGY.md`](requirements/TEST-STRATEGY.md) — contract, migration, UI, integration, and platform evidence.
 
-- [`epics/README.md`](epics/README.md) and [`issues/README.md`](issues/README.md) — EPIC-007 / #390 and its planning-only subissue contracts.
+- [`epics/README.md`](epics/README.md) and [`issues/README.md`](issues/README.md) — EPIC-001 / #390 and its planning-only subissue contracts.
 
 ## Release boundary
 

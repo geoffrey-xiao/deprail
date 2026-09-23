@@ -1,4 +1,4 @@
-# EPIC-007: v0.5 Local Web and History Readiness
+# EPIC-001: v0.5 Local Web and History Readiness
 **GitHub epic:** [#390](https://github.com/geoffrey-xiao/deprail/issues/390)
 
 - Target: `v0.5.0`

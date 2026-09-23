@@ -1,7 +1,7 @@
 # V05-002: Freeze the Local API and OpenAPI Security Contract
 - GitHub Issue: [#396](https://github.com/geoffrey-xiao/deprail/issues/396)
 
-- Epic: [EPIC-007 / #390](https://github.com/geoffrey-xiao/deprail/issues/390)
+- Epic: [EPIC-001 / #390](https://github.com/geoffrey-xiao/deprail/issues/390)
 - Target: `v0.5.0`
 - Status: Todo; planning/design deliverable
 - Type: decision

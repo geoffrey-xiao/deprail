@@ -1,7 +1,7 @@
 # V05-001: Finalize History and Scan-Detail UX Acceptance
 - GitHub Issue: [#394](https://github.com/geoffrey-xiao/deprail/issues/394)
 
-- Epic: [EPIC-007 / #390](https://github.com/geoffrey-xiao/deprail/issues/390)
+- Epic: [EPIC-001 / #390](https://github.com/geoffrey-xiao/deprail/issues/390)
 - Target: `v0.5.0`
 - Status: Todo; planning/design deliverable
 - Type: docs

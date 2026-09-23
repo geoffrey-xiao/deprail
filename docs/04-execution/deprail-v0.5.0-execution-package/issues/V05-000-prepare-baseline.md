@@ -1,8 +1,8 @@
 # V05-000: Prepare the v0.5.0 Development Baseline
 
 - GitHub Issue: [#387](https://github.com/geoffrey-xiao/deprail/issues/387)
-- GitHub parent epic: [EPIC-007 / #390](https://github.com/geoffrey-xiao/deprail/issues/390)
-- Epic: [EPIC-007](../epics/EPIC-007-local-history-readiness.md)
+- GitHub parent epic: [EPIC-001 / #390](https://github.com/geoffrey-xiao/deprail/issues/390)
+- Epic: [EPIC-001](../epics/EPIC-001-local-history-readiness.md)
 - Target: `v0.5.0`
 - Status: Open; planning only
 - Priority: P0
@@ -18,7 +18,7 @@ Prepare a bounded, evidence-backed v0.5 plan for local scan history and the embe
 
 ## Scope
 
-Reconcile the v0.5 plan/package with the product design, architecture, roadmap, and #356 predecessor evidence; maintain the explicit v0.5 boundary; record the owner's disposition that all five #356 follow-ups remain in #356; maintain the Definition of Ready; and link the dependency-ordered planning work under EPIC-007.
+Reconcile the v0.5 plan/package with the product design, architecture, roadmap, and #356 predecessor evidence; maintain the explicit v0.5 boundary; record the owner's disposition that all five #356 follow-ups remain in #356; maintain the Definition of Ready; and link the dependency-ordered planning work under EPIC-001.
 
 ## Exclusions
 
@@ -36,5 +36,5 @@ Check source links, owner disposition crosswalk, issue hierarchy, milestone, lab
 
 - The included and excluded v0.5 scope remains traceable to the product, architecture, and roadmap.
 - All five #356 follow-ups are explicitly kept in #356; this does not close them or imply their completion.
-- Planning issues are linked under EPIC-007; implementation issues remain absent until the v0.5 DoR passes.
+- Planning issues are linked under EPIC-001; implementation issues remain absent until the v0.5 DoR passes.
 - The independent reviewer and owner approval remain separate, visible gates for implementation readiness.

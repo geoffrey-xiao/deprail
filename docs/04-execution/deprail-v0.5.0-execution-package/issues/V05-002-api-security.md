@@ -3,7 +3,7 @@
 
 - Epic: [EPIC-001 / #390](https://github.com/geoffrey-xiao/deprail/issues/390)
 - Target: `v0.5.0`
-- Status: Review; draft API profile in merged [PR #404](https://github.com/geoffrey-xiao/deprail/pull/404); error-mapping corrections in follow-up [PR #405](https://github.com/geoffrey-xiao/deprail/pull/405); complete OpenAPI schema, numeric bounds, listener/auth decisions, independent security review, and Definition of Ready remain pending.
+- Status: Review; draft API profile in merged [PR #404](https://github.com/geoffrey-xiao/deprail/pull/404); corrected candidate error mapping merged in [PR #405](https://github.com/geoffrey-xiao/deprail/pull/405); complete OpenAPI schema, numeric bounds, listener/auth decisions, independent security review, and Definition of Ready remain pending.
 - Type: decision
 - Area: docs
 - Priority: P0

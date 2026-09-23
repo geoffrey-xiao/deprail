@@ -1,0 +1,105 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="390" height="1680" viewBox="0 0 390 1680" role="img" aria-labelledby="title desc">
+  <title id="title">DepRail scan detail — narrow layout draft</title>
+  <desc id="desc">Illustrative narrow scan detail with a visible history link, separate cancelled operation and complete report statuses, findings, workspace context, and provenance. All data is synthetic.</desc>
+  <defs>
+    <style>
+      text { font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; fill: #111827; }
+      .muted { fill: #475569; }
+      .soft { fill: #64748b; }
+      .small { font-size: 12px; }
+      .body { font-size: 14px; }
+      .label { font-size: 11px; font-weight: 650; letter-spacing: .04em; }
+      .heading { font-size: 26px; font-weight: 700; letter-spacing: -.02em; }
+      .border { stroke: #dbe2ea; stroke-width: 1; }
+    </style>
+  </defs>
+  <rect width="390" height="1680" fill="#f6f8fb"/>
+  <rect width="390" height="64" fill="#ffffff"/>
+  <path d="M0 63.5H390" stroke="#e2e8f0"/>
+  <rect x="16" y="12" width="40" height="40" rx="12" fill="#14243a"/>
+  <path d="M36 20l11 5v8c0 8-5 13-11 16-6-3-11-8-11-16v-8z" fill="none" stroke="#ffffff" stroke-width="2"/>
+  <path d="M31 33l4 4 7-8" fill="none" stroke="#93c5fd" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+  <text x="66" y="39" font-size="17" font-weight="720">DepRail</text>
+  <rect x="251" y="18" width="123" height="28" rx="14" fill="#eff6ff" stroke="#bfdbfe"/>
+  <circle cx="267" cy="32" r="4" fill="#1d4ed8"/>
+  <text x="279" y="36" font-size="11" font-weight="650" fill="#1e40af">LOCAL ONLY</text>
+
+  <text x="16" y="96" class="small muted">‹  Back to scan history</text>
+  <text x="16" y="140" class="heading">atlas-api</text>
+  <text x="16" y="164" class="small muted">History entry h_01JQ8W9K2M</text>
+  <text x="16" y="183" class="small muted">Source scan s_84b2… · illustrative data</text>
+
+  <rect x="16" y="204" width="358" height="116" rx="10" fill="#ffffff" stroke="#dbe2ea"/>
+  <text x="32" y="230" class="label muted">OPERATION OUTCOME</text>
+  <rect x="32" y="244" width="100" height="28" rx="14" fill="#fef3c7"/>
+  <circle cx="48" cy="258" r="4" fill="#92400e"/>
+  <text x="60" y="263" font-size="14" font-weight="680" fill="#78350f">Cancelled</text>
+  <text x="32" y="298" class="small muted">Execution outcome is Cancelled.</text>
+
+  <rect x="16" y="332" width="358" height="116" rx="10" fill="#ffffff" stroke="#dbe2ea"/>
+  <text x="32" y="358" class="label muted">REPORT COMPLETENESS</text>
+  <rect x="32" y="372" width="96" height="28" rx="14" fill="#dcfce7"/>
+  <circle cx="48" cy="386" r="4" fill="#166534"/>
+  <text x="60" y="391" font-size="14" font-weight="680" fill="#14532d">Complete</text>
+  <text x="32" y="426" class="small muted">Returned report status; separate from outcome.</text>
+
+  <rect x="16" y="460" width="358" height="82" rx="10" fill="#fffbeb" stroke="#fcd34d"/>
+  <circle cx="34" cy="486" r="9" fill="#fef3c7" stroke="#b45309"/>
+  <text x="34" y="490" text-anchor="middle" font-size="12" font-weight="750" fill="#78350f">!</text>
+  <text x="50" y="485" class="body" font-weight="680" fill="#78350f">Cancelled operation</text>
+  <text x="32" y="510" class="small" fill="#78350f">A complete report does not change the</text>
+  <text x="32" y="527" class="small" fill="#78350f">operation outcome to Completed.</text>
+
+  <rect x="16" y="554" width="171" height="74" rx="10" fill="#ffffff" stroke="#dbe2ea"/>
+  <text x="30" y="578" class="label muted">FINDINGS</text>
+  <text x="30" y="609" font-size="23" font-weight="700">12</text>
+  <text x="61" y="608" class="small muted">returned</text>
+  <rect x="203" y="554" width="171" height="74" rx="10" fill="#ffffff" stroke="#dbe2ea"/>
+  <text x="217" y="578" class="label muted">WORKSPACES</text>
+  <text x="217" y="609" font-size="23" font-weight="700">2</text>
+  <text x="239" y="608" class="small muted">reported</text>
+
+  <rect x="16" y="644" width="358" height="385" rx="10" fill="#ffffff" stroke="#dbe2ea"/>
+  <text x="32" y="674" font-size="17" font-weight="680">Findings</text>
+  <text x="32" y="697" class="small muted">Stable identifiers from the saved report.</text>
+  <path d="M32 714H358" class="border"/>
+  <rect x="32" y="728" width="69" height="23" rx="11" fill="#fee2e2"/>
+  <circle cx="44" cy="739.5" r="3.5" fill="#991b1b"/>
+  <text x="54" y="744" font-size="11" font-weight="680" fill="#7f1d1d">Critical</text>
+  <text x="32" y="775" class="body" font-weight="620">pkg:example/auth@1.2.0</text>
+  <text x="32" y="795" class="small muted">VULN-EXAMPLE-01 · services/api</text>
+  <path d="M32 810H358" class="border"/>
+  <rect x="32" y="824" width="60" height="23" rx="11" fill="#ffedd5"/>
+  <circle cx="44" cy="835.5" r="3.5" fill="#9a3412"/>
+  <text x="54" y="840" font-size="11" font-weight="680" fill="#7c2d12">High</text>
+  <text x="32" y="871" class="body" font-weight="620">pkg:example/crypto@2.0.1</text>
+  <text x="32" y="891" class="small muted">VULN-EXAMPLE-02 · services/worker</text>
+  <path d="M32 906H358" class="border"/>
+  <rect x="32" y="920" width="81" height="23" rx="11" fill="#fef3c7"/>
+  <circle cx="44" cy="931.5" r="3.5" fill="#92400e"/>
+  <text x="54" y="936" font-size="11" font-weight="680" fill="#78350f">Moderate</text>
+  <text x="32" y="967" class="body" font-weight="620">pkg:example/parser@0.8.0</text>
+  <text x="32" y="987" class="small muted">VULN-EXAMPLE-03 · services/api</text>
+  <text x="32" y="1012" class="small muted">Showing 3 of 12 findings</text>
+
+  <rect x="16" y="1045" width="358" height="176" rx="10" fill="#ffffff" stroke="#dbe2ea"/>
+  <text x="32" y="1075" font-size="17" font-weight="680">Workspace scope</text>
+  <text x="32" y="1106" class="body" font-weight="620">services/api</text>
+  <text x="32" y="1127" class="small muted">Java · manifest scope</text>
+  <text x="32" y="1160" class="body" font-weight="620">services/worker</text>
+  <text x="32" y="1181" class="small muted">JavaScript · npm workspace</text>
+  <text x="32" y="1205" class="small" font-weight="650" fill="#1d4ed8">View workspace details  →</text>
+
+  <rect x="16" y="1237" width="358" height="214" rx="10" fill="#ffffff" stroke="#dbe2ea"/>
+  <text x="32" y="1267" font-size="17" font-weight="680">Provenance</text>
+  <text x="32" y="1300" class="small muted">Scanner</text>
+  <text x="32" y="1321" class="body" font-weight="620">OSV-Scanner · 2.x</text>
+  <text x="32" y="1352" class="small muted">Database</text>
+  <text x="32" y="1373" class="body" font-weight="620">Recorded version · illustrative</text>
+  <text x="32" y="1404" class="small muted">Raw artifact</text>
+  <text x="32" y="1425" class="body" font-weight="620" fill="#166534">Available · digest verified</text>
+
+  <text x="16" y="1490" class="small soft">Draft visual reference · synthetic data.</text>
+  <text x="16" y="1510" class="small soft">At 390 px; actual 320 px and assistive-technology</text>
+  <text x="16" y="1527" class="small soft">behavior require browser verification.</text>
+</svg>

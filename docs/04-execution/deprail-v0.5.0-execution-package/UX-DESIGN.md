@@ -27,6 +27,8 @@ PNG previews and editable SVG sources:
 - Scan history, narrow layout: [`history-mobile.png`](design/ux/history-mobile.png) ([SVG](design/ux/history-mobile.svg)).
 - Scan detail, desktop: [`scan-detail-desktop.png`](design/ux/scan-detail-desktop.png) ([SVG](design/ux/scan-detail-desktop.svg)).
 - Loading, empty, and recovery states: [`state-patterns.png`](design/ux/state-patterns.png) ([SVG](design/ux/state-patterns.svg)).
+- Scan detail, narrow layout: [`scan-detail-mobile.png`](design/ux/scan-detail-mobile.png) ([SVG](design/ux/scan-detail-mobile.svg)).
+- Scan detail outcome/report variants: [`scan-detail-statuses.png`](design/ux/scan-detail-statuses.png) ([SVG](design/ux/scan-detail-statuses.svg)).
 
 These are proposal artifacts, not accepted schemas or implementation authorization. All names, IDs, counts, timestamps, and finding examples are synthetic. Routes, exact response fields, ordering, page size, pagination behavior, finding-detail depth, and component dependencies remain open for the API/UX review.
 
@@ -35,7 +37,7 @@ These are proposal artifacts, not accepted schemas or implementation authorizati
 - When `/history/{historyEntryID}` is opened directly or in a new tab, browser Back retains normal browser behavior and may leave the console. The visible `Back to scan history` link is always available as the in-app fallback. A missing or stale entry shows the not-found state with that link; do not invent an in-app history entry for direct navigation.
 - Restoring the list's exact page, cursor, or filter selection remains deferred until the API pagination and URL-state contracts are approved; these are client routes, not API routes.
 - A project-level expandable table was considered but deferred for v0.5. It could help users browse repeated scans per repository, but FR-502 and the proposed `GET /api/v1/scans` page scan entries; no stable project-group identity or bounded group/child-pagination contract is approved. Grouping risks splitting a project’s scans across pages and adds nested-table keyboard/screen-reader complexity. Revisit only with user evidence and an explicit data/API contract update.
-- The detail proposal places operation outcome before report completeness and keeps workspaces, findings, provenance, and diagnostics distinct. The cancelled/complete example is intentionally adversarial: `complete` describes the returned report, not successful completion of the operation. The desktop and narrow history samples also show a completed operation with a failed report; findings are unavailable rather than presented as zero.
+- The detail proposal places operation outcome before report completeness and keeps workspaces, findings, provenance, and diagnostics distinct. The existing desktop and new narrow examples show a cancelled operation with a complete returned report; the status board separately illustrates completed/partial, completed/failed, failed/no-report, and completed/complete/zero-findings. Only the last case may present zero findings as a complete result.
 - The state board distinguishes loading, empty history, store unavailable, incompatible/corrupt storage, missing or mismatched raw artifacts, and stale selection. Retry is shown only for a safe read; no destructive recovery control is proposed.
 - The mockups use system UI fonts and local vector shapes only; no remote fonts, icons, or images are required. The shadcn/ui direction remains a visual reference, not a dependency or component-source decision.
 - Repository-controlled strings must render as inert text. Review cases include a label such as `<script>alert(1)</script>` and a long path; text wraps or truncates without changing meaning or causing horizontal page overflow.
@@ -82,7 +84,8 @@ Navigation includes a persistent product identity and a clear return-to-history 
 | Completed operation, complete report, zero findings | Clearly show completed execution and zero findings; no ambiguity. |
 | Completed operation, complete report, findings | Finding count/severity summary and details navigation. |
 | Partial report, any operation outcome | Persistent warning label; explain omitted/incomplete scope and show diagnostics while retaining the separate execution outcome. |
-| Failed execution/report | Explicitly distinguish execution failure from report completeness; never “clean.” |
+| Failed operation with no report | Show Failed outcome, report unavailable, findings unavailable, and diagnostics; never show zero findings. |
+| Failed report after completed operation | Show Completed outcome and Failed report separately; findings are unavailable and diagnostics remain visible; never call this clean. |
 | Cancelled execution | Show Cancelled as the operation outcome, separately from any returned report completeness; never treat it as a completed scan. |
 | API/storage unavailable | Error state distinct from empty; retry/action only when safe. |
 | Migration/storage corruption | Explain history availability and recovery path without suggesting destructive reset. |
@@ -140,7 +143,7 @@ The proposal preserves the requested shadcn/ui visual characteristics without fr
 - Headings and landmarks express page structure; controls have programmatic labels; tables identify column headers; links have distinguishable names.
 - Loading, errors, cancellation, and status changes are announced without repeatedly interrupting assistive technology. Outcome and report completeness are both conveyed in text.
 - Proposed contrast target is WCAG 2.2 AA: at least 4.5:1 for normal text, 3:1 for large text, and 3:1 for meaningful UI/focus indicators. Verify all interactive and status states; this target remains subject to design review.
-- At 320 CSS px width and 200% zoom, essential status, identity, findings information, and navigation remain available without page-level horizontal scrolling; wide tables use an intentional responsive pattern.
+- At 320 CSS px width and 200% zoom, essential status, identity, findings information, and navigation remain available without page-level horizontal scrolling; wide tables use an intentional responsive pattern. The 390 px narrow-detail mockup is illustrative and does not verify this acceptance.
 - Reduced-motion preferences are respected; movement is nonessential and disabled or simplified when `prefers-reduced-motion` is enabled.
 - Repository-controlled strings remain inert text. Review markup-like labels such as `<script>alert(1)</script>`, long paths, Unicode, and direction-control characters; they must not become executable markup, navigation targets, or misleading visual labels.
 - Select and document the supported browser/OS and screen-reader combination in the compatibility/test plan. Record the environment and observed gaps; a static mockup is not accessibility verification.
@@ -149,7 +152,7 @@ Color alone never communicates status. PNG/SVG inspection can verify layout and 
 
 ## 8. UX evidence package required before implementation
 
-The design package links the draft history, detail, empty/loading/recovery wireframes and editable sources above. Before UX acceptance, the owner and design reviewer must review and record:
+The design package links draft history (desktop/narrow), detail (desktop/narrow), outcome/report-state variants, empty/loading/recovery wireframes, and editable sources above. Before UX acceptance, the owner and design reviewer must review and record:
 
 - User/workflow assumptions and scope decisions, including the About/Local data help decision.
 - History/detail navigation, direct-route behavior, and browser back/forward behavior, including stale-selection recovery.

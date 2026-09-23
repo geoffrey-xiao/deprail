@@ -3,7 +3,7 @@
 
 - Epic: [EPIC-001 / #390](https://github.com/geoffrey-xiao/deprail/issues/390)
 - Target: `v0.5.0`
-- Status: Review; initial mockups merged via [PR #398](https://github.com/geoffrey-xiao/deprail/pull/398); follow-up UX proposals are in [PR #399](https://github.com/geoffrey-xiao/deprail/pull/399); owner acceptance and independent review remain pending.
+- Status: Review; initial mockups merged via [PR #398](https://github.com/geoffrey-xiao/deprail/pull/398); UX proposal follow-up in [PR #399](https://github.com/geoffrey-xiao/deprail/pull/399); navigation/API mapping update in [PR #400](https://github.com/geoffrey-xiao/deprail/pull/400); owner acceptance and independent review remain pending.
 - Type: docs
 - Area: docs
 - Priority: P0

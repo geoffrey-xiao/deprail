@@ -31,8 +31,9 @@ PNG previews and editable SVG sources:
 These are proposal artifacts, not accepted schemas or implementation authorization. All names, IDs, counts, timestamps, and finding examples are synthetic. Routes, exact response fields, ordering, page size, pagination behavior, finding-detail depth, and component dependencies remain open for the API/UX review.
 
 - Proposed client navigation: `/history` and `/history/{historyEntryID}`; both routes are directly addressable. This does not define an API route.
-- Desktop history remains a flat scan-entry table with repository context in the first column; narrow layouts use stacked scan cards. Each row/card is one link to `/history/{historyEntryID}`. The visible back link and browser Back return to history.
-- Browser Forward restores the selected detail route if the entry remains available. A direct or stale ID that is no longer present shows the not-found state with a safe history link. Restoring page, cursor, or filter selection is deferred until the API pagination and URL-state contracts are approved; no server route or persistence behavior is implied.
+- From a history row/card, open its detail route as an in-app history entry; browser Back returns to the originating history list, and Forward restores detail if the entry is still available.
+- When `/history/{historyEntryID}` is opened directly or in a new tab, browser Back retains normal browser behavior and may leave the console. The visible `Back to scan history` link is always available as the in-app fallback. A missing or stale entry shows the not-found state with that link; do not invent an in-app history entry for direct navigation.
+- Restoring the list's exact page, cursor, or filter selection remains deferred until the API pagination and URL-state contracts are approved; these are client routes, not API routes.
 - A project-level expandable table was considered but deferred for v0.5. It could help users browse repeated scans per repository, but FR-502 and the proposed `GET /api/v1/scans` page scan entries; no stable project-group identity or bounded group/child-pagination contract is approved. Grouping risks splitting a project’s scans across pages and adds nested-table keyboard/screen-reader complexity. Revisit only with user evidence and an explicit data/API contract update.
 - The detail proposal places operation outcome before report completeness and keeps workspaces, findings, provenance, and diagnostics distinct. The cancelled/complete example is intentionally adversarial: `complete` describes the returned report, not successful completion of the operation. The desktop and narrow history samples also show a completed operation with a failed report; findings are unavailable rather than presented as zero.
 - The state board distinguishes loading, empty history, store unavailable, incompatible/corrupt storage, missing or mismatched raw artifacts, and stale selection. Retry is shown only for a safe read; no destructive recovery control is proposed.
@@ -97,14 +98,23 @@ The endpoint names and error codes below are candidates from `API-DESIGN.md` and
 | Response or condition | Required UI state and behavior |
 | --- | --- |
 | Initial `GET /api/v1/scans` request | Loading skeleton with an announced loading label; no invented progress percentage. |
-| Successful history page with no entries | Empty history only after a successful response; never use this state for a request or storage failure. |
+| Successful history collection with no entries | Empty history only after a successful response confirms the collection is empty; never use this state for a request or storage failure. |
 | Successful history page with entries | Render each unique history entry. Show operation outcome separately from optional report completeness. For `completed` + `failed`, label the report `Failed` and do not show zero findings as a clean result. |
+| Initial detail or child-collection request | Show loading state in the affected detail/collection region; do not replace the overall entry or another loaded section with an empty state. |
+| Successful `GET /api/v1/scans/{historyEntryID}` with a report | Render the entry identity, operation outcome, report completeness, provenance, workspaces, findings, and diagnostics. Keep operation outcome and report completeness independent. |
+| Successful detail with no report | Render trustworthy operation metadata and diagnostics, label report/findings as unavailable, and do not synthesize an empty report or a zero-finding result. |
+| Successful workspace collection with entries | Render the returned workspace page with its parent entry context and workspace completeness. |
+| Successful workspace collection confirmed empty | Show that no workspaces were recorded only after successful completion of the collection; a failed or not-yet-loaded collection is not empty. |
+| Successful findings collection with entries | Render the returned finding page with stable identifiers and workspace/provenance context; retain the parent report state. |
+| Successful findings collection confirmed empty, complete report | Show no findings only when the API confirms the collection is empty/end-of-collection and the report is `complete`. |
+| Successful findings collection confirmed empty, partial/failed/no report | Keep the partial, failed, or unavailable report state and diagnostics; never describe this as a clean zero-finding result. |
+| Workspace/finding child request fails | Show an error scoped to that section and retain other trustworthy detail; do not substitute an empty collection. |
 | `HISTORY_UNAVAILABLE` | Store-unavailable state; explain that history could not be read and offer only safe read retry. |
 | `HISTORY_SCHEMA_UNSUPPORTED`, `HISTORY_MIGRATION_FAILED`, or `HISTORY_CORRUPT` | Compatibility/recovery state; preserve existing data and do not suggest reset or deletion. |
-| `HISTORY_ENTRY_NOT_FOUND` | Stale-selection state with a return-to-history link; do not substitute another entry. |
+| `HISTORY_ENTRY_NOT_FOUND` | Stale-selection state with a visible return-to-history link; do not substitute another entry. |
 | `HISTORY_ARTIFACT_MISSING` or `HISTORY_ARTIFACT_DIGEST_MISMATCH` | Keep trustworthy metadata if permitted, disclose unavailable/unverified evidence, and never substitute an empty artifact or report. |
-| `API_REQUEST_INVALID`, `API_REQUEST_TOO_LARGE`, `API_VERSION_UNSUPPORTED`, `API_METHOD_UNSUPPORTED`, or `API_ORIGIN_REJECTED` | Explicit safe request/compatibility error; never render empty history. |
-| `API_TIMEOUT` or `API_CANCELLED` on a read | End the loading state with a request-level message. Do not rewrite the saved operation outcome or report completeness. |
+| `API_REQUEST_INVALID`, `API_REQUEST_TOO_LARGE`, `API_VERSION_UNSUPPORTED`, `API_METHOD_UNSUPPORTED`, or `API_ORIGIN_REJECTED` | Explicit safe request/compatibility error; never render empty history or child data. |
+| `API_TIMEOUT` or `API_CANCELLED` on a read | End the affected loading state with a request-level message. Do not rewrite saved operation outcome or report completeness. |
 
 The screen presents `operationOutcome` (`completed|failed|cancelled`) and, when a report exists, `reportStatus` (`complete|partial|failed`) as independent values. Candidate codes do not replace the approved error contract, and an error response is never treated as a successful empty page.
 

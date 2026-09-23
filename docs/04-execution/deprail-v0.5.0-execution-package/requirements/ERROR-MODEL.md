@@ -22,10 +22,12 @@ The existing scan-error inventory is [`v0.1 ERROR-MODEL.md`](../../deprail-v0.1-
 | `HISTORY_ENTRY_NOT_FOUND` | Requested unique history-entry ID is absent | Return not found, distinct from a valid entry whose report has no findings. |
 | `HISTORY_ARTIFACT_MISSING` | Referenced raw artifact is unavailable | Preserve valid summary if allowed and disclose missing evidence. |
 | `HISTORY_ARTIFACT_DIGEST_MISMATCH` | Retrieved artifact does not match recorded digest | Treat artifact as untrusted; do not claim provenance verified. |
-| `API_REQUEST_INVALID` | Path, query, header, or content shape is invalid | Reject before expensive work; provide safe field/context detail. |
-| `API_REQUEST_TOO_LARGE` | Request exceeds an approved body/page/response bound | Reject with documented bound; no partial success. |
+| `API_REQUEST_INVALID` | Query, header, content shape, path identifier, filter, or page-size value is invalid | Reject before expensive work; provide safe field/context detail. |
+| `API_REQUEST_TOO_LARGE` | A request body exceeds an approved body limit | Reject with 413 and no partial success; this candidate applies only to a body-bearing operation if one is approved. |
+| `API_RESPONSE_TOO_LARGE` | A valid request would require a response above the server's approved response bound | Return an explicit bounded failure; never truncate into an apparently successful response. Candidate code requires review. |
+| `API_ROUTE_NOT_FOUND` | Path is not part of the approved API route table | Return not found; do not classify an unknown route as an unsupported method. |
 | `API_VERSION_UNSUPPORTED` | Client requests an unsupported contract version | Fail explicitly and identify supported API version safely. |
-| `API_METHOD_UNSUPPORTED` | Method or operation is not part of the approved surface | Reject; do not invoke side effects. |
+| `API_METHOD_UNSUPPORTED` | Method is not allowed for a known route | Reject without invoking side effects; distinguish from an unknown route. |
 | `API_ORIGIN_REJECTED` | Host/origin violates the approved local boundary | Reject without disclosing listener internals. |
 | `API_TIMEOUT` | Bounded read/API request deadline elapsed | Report timeout; do not change persisted history or scan operation outcome. |
 | `API_CANCELLED` | A read/API request was cancelled by the caller or deadline | Terminate the request without changing scan operation outcome or persisted report state. |
@@ -39,10 +41,12 @@ The table recommends one candidate HTTP status per API error category to make th
 
 | Category | Recommended candidate HTTP status |
 | --- | ---: |
-| Invalid path, query, content type, or unknown filter (`API_REQUEST_INVALID`) | 400 |
-| Request exceeds an approved bound (`API_REQUEST_TOO_LARGE`) | 413 |
+| Invalid path identifier, query, content type, filter, or page-size value (`API_REQUEST_INVALID`) | 400 |
+| Request body exceeds its bound (`API_REQUEST_TOO_LARGE`) | 413; candidate only for an approved body-bearing operation |
+| A valid request would exceed the response-size bound (`API_RESPONSE_TOO_LARGE`) | 500; do not truncate the response |
+| Unknown API route (`API_ROUTE_NOT_FOUND`) | 404 |
 | Unsupported API version (`API_VERSION_UNSUPPORTED`) | 404 |
-| Unsupported method (`API_METHOD_UNSUPPORTED`) | 405 |
+| Unsupported method on a known route (`API_METHOD_UNSUPPORTED`) | 405 with an `Allow` header |
 | Host or origin rejected (`API_ORIGIN_REJECTED`) | 403 |
 | History entry missing (`HISTORY_ENTRY_NOT_FOUND`) | 404 |
 | Store unavailable/locked, unsupported schema, or migration failure | 503 |
@@ -50,7 +54,7 @@ The table recommends one candidate HTTP status per API error category to make th
 | Server-side request deadline (`API_TIMEOUT`) | 504 |
 | Unexpected internal failure | 500 |
 
-`API_CANCELLED` describes a cancelled read request; when the client has disconnected, stop work and return no fabricated response. `API_LISTENER_UNAVAILABLE` is a startup failure, not an HTTP response. `HISTORY_WRITE_FAILED` is not reachable through the proposed read-only API and must remain a distinct application/CLI persistence outcome. Mixed integrity cases (trustworthy metadata with unavailable evidence) still need one explicit OpenAPI representation.
+`API_CANCELLED` describes a cancelled read request; when the client has disconnected, stop work and return no fabricated response. `API_LISTENER_UNAVAILABLE` is a startup failure, not an HTTP response. `HISTORY_WRITE_FAILED` is not reachable through the proposed read-only API and remains a distinct application/CLI persistence outcome. The current GET-only surface has no request-body route, so `API_REQUEST_TOO_LARGE` is unreachable unless a body-bearing operation is separately approved. Page-size bounds are invalid request parameters; output-limit failures use the distinct candidate `API_RESPONSE_TOO_LARGE`.
 
 Do not expose DB driver messages, SQL, stack traces, filesystem absolute paths, credentials, or untrusted input verbatim. The recommended statuses and their mapping to existing stable error contracts require owner and independent architecture/security review before acceptance.
 

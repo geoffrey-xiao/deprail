@@ -3,7 +3,7 @@
 
 - Epic: [EPIC-001 / #390](https://github.com/geoffrey-xiao/deprail/issues/390)
 - Target: `v0.5.0`
-- Status: Review; draft mockups are in [PR #398](https://github.com/geoffrey-xiao/deprail/pull/398) and UX acceptance remains pending
+- Status: Review; initial mockups merged via [PR #398](https://github.com/geoffrey-xiao/deprail/pull/398); follow-up UX proposals are in [PR #399](https://github.com/geoffrey-xiao/deprail/pull/399); owner acceptance and independent review remain pending.
 - Type: docs
 - Area: docs
 - Priority: P0

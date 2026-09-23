@@ -29,6 +29,7 @@ PNG previews and editable SVG sources:
 - Loading, empty, and recovery states: [`state-patterns.png`](design/ux/state-patterns.png) ([SVG](design/ux/state-patterns.svg)).
 - Scan detail, narrow layout: [`scan-detail-mobile.png`](design/ux/scan-detail-mobile.png) ([SVG](design/ux/scan-detail-mobile.svg)).
 - Scan detail outcome/report variants: [`scan-detail-statuses.png`](design/ux/scan-detail-statuses.png) ([SVG](design/ux/scan-detail-statuses.svg)).
+- About / local-data help: [`about-local-data.png`](design/ux/about-local-data.png) ([SVG](design/ux/about-local-data.svg)).
 
 These are proposal artifacts, not accepted schemas or implementation authorization. All names, IDs, counts, timestamps, and finding examples are synthetic. Routes, exact response fields, ordering, page size, pagination behavior, finding-detail depth, and component dependencies remain open for the API/UX review.
 
@@ -49,9 +50,9 @@ Exact color tokens and dependency/build decisions require owner and independent 
 
 1. **Scan History** — primary route; paginated saved scans, status and summary filters only if justified by user research.
 2. **Scan Detail** — selected scan metadata, completeness/diagnostics, finding summary, workspace list, findings, and provenance.
-3. **About/Local data help — recommendation, pending owner decision:** include a static, read-only view explaining local-only operation and pointing to approved data-location guidance. Do not expose absolute host paths or offer reset, delete, or export controls.
+3. **About/Local data help — included by owner decision:** a static, read-only view explains the local workflow and that exact storage location, retention, and permissions remain subject to the approved data contract. Do not expose absolute host paths or offer reset, delete, or export controls.
 
-Navigation includes a persistent product identity and a clear return-to-history path. Do not show controls for unsupported team, publish, exception-management, agent-write, or remediation capabilities. The owner must accept or exclude About/Local data help before UX acceptance; if excluded, retain a concise local-only note on history. Exact data location remains deferred until its storage contract is approved.
+Navigation includes a persistent product identity and clear return-to-history path. The About/Local data help view is read-only and has no scan, publish, team, agent-write, remediation, reset, delete, or export controls. The owner selected inclusion; final copy/design remains subject to independent UX/security review. Exact data location, retention, and permissions remain deferred until the storage contract is approved.
 
 ## 4. Primary workflows
 
@@ -152,9 +153,9 @@ Color alone never communicates status. PNG/SVG inspection can verify layout and 
 
 ## 8. UX evidence package required before implementation
 
-The design package links draft history (desktop/narrow), detail (desktop/narrow), outcome/report-state variants, empty/loading/recovery wireframes, and editable sources above. Before UX acceptance, the owner and design reviewer must review and record:
+The design package links draft history (desktop/narrow), detail (desktop/narrow), outcome/report-state variants, About/local-data help, empty/loading/recovery wireframes, and editable sources above. Before UX acceptance, the owner and design reviewer must review and record:
 
-- User/workflow assumptions and scope decisions, including the About/Local data help decision.
+- The owner-approved inclusion of About/Local data help; verify its copy does not claim an unapproved data location, retention policy, or permission model.
 - History/detail navigation, direct-route behavior, and browser back/forward behavior, including stale-selection recovery.
 - The response-to-state map from API success, candidate errors, and report/operation values to visible UI states.
 - The component/dependency, code ownership, icon/font, token, and embedded-build proposal, with every unapproved choice clearly marked.

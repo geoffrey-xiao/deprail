@@ -1,6 +1,6 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="390" height="1680" viewBox="0 0 390 1680" role="img" aria-labelledby="title desc">
   <title id="title">DepRail scan detail — narrow layout draft</title>
-  <desc id="desc">Illustrative narrow scan detail with a visible history link, separate cancelled operation and complete report statuses, findings, workspace context, and provenance. All data is synthetic.</desc>
+  <desc id="desc">Illustrative narrow scan detail with the available start time, a visible history link, separate cancelled operation and complete report statuses, a route to all findings, workspace context, and provenance. All data is synthetic.</desc>
   <defs>
     <style>
       text { font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; fill: #111827; }
@@ -27,7 +27,7 @@
   <text x="16" y="96" class="small muted">‹  Back to scan history</text>
   <text x="16" y="140" class="heading">atlas-api</text>
   <text x="16" y="164" class="small muted">History entry h_01JQ8W9K2M</text>
-  <text x="16" y="183" class="small muted">Source scan s_84b2… · illustrative data</text>
+  <text x="16" y="183" class="small muted">Source s_84b2… · Started Apr 17, 2026 · 10:42 AM</text>
 
   <rect x="16" y="204" width="358" height="116" rx="10" fill="#ffffff" stroke="#dbe2ea"/>
   <text x="32" y="230" class="label muted">OPERATION OUTCOME</text>
@@ -81,6 +81,7 @@
   <text x="32" y="967" class="body" font-weight="620">pkg:example/parser@0.8.0</text>
   <text x="32" y="987" class="small muted">VULN-EXAMPLE-03 · services/api</text>
   <text x="32" y="1012" class="small muted">Showing 3 of 12 findings</text>
+  <text x="358" y="1012" text-anchor="end" class="small" font-weight="650" fill="#1d4ed8">View all findings  →</text>
 
   <rect x="16" y="1045" width="358" height="176" rx="10" fill="#ffffff" stroke="#dbe2ea"/>
   <text x="32" y="1075" font-size="17" font-weight="680">Workspace scope</text>

@@ -44,7 +44,7 @@ Only include separate child collection endpoints if UX/resource size needs justi
 - Existing complete/partial/failed/cancelled scan states remain unchanged end-to-end.
 - Empty scan history is a successful empty page. Store unavailable, migration rejected, unsupported version, corrupt row, artifact digest mismatch, or timeout are explicit non-success responses.
 - A missing scan resource is distinct from a scan whose report has zero findings.
-- Use consistent JSON error envelope and HTTP status mapping; final codes and mapping must be agreed with existing `requirements/ERROR-MODEL.md` and v0.5 storage errors. No new stable code is finalized here.
+- Use consistent JSON error envelope and HTTP status mapping; candidate codes in [`requirements/ERROR-MODEL.md`](requirements/ERROR-MODEL.md) must be cross-walked with existing stable contracts before implementation. No new stable code is finalized here.
 - User-visible errors are redacted and actionable; server diagnostics never include credentials, full environment, or untrusted raw content.
 
 ## 6. Local security model — decisions required

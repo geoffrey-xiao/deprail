@@ -19,7 +19,7 @@ Keep scan outcome distinct from history/API operation outcome:
 - History operation: success, unavailable, invalid/incompatible, corrupt, integrity-failed, full/limit-exceeded, conflict, or cancelled/timeout as defined by final error contract.
 - API request: success, client validation/not-found, unsupported version, rate/size bound, unavailable, internal failure, or cancellation/timeout.
 
-These labels are semantic states, not finalized wire codes. Stable error codes and HTTP status mapping must be cross-walked with `requirements/ERROR-MODEL.md` before implementation.
+These labels are semantic states, not finalized wire codes. Stable error codes and HTTP status mapping must be cross-walked with [`ERROR-MODEL.md`](ERROR-MODEL.md) and the existing v0.3/v0.4 error contracts before implementation.
 
 ## 3. Failure matrix (proposed)
 

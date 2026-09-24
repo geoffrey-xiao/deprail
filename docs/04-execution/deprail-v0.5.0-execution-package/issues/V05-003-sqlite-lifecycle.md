@@ -3,7 +3,7 @@
 
 - Epic: [EPIC-001 / #390](https://github.com/geoffrey-xiao/deprail/issues/390)
 - Target: `v0.5.0`
-- Status: Closed in GitHub; original proposal owner-approved in merged PR #407; owner-selected independent history-projection revision is proposed in PR #410, not independently approved; v0.5 DoR and runtime authorization remain outstanding
+- Status: Closed in GitHub; original proposal owner-approved in merged PR #407; owner-selected independent history-projection revision is proposed in PR #411, not independently approved; v0.5 DoR and runtime authorization remain outstanding
 - Type: decision
 - Area: docs
 - Priority: P0

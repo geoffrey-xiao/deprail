@@ -3,7 +3,7 @@
 
 - Epic: [EPIC-001 / #390](https://github.com/geoffrey-xiao/deprail/issues/390)
 - Target: `v0.5.0`
-- Status: Review; candidate API profile and error mapping in [PR #404](https://github.com/geoffrey-xiao/deprail/pull/404); owner-selected `history-v1` projection direction in [PR #410](https://github.com/geoffrey-xiao/deprail/pull/410). Exact projection/OpenAPI schemas, numeric bounds, listener/auth decisions, independent security review, and Definition of Ready remain pending.
+- Status: Review; candidate API profile and error mapping in [PR #404](https://github.com/geoffrey-xiao/deprail/pull/404); owner-selected `history-v1` projection direction in [PR #411](https://github.com/geoffrey-xiao/deprail/pull/411). Exact projection/OpenAPI schemas, numeric bounds, listener/auth decisions, independent security review, and Definition of Ready remain pending.
 - Type: decision
 - Area: docs
 - Priority: P0

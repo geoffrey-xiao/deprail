@@ -26,7 +26,7 @@ Errors are stable application codes with safe messages. HTTP status describes th
 | `HISTORY_ARTIFACT_DIGEST_MISMATCH` | Retrieved artifact digest differs from the recorded digest | Do not trust bytes or claim verified provenance. In API detail, represented as integrity state `digest_mismatch`, not an error envelope. |
 | `API_REQUEST_INVALID` | Identifier, query, cursor, or prohibited body is invalid | Reject before expensive work; use safe generic guidance and do not echo input. |
 | `API_AUTH_UNAUTHORIZED` | Required process-scoped bearer credential is absent or invalid | Return 401 with a generic message and `WWW-Authenticate: Bearer`; do not distinguish secret values. |
-| `API_RESPONSE_TOO_LARGE` | A valid request would exceed the proposed 1 MiB response bound | Return an explicit bounded 500 response; never truncate into success. |
+| `API_RESPONSE_TOO_LARGE` | A fully serialized UTF-8 JSON success response exceeds the proposed 1 MiB byte bound | Return an explicit bounded 500 response before sending a partial body; never truncate into success. |
 | `API_ROUTE_NOT_FOUND` | Path is not part of the candidate route table | Return 404; distinguish from unsupported method. |
 | `API_VERSION_UNSUPPORTED` | Versioned API prefix is recognized but unsupported | Return 404 with a safe supported-version message. |
 | `API_METHOD_UNSUPPORTED` | Method is not allowed for a known route | Return 405 with `Allow: GET`; invoke no side effect. |
@@ -87,7 +87,7 @@ Messages are static and do not echo input or expose secrets, raw paths, SQL, dat
 - [ ] Mixed artifact-integrity behavior is accepted; trustworthy detail remains distinct from missing/unverified evidence.
 - [ ] Cancellation, timeout, listener startup, storage failure, and malformed/oversized inputs remain explicit without false success.
 - [ ] No raw SQL, database message, stack trace, token, credential URL, or full environment is returned/logged.
-- [x] OpenAPI candidate examples and schema-bounded response shapes were validated offline; runtime contract/integration tests remain future work.
+- [x] OpenAPI candidate examples and status-specific error constraints were validated offline; runtime response-byte enforcement and contract/integration tests remain future work.
 - [ ] Owner and independent reviewer record separate approval; no runtime implementation before the complete DoR passes.
 
 ## 6. Candidate code-to-state and evidence crosswalk

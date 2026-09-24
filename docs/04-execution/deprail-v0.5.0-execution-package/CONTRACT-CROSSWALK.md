@@ -40,6 +40,8 @@ The per-requirement verification IDs are defined in [`requirements/TEST-STRATEGY
 
 ADR-0004's proposed schema-v1 and lifecycle were owner-approved and merged in PR #407. The ADR remains Proposed pending independent architecture/security review; its numeric payload/store bounds and retention-risk disposition remain open.
 
+**New validation blocker:** [ADR-0004's additive finding](../../adr/ADR-0004-local-scan-history.md#post-proposal-validation-finding-source-report-is-not-the-proposed-stored-document) demonstrates that the current `ScanReport` is not the unchanged, schema-valid, privacy-safe document assumed by the proposed `report_json` column. Owner and independent reviewer must resolve the storage projection versus CLI/schema compatibility decision and update the persistence, API and verification contracts before OpenAPI acceptance or implementation issue creation. A merged planning PR is not evidence that the inconsistency is resolved.
+
 1. Approve or revise the candidate history-capture trigger and CLI compatibility behavior, including persistence-failure/exit-code precedence.
 2. Select evidence-backed per-entry, response, and store bounds, or explicitly accept unbounded growth; record disk-full refusal behavior.
 3. Complete and validate the exact OpenAPI resource fields, pagination/cursor behavior, error mapping, version policy, and numeric request/response limits.

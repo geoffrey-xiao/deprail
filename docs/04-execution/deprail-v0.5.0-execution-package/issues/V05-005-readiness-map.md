@@ -3,13 +3,13 @@
 
 - Epic: [EPIC-001 / #390](https://github.com/geoffrey-xiao/deprail/issues/390)
 - Target: `v0.5.0`
-- Status: Review in GitHub; draft readiness map in [PR #409](https://github.com/geoffrey-xiao/deprail/pull/409), independent review and v0.5 DoR pending.
+- Status: Review in GitHub; readiness proposal in PR #409; owner-selected history projection revision merged in PR #411; independent architecture/security review requested from owner-designated `@geoffreyxiaoai` in [#392](https://github.com/geoffrey-xiao/deprail/issues/392#issuecomment-5807824469); approval and v0.5 DoR pending.
 - Type: decision
 - Area: docs
 - Priority: P0
 - Risk: R3
 - Owner: `@geoffrey-xiao`
-- Reviewer: `@geoffrey-xiao` for planning-ticket oversight only, by explicit owner direction; not independent architecture/security approval
+- Reviewer: `@geoffrey-xiao` for planning-ticket oversight only; independent architecture/security reviewer `@geoffreyxiaoai` designated by owner, review requested, decision pending
 - Dependencies: V05-000 through V05-004
 
 ## Value
@@ -41,7 +41,7 @@ Validate all local links and crosswalks; verify every proposed implementation is
 
 ## Readiness snapshot
 
-The [execution-package DoR map](../README.md#readiness-evidence-and-blockers) links every outstanding gate to evidence, owner, and next decision. Draft UX [#394](https://github.com/geoffrey-xiao/deprail/issues/394) and SQLite [#391](https://github.com/geoffrey-xiao/deprail/issues/391) issue closure do not constitute independent approval; API [#396](https://github.com/geoffrey-xiao/deprail/issues/396) and quality [#393](https://github.com/geoffrey-xiao/deprail/issues/393) remain in Review. [#387](https://github.com/geoffrey-xiao/deprail/issues/387) and this issue remain open. The five owner-dispositioned v0.4 follow-ups remain in [#356](https://github.com/geoffrey-xiao/deprail/issues/356), outside v0.5 scope.
+The [execution-package DoR map](../README.md#readiness-evidence-and-blockers) links every outstanding gate to evidence, owner, and next decision. Draft UX [#394](https://github.com/geoffrey-xiao/deprail/issues/394) and SQLite [#391](https://github.com/geoffrey-xiao/deprail/issues/391) issue closure do not constitute independent approval; API [#396](https://github.com/geoffrey-xiao/deprail/issues/396) and quality [#393](https://github.com/geoffrey-xiao/deprail/issues/393) remain in Review. Owner-designated independent reviewer `@geoffreyxiaoai` has been asked to review the complete package in [#392](https://github.com/geoffrey-xiao/deprail/issues/392#issuecomment-5807824469); no approval is recorded yet. [#387](https://github.com/geoffrey-xiao/deprail/issues/387) and this issue remain open. The five owner-dispositioned v0.4 follow-ups remain in [#356](https://github.com/geoffrey-xiao/deprail/issues/356), outside v0.5 scope.
 
 ## Conditional post-DoR delivery map
 
@@ -56,7 +56,7 @@ These are **candidate outcomes, not issue contracts, GitHub issues, an authorize
 | E. Reproducible embedded delivery | `FR-505`, `FR-509`, `SEC-10`, `SEC-12`, `SEC-13`; C–D, selected pinned toolchains/dependencies and packaging targets. | Version-matched assets/API, visible mismatch and missing-asset failures, no filesystem fallback/CDN; clean builds and package identity/size/startup evidence on Linux/macOS/Windows. | Roll back to a matching reviewed binary/assets without downgrading or replacing the store. R2. |
 | F. Release verification and evidence | `FR-501`–`FR-511`, `SEC-01`–`SEC-13`, `STORE-01`; A–E and [release checklist](../../../RELEASE-CHECKLIST.md). | Real representative workflows, browser and hostile-input evidence, release binary/tree comparison, version/checksum/SBOM/signature/provenance dispositions, separate reviewer and owner decisions; no unit-only release claim. | Document rollback owner, preserve immutable tags/data and publish a new corrected preview rather than moving a tag. R3. |
 
-Proposed milestone for any future issue is [`v0.5.0`](https://github.com/geoffrey-xiao/deprail/milestone/11); each would be linked beneath an approved implementation epic in the [DepRail Project](https://github.com/orgs/geoffrey-xiao/projects/1/views/6). `area:storage`, `area:api`, and `area:web` are **not** in the current label set; the owner must select existing matching labels or approve a label-set change before publishing an issue. No reviewer is assigned here: `@geoffrey-xiao` owns the planning disposition, and the independent architecture/security reviewer remains to be named. The accepted contracts—not this provisional table—determine final issue boundaries and sequencing.
+Proposed milestone for any future issue is [`v0.5.0`](https://github.com/geoffrey-xiao/deprail/milestone/11); each would be linked beneath an approved implementation epic in the [DepRail Project](https://github.com/orgs/geoffrey-xiao/projects/1/views/6). `area:storage`, `area:api`, and `area:web` are **not** in the current label set; the owner must select existing matching labels or approve a label-set change before publishing an issue. Owner-designated independent reviewer `@geoffreyxiaoai` has been asked to review the package; until a separate decision is recorded, no reviewer approval or implementation authorization is inferred. The accepted contracts—not this provisional table—determine final issue boundaries and sequencing.
 
 ## Tracking verification (planning only)
 

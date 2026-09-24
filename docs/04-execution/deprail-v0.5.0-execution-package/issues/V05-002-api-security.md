@@ -3,13 +3,13 @@
 
 - Epic: [EPIC-001 / #390](https://github.com/geoffrey-xiao/deprail/issues/390)
 - Target: `v0.5.0`
-- Status: Review; OpenAPI/security candidate merged in [PR #413](https://github.com/geoffrey-xiao/deprail/pull/413), with five automated-review schema gaps corrected in follow-up [PR #414](https://github.com/geoffrey-xiao/deprail/pull/414). Exact contract acceptance and independent review remain pending.
+- Status: GitHub issue #396 was closed by PR #414, then reopened; Project status is Review. The owner merged the five schema/security corrections, but PR #414 has no independent human APPROVED review (only Codex COMMENTED). The exact current API contract and full v0.5 DoR remain blocked on that review.
 - Type: decision
 - Area: docs
 - Priority: P0
 - Risk: R3
 - Owner: `@geoffrey-xiao`
-- Reviewer: `@geoffreyxiaoai` (independent architecture/security reviewer); direct decision requested in PR #414 and #396; GitHub rejected formal assignment with HTTP 422 because the account is not a repository collaborator.
+- Reviewer: `@geoffreyxiaoai` (independent architecture/security reviewer) approved the earlier package in PR #412; the direct review request for the later PR #414 candidate remains unanswered. Formal assignment failed with HTTP 422 because the account is not a repository collaborator.
 - Dependencies: V05-001; V05-000 / #387
 
 ## Value
@@ -38,7 +38,7 @@ Validate OpenAPI syntax and examples against the selected validator; crosswalk s
 - Bind address, port conflict, origin/Host, DNS-rebinding, CORS/CSRF/auth, lifecycle, shutdown, and redaction decisions have explicit evidence and failure behavior.
 - The candidate surface contains only the five read operations; no arbitrary SQL, filesystem path, or process operation is exposed.
 - Existing report completeness, operation outcome, CLI output, and error meanings remain compatible unless separately approved.
-- Independent security review and owner acceptance of this exact contract remain outstanding; runtime authorization and implementation issue creation remain gated on the complete current Definition of Ready.
+- PR #414's owner merge accepts its correction patch; independent security review of the exact current API/security candidate is not recorded. The current-version review and complete Definition of Ready still gate implementation issue creation and runtime authorization.
 
 ## Source-report validation blocker
 

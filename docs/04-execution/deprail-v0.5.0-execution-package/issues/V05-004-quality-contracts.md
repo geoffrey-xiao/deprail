@@ -3,7 +3,7 @@
 
 - Epic: [EPIC-001 / #390](https://github.com/geoffrey-xiao/deprail/issues/390)
 - Target: `v0.5.0`
-- Status: Todo; planning/design deliverable
+- Status: Review in GitHub; draft FR/security/error/compatibility evidence crosswalk merged in [PR #408](https://github.com/geoffrey-xiao/deprail/pull/408), but #393 remains open and independent security review and v0.5 DoR remain outstanding.
 - Type: test
 - Area: docs
 - Priority: P0

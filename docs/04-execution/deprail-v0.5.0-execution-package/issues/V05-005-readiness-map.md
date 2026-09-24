@@ -3,7 +3,7 @@
 
 - Epic: [EPIC-001 / #390](https://github.com/geoffrey-xiao/deprail/issues/390)
 - Target: `v0.5.0`
-- Status: Open; draft planning/design deliverable, independent review and v0.5 DoR pending.
+- Status: Review in GitHub; draft readiness map in [PR #409](https://github.com/geoffrey-xiao/deprail/pull/409), independent review and v0.5 DoR pending.
 - Type: decision
 - Area: docs
 - Priority: P0
@@ -61,5 +61,5 @@ Proposed milestone for any future issue is [`v0.5.0`](https://github.com/geoffre
 ## Tracking verification (planning only)
 
 - `gh api repos/geoffrey-xiao/deprail/issues/390/sub_issues` lists exactly the six planning children #387, #394, #396, #391, #393, and #392. No candidate delivery outcome above has a GitHub implementation issue.
-- `gh project view 1 --owner geoffrey-xiao` resolves the live DepRail Project; its `Release · v0.5.0` view is number `6` with filter `milestone:v0.5.0`. #392 is open, assigned to the `v0.5.0` milestone, carries `area:docs`, `risk:R3`, `priority:P0`, `type:decision`, and is in Project `Todo`; verify its workflow status again after a review PR is opened.
+- `gh project view 1 --owner geoffrey-xiao` resolves the live DepRail Project; its `Release · v0.5.0` view is number `6` with filter `milestone:v0.5.0`. #392 is open, assigned to the `v0.5.0` milestone, carries `area:docs`, `risk:R3`, `priority:P0`, `type:decision`, and is in Project `Review` after [PR #409](https://github.com/geoffrey-xiao/deprail/pull/409) opened; this is workflow state, not DoR approval.
 - [#394](https://github.com/geoffrey-xiao/deprail/issues/394) and [#391](https://github.com/geoffrey-xiao/deprail/issues/391) are closed; [#396](https://github.com/geoffrey-xiao/deprail/issues/396) and [#393](https://github.com/geoffrey-xiao/deprail/issues/393) remain open in Project `Review`; [#387](https://github.com/geoffrey-xiao/deprail/issues/387) remains open in `In Progress`. Closure or Project state is not an independent contract acceptance record.

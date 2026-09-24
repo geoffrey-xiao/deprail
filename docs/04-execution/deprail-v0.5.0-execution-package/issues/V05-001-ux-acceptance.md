@@ -3,7 +3,7 @@
 
 - Epic: [EPIC-001 / #390](https://github.com/geoffrey-xiao/deprail/issues/390)
 - Target: `v0.5.0`
-- Status: Review; initial mockups merged via [PR #398](https://github.com/geoffrey-xiao/deprail/pull/398); UX proposal follow-up in [PR #399](https://github.com/geoffrey-xiao/deprail/pull/399); navigation/API mapping update in [PR #400](https://github.com/geoffrey-xiao/deprail/pull/400); narrow detail and outcome/report variants in [PR #401](https://github.com/geoffrey-xiao/deprail/pull/401); narrow-detail findings navigation and timestamp fix in [PR #402](https://github.com/geoffrey-xiao/deprail/pull/402); About/local-data help inclusion and proposal in [PR #403](https://github.com/geoffrey-xiao/deprail/pull/403); owner accepted help inclusion, while independent UX/security review and remaining design decisions are pending.
+- Status: Closed in GitHub after design PRs [#398](https://github.com/geoffrey-xiao/deprail/pull/398), [#399](https://github.com/geoffrey-xiao/deprail/pull/399), [#400](https://github.com/geoffrey-xiao/deprail/pull/400), [#401](https://github.com/geoffrey-xiao/deprail/pull/401), [#402](https://github.com/geoffrey-xiao/deprail/pull/402), and [#403](https://github.com/geoffrey-xiao/deprail/pull/403); owner selected About/local-data help, but independent UX/security review, component/dependency decisions, and v0.5 DoR remain outstanding.
 - Type: docs
 - Area: docs
 - Priority: P0

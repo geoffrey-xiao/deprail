@@ -49,3 +49,7 @@ ADR-0004's proposed schema-v1 and lifecycle were owner-approved and merged in PR
 7. Disposition each #356 follow-up with owner, target, and evidence; no item is inferred complete.
 
 No implementation issue map is authorized until these decisions and the complete Definition of Ready have linked evidence and separate reviewer/owner approval. Refer to the release plan for the design-first sequence.
+
+## Conditional delivery trace
+
+The [V05-005 readiness map](issues/V05-005-readiness-map.md#conditional-post-dor-delivery-map) groups the FR-501–FR-511 and SEC/STORE evidence into tentative store, shared-service, API, UI, packaging, and release-verification outcomes. It is not an implementation backlog: #396 and #393 remain in Review, ADR-0004 remains Proposed pending independent review, and the execution package's [DoR evidence map](README.md#readiness-evidence-and-blockers) keeps every unapproved gate explicit. Final issue ownership, labels, interfaces, dependencies and acceptance evidence follow separately approved contracts, not this provisional grouping.

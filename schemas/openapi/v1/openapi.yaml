@@ -406,7 +406,14 @@ components:
       content:
         application/json:
           schema:
-            $ref: '#/components/schemas/ApiErrorResponse'
+            allOf:
+              - $ref: '#/components/schemas/ApiErrorResponse'
+              - type: object
+                properties:
+                  error:
+                    properties:
+                      code:
+                        const: API_REQUEST_INVALID
           example:
             error:
               code: API_REQUEST_INVALID
@@ -425,7 +432,14 @@ components:
       content:
         application/json:
           schema:
-            $ref: '#/components/schemas/ApiErrorResponse'
+            allOf:
+              - $ref: '#/components/schemas/ApiErrorResponse'
+              - type: object
+                properties:
+                  error:
+                    properties:
+                      code:
+                        const: API_AUTH_UNAUTHORIZED
           example:
             error:
               code: API_AUTH_UNAUTHORIZED
@@ -438,7 +452,14 @@ components:
       content:
         application/json:
           schema:
-            $ref: '#/components/schemas/ApiErrorResponse'
+            allOf:
+              - $ref: '#/components/schemas/ApiErrorResponse'
+              - type: object
+                properties:
+                  error:
+                    properties:
+                      code:
+                        const: API_ORIGIN_REJECTED
           example:
             error:
               code: API_ORIGIN_REJECTED
@@ -451,7 +472,14 @@ components:
       content:
         application/json:
           schema:
-            $ref: '#/components/schemas/ApiErrorResponse'
+            allOf:
+              - $ref: '#/components/schemas/ApiErrorResponse'
+              - type: object
+                properties:
+                  error:
+                    properties:
+                      code:
+                        const: API_ROUTE_NOT_FOUND
           example:
             error:
               code: API_ROUTE_NOT_FOUND
@@ -464,7 +492,14 @@ components:
       content:
         application/json:
           schema:
-            $ref: '#/components/schemas/ApiErrorResponse'
+            allOf:
+              - $ref: '#/components/schemas/ApiErrorResponse'
+              - type: object
+                properties:
+                  error:
+                    properties:
+                      code:
+                        const: API_VERSION_UNSUPPORTED
           example:
             error:
               code: API_VERSION_UNSUPPORTED
@@ -477,7 +512,14 @@ components:
       content:
         application/json:
           schema:
-            $ref: '#/components/schemas/ApiErrorResponse'
+            allOf:
+              - $ref: '#/components/schemas/ApiErrorResponse'
+              - type: object
+                properties:
+                  error:
+                    properties:
+                      code:
+                        const: HISTORY_ENTRY_NOT_FOUND
           example:
             error:
               code: HISTORY_ENTRY_NOT_FOUND
@@ -492,7 +534,14 @@ components:
       content:
         application/json:
           schema:
-            $ref: '#/components/schemas/ApiErrorResponse'
+            allOf:
+              - $ref: '#/components/schemas/ApiErrorResponse'
+              - type: object
+                properties:
+                  error:
+                    properties:
+                      code:
+                        const: API_METHOD_UNSUPPORTED
           example:
             error:
               code: API_METHOD_UNSUPPORTED
@@ -505,7 +554,17 @@ components:
       content:
         application/json:
           schema:
-            $ref: '#/components/schemas/ApiErrorResponse'
+            allOf:
+              - $ref: '#/components/schemas/ApiErrorResponse'
+              - type: object
+                properties:
+                  error:
+                    properties:
+                      code:
+                        enum:
+                          - API_RESPONSE_TOO_LARGE
+                          - HISTORY_CORRUPT
+                          - API_INTERNAL_ERROR
           examples:
             responseTooLarge:
               value:
@@ -523,14 +582,24 @@ components:
                   code: API_INTERNAL_ERROR
                   message: The local API request could not be completed.
     StoreUnavailable:
-      description: History storage is unavailable, incompatible, busy, or failed migration.
+      description: History storage is unavailable, incompatible, or failed migration.
       headers:
         Cache-Control:
           $ref: '#/components/headers/NoStore'
       content:
         application/json:
           schema:
-            $ref: '#/components/schemas/ApiErrorResponse'
+            allOf:
+              - $ref: '#/components/schemas/ApiErrorResponse'
+              - type: object
+                properties:
+                  error:
+                    properties:
+                      code:
+                        enum:
+                          - HISTORY_UNAVAILABLE
+                          - HISTORY_SCHEMA_UNSUPPORTED
+                          - HISTORY_MIGRATION_FAILED
           examples:
             unavailable:
               value:
@@ -547,11 +616,6 @@ components:
                 error:
                   code: HISTORY_MIGRATION_FAILED
                   message: Local scan history could not be opened safely.
-            busy:
-              value:
-                error:
-                  code: API_BUSY
-                  message: The local API is temporarily busy.
     ServiceBusy:
       description: The bounded local request capacity is temporarily full.
       headers:
@@ -560,7 +624,14 @@ components:
       content:
         application/json:
           schema:
-            $ref: '#/components/schemas/ApiErrorResponse'
+            allOf:
+              - $ref: '#/components/schemas/ApiErrorResponse'
+              - type: object
+                properties:
+                  error:
+                    properties:
+                      code:
+                        const: API_BUSY
           example:
             error:
               code: API_BUSY
@@ -573,7 +644,14 @@ components:
       content:
         application/json:
           schema:
-            $ref: '#/components/schemas/ApiErrorResponse'
+            allOf:
+              - $ref: '#/components/schemas/ApiErrorResponse'
+              - type: object
+                properties:
+                  error:
+                    properties:
+                      code:
+                        const: API_TIMEOUT
           example:
             error:
               code: API_TIMEOUT
@@ -684,6 +762,28 @@ components:
           minLength: 1
           maxLength: 64
           description: Original report schema version, not the history projection or API version.
+      allOf:
+        - description: These source-report identity and summary fields are all null or all present.
+          if:
+            properties:
+              sourceScanID:
+                type: 'null'
+          then:
+            properties:
+              reportStatus:
+                type: 'null'
+              findingCount:
+                type: 'null'
+              sourceReportSchemaVersion:
+                type: 'null'
+          else:
+            properties:
+              reportStatus:
+                type: string
+              findingCount:
+                type: integer
+              sourceReportSchemaVersion:
+                type: string
     HistoryPage:
       type: object
       additionalProperties: false
@@ -725,6 +825,22 @@ components:
           description: Digests and integrity states only; the API never serves artifact bytes or filesystem paths.
           items:
             $ref: '#/components/schemas/ArtifactReference'
+      allOf:
+        - description: The report is present exactly when the summary has source report metadata.
+          if:
+            properties:
+              summary:
+                properties:
+                  sourceScanID:
+                    type: 'null'
+          then:
+            properties:
+              report:
+                type: 'null'
+          else:
+            properties:
+              report:
+                $ref: '#/components/schemas/HistoryReportMetadata'
     HistoryReportMetadata:
       type: object
       additionalProperties: false
@@ -756,10 +872,24 @@ components:
           type: string
           enum: [repository, workspace]
         workspaceID:
-          type: string
+          type: [string, 'null']
           minLength: 1
           maxLength: 256
-          description: Required by the projection contract when scope is workspace.
+          description: Required and non-null for workspace scope; omitted or null for repository scope.
+      allOf:
+        - if:
+            properties:
+              scope:
+                const: workspace
+          then:
+            required: [workspaceID]
+            properties:
+              workspaceID:
+                type: string
+          else:
+            properties:
+              workspaceID:
+                type: 'null'
     ArtifactReference:
       type: object
       additionalProperties: false
@@ -827,6 +957,7 @@ components:
           type: string
           minLength: 1
           maxLength: 4096
+          pattern: '^(?!/)(?![A-Za-z]:)(?!.*(?:^|/)\.\.(?:/|$))(?!.*\\)[^/\x00-\x1F]+(?:/[^/\x00-\x1F]+)*$'
           description: Repository-relative path using slash separators; never absolute or resolved outside the repository.
         ecosystem:
           type: string
@@ -924,6 +1055,7 @@ components:
         relativePath:
           type: string
           minLength: 1
+          pattern: '^(?!/)(?![A-Za-z]:)(?!.*(?:^|/)\.\.(?:/|$))(?!.*\\)[^/\x00-\x1F]+(?:/[^/\x00-\x1F]+)*$'
           maxLength: 4096
           description: Repository-relative path using slash separators.
         ecosystem:

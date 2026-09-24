@@ -44,7 +44,7 @@ The versioned candidate is [`schemas/openapi/v1/openapi.yaml`](../../../schemas/
 - Keyset pagination avoids offset shifts. It does not promise a database snapshot across requests; clients restart pagination to include newly recorded entries.
 - Unknown query parameters, malformed cursors, unsupported cursor versions, and page sizes outside the contract fail with `API_REQUEST_INVALID`.
 
-Every successful response is bounded to 1 MiB. A response that would exceed the bound fails explicitly with `API_RESPONSE_TOO_LARGE`; it is never truncated into success. The listed values are review candidates, not accepted performance or storage limits.
+Every successful response is limited to 1 MiB of fully serialized UTF-8 JSON bytes, including framing and required escaping. The server must measure the complete encoded response before sending; it never streams or truncates a partial success. A response above the bound returns `500 API_RESPONSE_TOO_LARGE`, including when all fields satisfy their schemas, because JSON Schema `maxLength` counts code points rather than encoded bytes. The bounded error envelope must itself fit. These candidate limits remain subject to payload, load, and independent-review evidence.
 
 ## 5. Response and error semantics
 
@@ -80,7 +80,7 @@ Breaking API changes require a new API version or an explicit reviewed migration
 
 ## 8. API design acceptance checklist
 
-The OpenAPI structure, local references, response examples, and schema-bounded response sizes have been checked for this review candidate. These technical checks do not constitute owner or independent-review acceptance.
+The OpenAPI structure, local references, response examples, and status-specific error constraints have been checked for this review candidate. No schema-derived maximum response size is claimed: `maxLength` counts Unicode code points, not serialized bytes. The 1 MiB UTF-8 response cap is a runtime byte check and remains unverified. These checks do not constitute owner or independent-review acceptance.
 
 - [ ] UX acceptance maps every operation to a reviewed screen/action.
 - [ ] Resource representation and pagination are accepted against payload and usage evidence.
@@ -102,10 +102,10 @@ The OpenAPI file is a concrete review candidate, not an accepted public contract
 | History projection | Strict response allowlists; null report and unavailable collections remain distinct from confirmed empty collections. Finding identity uses `normalize.StableFindingKey`; `TargetID` remains only the vulnerability ID. | Exact persisted `history-v1` fields, typed diagnostics, unknown-data policy, and same-operation graph capture remain separate review gates. The current `app.ScanReport` has no tool/database metadata field, so none is invented. |
 | Artifact integrity | Detail returns digest plus `verified`, `missing`, `digest_mismatch`, or `unavailable`; a safe detail remains `200` when metadata is trustworthy. | The API exposes neither artifact bytes nor paths. Owner/reviewer must accept this mixed-integrity behavior against `SEC-09` and UX. |
 | Pagination | Deterministic keyset; page size 25 by default, maximum 50; 512-character versioned cursor; no expiry while v0.5 has no deletion/eviction. | No snapshot-isolation guarantee across requests. Cursor and insertion behavior require review; consumers restart to include new entries. |
-| Response bounds | Maximum 1 MiB per JSON response; no truncation. Schema maxima yield 37,939 bytes for a maximum history page, 557,783 for detail, 230,219 for workspaces, and 786,844 for findings. | Worst-case values were generated from declared field and item limits and validated against the corresponding schemas. These calculations are not representative runtime payload, memory, or platform-performance evidence. |
+| Response bounds | Candidate cap: 1 MiB per fully serialized UTF-8 JSON response; no truncation. | Earlier schema-size figures used character-count maxima and are withdrawn as byte-budget evidence. Schema-valid payloads may exceed the wire cap and receive `API_RESPONSE_TOO_LARGE`. Before implementation, measure serialized bytes with Unicode/escaping and exact-boundary cases; record runtime, memory, and platform evidence. |
 | Listener and auth | `127.0.0.1:0`, same-origin UI/API, process-scoped 256-bit bearer token, no CORS, strict Host/Origin/Fetch-Metadata checks. | Fragment-only bootstrap is not sent over HTTP but is visible briefly in the browser/OS launch state; independent reviewer must accept or replace this mechanism. |
 | Runtime bounds | 2,048-byte request target, 8,192-byte headers, eight concurrent requests, 10-second request deadline and shutdown drain. | These remain proposed limits; actual platform/load evidence and owner/reviewer acceptance remain required before implementation. |
-| Errors | Typed, safe API envelope; 400/401/403/404/405/500/503/504 mappings, plus parser-level 414/431 rejection for request-target/header limits without a JSON-envelope guarantee. No request bodies. Artifact-integrity states are part of a successful detail response. | Candidate stable API codes and transport mappings are cross-walked in `requirements/ERROR-MODEL.md`; runtime behavior remains unverified. |
+| Errors | Typed, safe API envelope; 400/401/403/404/405/500/503/504 mappings, plus parser-level 414/431 rejection for request-target/header limits without a JSON-envelope guarantee. No request bodies. Artifact-integrity states are part of a successful detail response. | OpenAPI response schemas constrain each declared status to its allowed code set; runtime status/code behavior remains unverified. |
 | Versioning | `/api/v1`, OpenAPI 3.1, `info.version: 1.0.0`; no redundant response API-version field. | UI/API mismatch must fail visibly. Any breaking change requires a separately reviewed version change. |
 
 The remaining acceptance gates are independent review of this exact artifact, owner acceptance of the candidate decisions, exact storage-projection approval, supported browser and platform decisions, and the complete v0.5 Definition of Ready. Until those gates are linked, this contract remains proposed and no implementation issue is ready.
@@ -113,6 +113,7 @@ The remaining acceptance gates are independent review of this exact artifact, ow
 ## 10. Candidate validation evidence
 
 - `openapi-spec-validator 0.9.0` accepted the parsed OpenAPI 3.1 document with local references.
-- `openapi_schema_validator.OAS31Validator` validated all 66 operation-response examples, including available/unavailable collection states and error envelopes.
-- Maximum schema-shaped JSON response sizes were measured using maximum declared field/item lengths: history list 37,939 bytes; history detail 557,783 bytes; workspace page 230,219 bytes; finding page 786,844 bytes. Every case is below the proposed 1,048,576-byte response cap.
+- `openapi_schema_validator.OAS31Validator` validated all 62 operation-response examples and 15 component-response examples, including the stricter status/code schemas and unavailable collection states.
+- Earlier schema-size figures used character-count maxima and are withdrawn; they did not establish UTF-8 wire-byte maxima. The candidate limit applies to the complete serialized response, including JSON escaping. Schema-valid values may exceed 1 MiB and must produce a bounded `500 API_RESPONSE_TOO_LARGE` response without partial output. Runtime Unicode and exact-boundary tests remain required.
+- A schema-valid default-size page of 25 findings with maximum-length four-byte Unicode strings and 32 aliases per item serialized to 1,544,660 UTF-8 bytes (4,615,860 bytes with ASCII escaping). It exceeds the proposed 1 MiB cap and demonstrates why code-point limits do not guarantee a wire-byte bound.
 - These are offline contract checks only. They do not claim runtime, real-payload, browser, platform, performance, or security-test evidence.

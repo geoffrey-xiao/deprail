@@ -17,7 +17,9 @@ An OpenAPI 3.1 document with JSON Schema-compatible examples and validation is a
 - **FindingSummary:** stable finding key, package identity, aliases, severity/source as available, affected workspace/path context, fixed-version data, and evidence references subject to existing report schema.
 - **ApiError:** stable API error code, concise safe message, retryability only when meaningful, request/correlation ID if approved, and no stack trace/secrets/raw paths by default.
 
-Existing report schemas govern nested finding/report meaning. Do not invent new vulnerability semantics. Exact response representation (full embedded report versus paged child resources) is an open decision that must be resolved against size, UX, and compatibility evidence.
+Existing report schemas remain the source of semantic meaning; the API must not invent new vulnerability or completeness states. Exact representation of an approved privacy-safe projection (bounded embedded detail versus paged child resources) remains open pending size, UX, and compatibility evidence.
+
+**Unresolved report boundary:** [ADR-0004's validation finding](../../adr/ADR-0004-local-scan-history.md#post-proposal-validation-finding-source-report-is-not-the-proposed-stored-document) shows that the actual `ScanReport` contains an absolute repository root and does not validate as the proposed unchanged v1alpha scan document with findings/errors. `HistoryEntryDetail` and child collections must not embed raw `ScanReport` JSON, expose host paths, or claim a redacted copy is the original schema. The owner and independent reviewer must decide a privacy-safe, versioned history projection and its provenance/unknown-field behavior (or a separately reviewed CLI/schema compatibility change) before exact OpenAPI fields/examples can be frozen. A failure to form a trustworthy projection remains a typed failure, not a successful empty detail.
 
 ## 3. Proposed endpoint matrix (for design review)
 

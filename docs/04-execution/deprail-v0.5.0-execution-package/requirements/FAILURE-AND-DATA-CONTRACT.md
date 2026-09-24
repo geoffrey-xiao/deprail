@@ -68,6 +68,8 @@ Database schema version is the monotonic integer in `PRAGMA user_version`; the p
 | `history_entries.operation_diagnostics_json` | Safe, bounded operation diagnostics; redact secrets, credential URLs, and absolute host paths before commit. |
 | `history_artifact_refs` | `(history_entry_id, digest)` rows for validated report artifact digests; foreign-keyed to the history row, with a non-unique digest index for reference queries. |
 
+**Validation blocker:** The `report_json` row above and SQL shape below are still owner-approved proposals, not implementable storage contracts. The current `app.ScanReport` contains an absolute `repository_identity.root`, `[]adapter.Finding`, and string errors; it is neither privacy-safe unchanged JSON nor schema-valid as the proposed v1alpha scan document when findings or errors are present. [ADR-0004's additive finding](../../../adr/ADR-0004-local-scan-history.md#post-proposal-validation-finding-source-report-is-not-the-proposed-stored-document) records the evidence and possible decisions. Do not write a raw report, call a redacted copy unchanged, or treat invalid data as empty history. If no approved privacy-safe representation is available, reject a selected save with a typed persistence failure, no row/reference writes and no change to the original scan result. Owner and independent review must revise the report column, schema/version validation, API projection and migration/compatibility evidence before implementation.
+
 The candidate relational shape is:
 
 ```sql

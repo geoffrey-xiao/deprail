@@ -1,10 +1,10 @@
 # ADR-0004: Local Scan-History Storage and Lifecycle
 
-- Status: Proposed; draft only, not accepted
+- Status: Proposed; owner-approved, independent architecture/security review pending; runtime authorization not granted
 - Date: 2026-09-23
 - Owners: `@geoffrey-xiao`
 - Related issues: [#391 V05-003](https://github.com/geoffrey-xiao/deprail/issues/391); [#396 V05-002](https://github.com/geoffrey-xiao/deprail/issues/396)
-- Related pull request: [#407](https://github.com/geoffrey-xiao/deprail/pull/407) (draft)
+- Related pull request: [#407](https://github.com/geoffrey-xiao/deprail/pull/407) (merged)
 - Independent reviewer: Not assigned by owner direction; independent architecture/security review remains required before acceptance or runtime authorization.
 
 ## Context

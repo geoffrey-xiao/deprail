@@ -56,4 +56,6 @@ The v0.5 UI/API does not expose hosted accounts, multi-user collaboration, remot
 | FR-509–510 | [`UX-DESIGN.md`](../UX-DESIGN.md), [`ARCHITECTURE-v0.5.md`](../ARCHITECTURE-v0.5.md) | Actual packaged browser and accessibility checks |
 | FR-511 | [`PRD-v0.5.md`](../PRD-v0.5.md) | API route review and UI workflow inspection |
 
+Detailed FR-501–FR-511 design traceability is in [`CONTRACT-CROSSWALK.md`](../CONTRACT-CROSSWALK.md); planned scenario IDs and evidence requirements are in [`TEST-STRATEGY.md`](TEST-STRATEGY.md#9-requirement-and-threat-evidence-matrix). These are future acceptance requirements, not runtime pass claims.
+
 Implementation issues must link each requirement to a frozen contract and specific observable acceptance evidence. No requirement alone authorizes a new capability.

@@ -76,7 +76,7 @@ A candidate JSON envelope:
 
 ## 5. Acceptance checklist
 
-- [ ] Crosswalk candidate codes with existing stable error contracts; retain established codes unchanged.
+- [x] Crosswalk candidate codes to existing stable error contracts and retain established codes unchanged; candidate-code/state/evidence mapping is in §6. Owner/reviewer approval remains outstanding.
 - [ ] Approve history/API candidate code strings, scope, safe message, and actionable guidance.
 - [ ] Approve one OpenAPI status mapping per semantic category.
 - [ ] Define behavior for mixed failures, e.g. valid scan metadata with a missing raw artifact.
@@ -84,3 +84,23 @@ A candidate JSON envelope:
 - [ ] Ensure no raw SQL, DB messages, stack trace, token, credential URL, or full environment leaks.
 - [ ] Validate OpenAPI examples and exercise each code/status through contract/integration tests.
 - [ ] Record owner and independent reviewer approval; no runtime implementation before acceptance.
+
+## 6. Candidate code-to-state and evidence crosswalk
+
+Each candidate maps to a consumer-visible outcome and a planned scenario in [`TEST-STRATEGY.md`](TEST-STRATEGY.md#9-requirement-and-threat-evidence-matrix). These are future verification requirements, not completed tests or finalized wire semantics.
+
+| Candidate code | Required visible behavior | Verification ID |
+| --- | --- | --- |
+| `HISTORY_UNAVAILABLE` | Failed list/detail state, distinct from valid empty history; safe retry only when appropriate. | `FR-502` |
+| `HISTORY_WRITE_FAILED` | For separately approved CLI capture only: safe stderr persistence diagnostic, no saved claim, scan report/outcome preserved; no read-only API response. | `STORE-01` |
+| `HISTORY_SCHEMA_UNSUPPORTED`, `HISTORY_MIGRATION_FAILED`, `HISTORY_CORRUPT` | Explicit incompatibility/recovery state; preserve existing DB/backup and never suggest automatic reset or downgrade. | `FR-508`, `SEC-08` |
+| `HISTORY_ENTRY_NOT_FOUND` | Stale-selection/not-found state, distinct from an entry with no report or findings. | `FR-503` |
+| `HISTORY_ARTIFACT_MISSING`, `HISTORY_ARTIFACT_DIGEST_MISMATCH` | Preserve only trustworthy metadata; disclose unavailable/unverified evidence, never fabricate or trust bytes. | `FR-503`, `SEC-09` |
+| `API_REQUEST_INVALID` | Safe client error before expensive work; no empty-success or side effect. | `FR-507`, `SEC-03`, `SEC-04` |
+| `API_REQUEST_TOO_LARGE`, `API_RESPONSE_TOO_LARGE` | Explicit bounded failure, never partial/truncated success. Request-body case applies only if a body-bearing route is separately approved. | `SEC-05` |
+| `API_ROUTE_NOT_FOUND`, `API_VERSION_UNSUPPORTED`, `API_METHOD_UNSUPPORTED` | Distinguish unknown route, unsupported contract version, and unsupported method using the candidate status mapping in §3; never render empty history. | `FR-507`, `FR-509` |
+| `API_ORIGIN_REJECTED` | Reject the hostile origin without disclosing listener internals. | `SEC-01` |
+| `API_TIMEOUT`, `API_CANCELLED` | End only the affected read/request; no fabricated response and no rewrite of stored history or scan outcome. | `FR-502`, `FR-503` |
+| `API_LISTENER_UNAVAILABLE` | Safe startup failure before the browser surface exists; existing CLI remains usable and no public-bind fallback occurs. | `FR-505`, `SEC-11` |
+
+Existing v0.1/v0.2 scan codes, CLI exit meanings, report schemas, and artifact identities remain unchanged. Candidate history/API codes and any additive CLI exit code require separate owner and independent-review approval before they become stable.

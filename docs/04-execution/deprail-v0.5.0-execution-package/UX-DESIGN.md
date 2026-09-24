@@ -119,6 +119,10 @@ The endpoint names and error codes below are candidates from `API-DESIGN.md` and
 | `HISTORY_ARTIFACT_MISSING` or `HISTORY_ARTIFACT_DIGEST_MISMATCH` | Keep trustworthy metadata if permitted, disclose unavailable/unverified evidence, and never substitute an empty artifact or report. |
 | `API_REQUEST_INVALID`, `API_REQUEST_TOO_LARGE`, `API_VERSION_UNSUPPORTED`, `API_METHOD_UNSUPPORTED`, or `API_ORIGIN_REJECTED` | Explicit safe request/compatibility error; never render empty history or child data. |
 | `API_TIMEOUT` or `API_CANCELLED` on a read | End the affected loading state with a request-level message. Do not rewrite saved operation outcome or report completeness. |
+| `API_RESPONSE_TOO_LARGE` | Show an explicit response-limit error for the affected collection; never truncate into success or replace the result with an empty state. |
+| `API_ROUTE_NOT_FOUND` | Keep an unknown API route distinct from empty history and a known route with an unsupported method. |
+| `API_LISTENER_UNAVAILABLE` | Startup failure occurs before the browser surface is available; provide safe CLI startup guidance and keep existing CLI use independent. |
+| `HISTORY_WRITE_FAILED` | Not reachable through the proposed read-only API. If explicit CLI capture is separately approved, report the persistence error on stderr and preserve the scan result; do not imply a browser write control. |
 
 The screen presents `operationOutcome` (`completed|failed|cancelled`) and, when a report exists, `reportStatus` (`complete|partial|failed`) as independent values. Candidate codes do not replace the approved error contract, and an error response is never treated as a successful empty page.
 

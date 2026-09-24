@@ -8,21 +8,23 @@ Assets include local scan history, raw scanner artifacts, provenance/digests, fi
 
 ## 2. Threats and required controls
 
-| Threat | Required control/evidence |
-| --- | --- |
-| Remote website reaches loopback API (CSRF/DNS rebinding) | Reviewed loopback bind, strict Host/Origin validation, same-origin policy, no permissive CORS, browser-origin attack smoke; decide auth/token if needed |
-| Other local process reads history | Document local trust model, data-root ownership/permissions, listener controls; no claim loopback is authentication |
-| Path traversal via URL, encoded separator, symlink, asset route | Canonical URL/path validation; serve embedded assets only; reject arbitrary filesystem path parameters; adversarial route tests |
-| SQL injection or expensive query | Parameterized SQL, typed filters, allowlisted sort, bounded cursor/page limits, query timeout/limits |
-| Oversized body/result or request flood | Reject unsupported bodies, bound request/response/page size and concurrency, deadline/cancellation, memory profile/evidence |
-| XSS via repository labels/findings/diagnostics | Text rendering/escaping, safe URL policy, no unsafe HTML injection; hostile Unicode/markup fixture in actual browser |
-| Credential/path leakage | Explicit response allowlist and redaction; no env dumps, tokens, credential URLs, or full absolute host paths |
-| Malicious/corrupt SQLite contents | Validate schema/data at boundaries; parameterized queries; explicit corruption path; no unsafe auto-repair/delete |
-| Artifact substitution or loss | Verify digest/provenance before trusting artifact; report missing/mismatch distinctly |
-| UI/API contract skew | Versioned contract, generated/validated contract tests, mismatch fails visibly |
-| Local server accidentally exposed to LAN/public | No wildcard binding by default; inspect actual bound address on every supported OS; reject unsafe configuration unless separately authorized |
-| Static asset disclosure | Embedded allowlisted assets only, no filesystem fallback to arbitrary path, traversal test |
-| Insecure dependency/build chain | Pin toolchain/dependencies, license/SBOM review, reproducible lockfile/build evidence and frontend supply-chain review |
+| ID | Threat | Required control and evidence reference |
+| --- | --- | --- |
+| SEC-01 | Remote website reaches loopback API (CSRF/DNS rebinding) | Strict Host/Origin checks, same-origin policy, no permissive CORS; hostile-origin browser/API scenario and sanitized request/response evidence. |
+| SEC-02 | Other local process reads history | Explicit local trust model, canonical data root, restrictive owner-only permissions; POSIX mode/Windows ACL and unauthorized-user evidence. |
+| SEC-03 | Path traversal via URL, encoded separator, symlink, or asset route | Canonical URL/path validation; embedded assets only; reject arbitrary filesystem parameters; hostile-path corpus on each OS. |
+| SEC-04 | SQL injection or expensive query | Parameterized SQL, typed filters, allowlisted sort, bounded cursor/page/query work; SQL metacharacter and unknown-filter tests with DB unchanged. |
+| SEC-05 | Oversized body/result or request flood | Approved finite request/response/page/concurrency/deadline bounds; boundary and concurrency evidence without truncation or resource exhaustion. |
+| SEC-06 | XSS via repository labels/findings/diagnostics | Text rendering/escaping and safe URL policy; hostile Unicode/markup fixture in the actual browser, with no script execution. |
+| SEC-07 | Credential/path leakage | Response allowlist and redaction; corpus checks for tokens, credential URLs, environments, raw source, SQL/stack traces, and sensitive absolute paths. |
+| SEC-08 | Malicious/corrupt SQLite contents | Validate schema/data at boundaries; explicit corruption/future-version errors; preserve DB bytes and never auto-repair/delete. |
+| SEC-09 | Artifact substitution or loss | Verify digest/provenance; missing/mismatched artifact remains explicit and is never trusted, fabricated, or deleted. |
+| SEC-10 | UI/API contract skew | Versioned contract and visible incompatibility failure; packaged asset/API mismatch scenario. |
+| SEC-11 | Local server accidentally exposed to LAN/public | Loopback-only default and no unsafe fallback; inspect actual bound address on Linux/macOS/Windows. |
+| SEC-12 | Static asset disclosure | Embedded allowlisted assets only, no filesystem fallback; traversal and host-file canary tests. |
+| SEC-13 | Insecure dependency/build chain | Pin and review dependencies/toolchain, license/SBOM, and reproducible build evidence before package selection. |
+
+Threat IDs link to the matching scenario and release-evidence contract in [`TEST-STRATEGY.md`](TEST-STRATEGY.md#9-requirement-and-threat-evidence-matrix). They are planned controls and evidence, not claims that security testing has passed.
 
 ## 3. API minimum controls (proposed)
 
@@ -49,7 +51,7 @@ Default to local-only processing. No telemetry, source upload, remote history, e
 
 - [ ] Named independent reviewer examines API listener/origin and browser attack model.
 - [ ] Data classification and exact persisted/exposed fields are reviewed.
-- [ ] Request/path/SQL/XSS/response-size threat cases are mapped to tests.
+- [x] Request/path/SQL/XSS/response-size threat cases are mapped to planned `SEC-*` verification IDs in [`TEST-STRATEGY.md`](TEST-STRATEGY.md#9-requirement-and-threat-evidence-matrix); actual security execution and review remain outstanding.
 - [ ] Migration/backup/corruption/disk-full controls preserve data and permissions.
 - [ ] Artifact digest and provenance verification behavior is explicit.
 - [ ] Cross-platform bind, path, permission, and shutdown behavior is specified.

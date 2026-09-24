@@ -46,7 +46,7 @@ The owner recorded separate approval of the then-current package and the indepen
 
 1. Approve or revise exact `history-v1` field mapping/validation, safe diagnostics, unknown-data policy, and the candidate history-capture trigger/CLI compatibility behavior, including projection/persistence-failure and exit-code precedence.
 2. Select evidence-backed per-entry, response, and store bounds, or explicitly accept unbounded growth; record disk-full refusal behavior.
-3. Independently review the candidate [`OpenAPI 3.1 artifact`](../../../schemas/openapi/v1/openapi.yaml), including exact projection fields, pagination/cursors, error/status mapping, version policy, and numeric request/response limits. Offline structural/example/size checks are evidence, not acceptance.
+3. Independently review the candidate [`OpenAPI 3.1 artifact`](../../../schemas/openapi/v1/openapi.yaml) in [PR #413](https://github.com/geoffrey-xiao/deprail/pull/413); a direct mention requests the decision because GitHub rejected formal reviewer assignment (HTTP 422; account is not a repository collaborator). Review exact projection fields, pagination/cursors, error/status mapping, version policy, and numeric request/response limits. Offline checks are evidence, not acceptance.
 4. Review local listener bind/port/lifetime, Host/Origin/CORS/CSRF/authentication/token transfer, and shutdown behavior; explicitly disposition transient browser/OS token-fragment exposure.
 5. Select the shadcn/ui-compatible component/dependency strategy and freeze supported browser/OS/accessibility combinations.
 

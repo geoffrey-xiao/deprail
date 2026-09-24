@@ -26,7 +26,7 @@ No test harness, fixtures requiring source mutation, runtime test code, scanner 
 
 ## Inputs, outputs, and failure behavior
 
-Inputs: accepted UX, API/OpenAPI and SQLite contracts plus existing versioned report/error behavior. Outputs: updated requirement/test crosswalk, exact future verification scenarios, threat-to-control evidence map, and compatibility/rollback/release-evidence matrix. Every storage/API/UI failure remains distinguishable from empty history and complete zero findings; unresolved contract conflicts remain explicit blockers.
+Inputs: current UX, API/OpenAPI and owner-approved SQLite proposals plus existing versioned report/error behavior. Outputs: an FR-501–FR-511 map in [`CONTRACT-CROSSWALK.md`](../CONTRACT-CROSSWALK.md); visible error-state behavior in [`UX-DESIGN.md`](../UX-DESIGN.md); scenario/evidence IDs in [`requirements/TEST-STRATEGY.md`](../requirements/TEST-STRATEGY.md); threat IDs in [`requirements/SECURITY-REQUIREMENTS.md`](../requirements/SECURITY-REQUIREMENTS.md); code-to-state mapping in [`requirements/ERROR-MODEL.md`](../requirements/ERROR-MODEL.md); and platform/dependency/rollback evidence in [`requirements/COMPATIBILITY-MATRIX.md`](../requirements/COMPATIBILITY-MATRIX.md). These specify future checks only; no runtime evidence is claimed. Every storage/API/UI failure remains distinguishable from empty history and complete zero findings; unresolved decisions remain explicit DoR blockers.
 
 ## Required verification and evidence
 

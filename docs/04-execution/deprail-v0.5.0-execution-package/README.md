@@ -28,7 +28,7 @@ This package translates the proposed v0.5 release outcome into reviewable UX, AP
 
 - [`PRD-v0.5.md`](PRD-v0.5.md) — outcome, scope, users, exclusions, proposed acceptance criteria.
 - [`ARCHITECTURE-v0.5.md`](ARCHITECTURE-v0.5.md) — component boundaries and local system context.
-- [ADR-0004](../../adr/ADR-0004-local-scan-history.md) — proposed SQLite schema and lifecycle; not accepted.
+- [ADR-0004](../../adr/ADR-0004-local-scan-history.md) — owner-approved SQLite proposal; independent review and DoR remain outstanding.
 - [`UX-DESIGN.md`](UX-DESIGN.md) — workflows, information architecture, shadcn/ui-inspired direction, interaction and accessibility states.
 - [`API-DESIGN.md`](API-DESIGN.md) — proposed local REST resource and operation contract; OpenAPI artifact remains a design-gate deliverable.
 - [`requirements/FUNCTIONAL-REQUIREMENTS.md`](requirements/FUNCTIONAL-REQUIREMENTS.md) — observable behaviors and release gates.
@@ -37,6 +37,7 @@ This package translates the proposed v0.5 release outcome into reviewable UX, AP
 - [`requirements/SECURITY-REQUIREMENTS.md`](requirements/SECURITY-REQUIREMENTS.md) — local threat boundaries and security acceptance.
 - [`requirements/COMPATIBILITY-MATRIX.md`](requirements/COMPATIBILITY-MATRIX.md) — compatibility commitments and unresolved decisions.
 - [`requirements/TEST-STRATEGY.md`](requirements/TEST-STRATEGY.md) — contract, migration, UI, integration, and platform evidence.
+- [`CONTRACT-CROSSWALK.md`](CONTRACT-CROSSWALK.md) — source-contract and FR-501–FR-511 traceability; open gates remain explicit.
 
 - [`epics/README.md`](epics/README.md) and [`issues/README.md`](issues/README.md) — EPIC-001 / #390 and its planning-only subissue contracts.
 

@@ -28,27 +28,27 @@ These are semantic states, not finalized wire codes. Stable error codes and HTTP
 
 ## 3. Failure matrix (proposed)
 
-| Condition | Required observable behavior | Data-safety requirement |
-| --- | --- | --- |
-| Empty history | Successful empty collection and empty-state UI | Do not synthesize a scan record |
-| Missing data directory/database | Read-only history query returns an empty collection without creating files; only an explicit save initializes storage | Do not make a normal scan depend on history initialization |
-| Permission denied | Explicit storage unavailable error | Do not weaken permissions or write elsewhere silently |
-| Database locked/concurrent writer | Wait only for the bounded busy interval; then return a typed read/write failure | No partial transaction visible; retain the independent scan outcome |
-| Disk full/quota | Abort the selected save with `HISTORY_WRITE_FAILED` | Roll back the full transaction; preserve the scan outcome and prior entries |
-| Interrupted write/process crash | SQLite transaction rollback leaves the prior committed state readable | No half-record or ambiguous “saved” result |
-| Unsupported future schema | Refuse unsafe reads/writes with upgrade guidance | Never downgrade, delete, or overwrite automatically |
-| Migration error/interruption | Roll back the versioned transaction and preserve the pre-migration backup | Preserve the old database and provide manual recovery guidance |
-| Corrupt DB/page | Explicit integrity/storage error | No automatic destructive reset; preserve evidence for recovery |
-| Missing referenced artifact | Scan metadata may be shown if valid; integrity warning/error for evidence | Never substitute empty artifact or claim provenance verified |
-| Digest mismatch | Integrity failure at scoped read | Do not trust corrupted bytes or mutate the source artifact |
-| Malformed stored report | Explicit invalid-record result scoped to scan | Do not expose malformed content as a valid report |
-| Requested history save fails after scan success | Report `HISTORY_WRITE_FAILED` separately; candidate exit code 6, subject to CLI review | Preserve the scan report and outcome; do not claim it was saved |
-| Selected history entry exceeds its approved size bound | Fail the save explicitly before commit | No partial entry; preserve the scan outcome |
-| Request oversized/malformed | Client error; bounded work | Reject before expensive parsing/DB query |
-| Cancelled scan operation | History entry records `operationOutcome=cancelled`; any returned report keeps its existing status | Never treat retained pre-cancellation completeness as proof of completion |
-| API timeout/request cancellation | Explicit request outcome; no fabricated complete response | Do not rewrite stored history or `ScanReport.Status` |
-| UI assets missing/version mismatch | Explicit console unavailable/error | CLI remains usable |
-| Shutdown during query/write | Cancel/drain according to the accepted transaction model | Durable commit or rollback; no ambiguous “saved” result |
+| Condition | Required observable behavior | Data-safety requirement | Verification ID |
+| --- | --- | --- | --- |
+| Empty history | Successful empty collection and empty-state UI | Do not synthesize a scan record | `FR-502` |
+| Missing data directory/database | Read-only history query returns an empty collection without creating files; only an explicitly approved save initializes storage | Do not make a normal scan depend on history initialization | `FR-502`, `FR-505` |
+| Permission denied | Explicit storage-unavailable error | Do not weaken permissions or write elsewhere silently | `SEC-02`, `FR-505` |
+| Database locked/concurrent writer | Wait only for the bounded busy interval; then return a typed read/write failure | No partial transaction visible; retain the independent scan outcome | `STORE-01` |
+| Disk full/quota | Abort the selected save with `HISTORY_WRITE_FAILED` | Roll back the full transaction; preserve the scan outcome and prior entries | `STORE-01`, `FR-508` |
+| Interrupted write/process crash | SQLite transaction rollback leaves the prior committed state readable | No half-record or ambiguous “saved” result | `FR-508`, `SEC-08` |
+| Unsupported future schema | Refuse unsafe reads/writes with upgrade guidance | Never downgrade, delete, or overwrite automatically | `FR-508`, `SEC-08` |
+| Migration error/interruption | Roll back the versioned transaction and preserve the pre-migration backup | Preserve the old database and provide manual recovery guidance | `FR-508`, `SEC-08` |
+| Corrupt DB/page | Explicit integrity/storage error | No automatic destructive reset; preserve evidence for recovery | `FR-508`, `SEC-08` |
+| Missing referenced artifact | Scan metadata may be shown if valid; integrity warning/error for evidence | Never substitute empty artifact or claim provenance verified | `FR-503`, `SEC-09` |
+| Digest mismatch | Integrity failure at scoped read | Do not trust corrupted bytes or mutate the source artifact | `FR-503`, `SEC-09` |
+| Malformed stored report | Explicit invalid-record result scoped to scan | Do not expose malformed content as a valid report | `FR-503`, `SEC-08` |
+| Requested history save fails after scan success | Report `HISTORY_WRITE_FAILED` separately; candidate exit code `6` is subject to CLI review | Preserve the scan report and outcome; do not claim it was saved | `STORE-01` |
+| Selected history entry exceeds its approved size bound | Fail the save explicitly before commit | No partial entry; preserve the scan outcome | `SEC-05`, `FR-508` |
+| Request oversized/malformed | Client error; bounded work | Reject before expensive parsing/DB query | `FR-507`, `SEC-05` |
+| Cancelled scan operation | History entry records `operationOutcome=cancelled`; any returned report keeps its existing status | Never treat retained pre-cancellation completeness as proof of completion | `FR-504` |
+| API timeout/request cancellation | Explicit request outcome; no fabricated complete response | Do not rewrite stored history or `ScanReport.Status` | `FR-502`, `FR-503` |
+| UI assets missing/version mismatch | Explicit console unavailable/error | CLI remains usable | `FR-509`, `SEC-10` |
+| Shutdown during query/write | Cancel/drain according to the accepted transaction model | Durable commit or rollback; no ambiguous “saved” result | `FR-508`, `STORE-01` |
 
 ## 4. Proposed persisted schema v1 (unapproved)
 

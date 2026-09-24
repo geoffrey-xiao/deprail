@@ -18,16 +18,34 @@
 | v0.4 requirements | No `requirements/ERROR-MODEL.md` exists in the v0.4 package; its available requirements do not replace v0.1/v0.2 scan codes | v0.5 [`requirements/ERROR-MODEL.md`](requirements/ERROR-MODEL.md) | Name and review the actual contract instead of citing a nonexistent v0.4 error model |
 | v0.4 closeout #356 | Outstanding release follow-ups remain open and require disposition | Plan §1, package README | Each gap assigned/carried/deferred; no assumed completion |
 
-## Unresolved decisions
+## FR-501–FR-511 execution traceability (draft)
 
-1. What uniquely identifies a history entry across repeated runs with the same `ScanReport.ScanID`, and how are ingestion retries made idempotent without deduplicating distinct runs?
-2. How is history captured, and which optional report fields and raw content-addressed artifacts are stored/referenced/retained?
-3. What is the data root, permission model, retention/deletion and export behavior?
-4. What migration, transaction/concurrency, backup, disk-full, corruption and interrupted-write contract is accepted?
-5. Which API resource shape, endpoint pagination, error codes, version policy and payload limits are required by approved UX?
-6. What are listener startup/port/browser-open, Host/Origin/CORS/CSRF/auth, and shutdown behavior?
-7. Which shadcn/ui-compatible implementation and pinned dependency/build strategy is accepted?
-8. Which browsers, platform/browser combinations, bundle limits, and manual smoke criteria are supported?
-9. Who is the independent architecture/security reviewer, and how are all #356 follow-ups dispositioned?
+The per-requirement verification IDs are defined in [`requirements/TEST-STRATEGY.md`](requirements/TEST-STRATEGY.md#9-requirement-and-threat-evidence-matrix). They specify the observable assertion, planned evidence artifact, and platform/browser matrix; they are not evidence that implementation tests have passed.
 
-No implementation issue map is created until those decisions and Definition of Ready are accepted. Refer to the release plan for the design-first sequence.
+| Requirement | Design and failure contract | Required observable guard | Verification ID |
+| --- | --- | --- | --- |
+| FR-501 | PRD; [ADR-0004](../../adr/ADR-0004-local-scan-history.md); failure/data §§1, 4 | Repeated `ScanReport.ScanID` values remain separate entries with unique history IDs; report identity and provenance remain unchanged. | `FR-501` |
+| FR-502 | API §§2–5; UX §§3–5; error model | Bounded, deterministic pages; empty results are distinct from loading, unavailable store, and API failure. | `FR-502` |
+| FR-503 | API §§2–5; UX §§4–5; failure/data §3 | Detail retains allowed scope/provenance; no report, missing artifact, and digest mismatch remain explicit rather than fabricated evidence. | `FR-503` |
+| FR-504 | Failure/data §§1–2; UX §5 | Operation outcome and optional report completeness remain independent through persistence, API, UI, and announcements. | `FR-504` |
+| FR-505 | Architecture §§3, 6; v0.1 CLI contract; compatibility matrix | CLI command/output/exit behavior remains unchanged when the console or history store is absent/unavailable, unless a separate compatibility decision is approved. | `FR-505` |
+| FR-506 | Architecture §§3, 5; API §1 | CLI and HTTP paths expose the same application/domain result; transport failures do not duplicate policy or scanner behavior. | `FR-506` |
+| FR-507 | API §§3, 5–6; security requirements §§2–3 | Invalid identifiers/filters/routes/versions/methods, hostile origins, traversal, SQL metacharacters, and bounded-work failures are explicit and side-effect-free. | `FR-507` |
+| FR-508 | [ADR-0004](../../adr/ADR-0004-local-scan-history.md); failure/data §§4–8; compatibility matrix | Fresh, supported, interrupted, corrupt, and future-schema outcomes preserve prior committed data under the proposed lifecycle; unresolved bounds/retention remain DoR gates. | `FR-508` |
+| FR-509 | Architecture §6; API §7; UX §5–6 | Packaged assets match the API contract; missing assets or incompatible versions fail visibly without filesystem fallback. | `FR-509` |
+| FR-510 | UX §§7–8 | Keyboard, assistive-technology, focus, status, contrast, responsive, and reduced-motion criteria pass on the actual packaged surface. | `FR-510` |
+| FR-511 | PRD exclusions; API §3; UX §§3, 6 | Route and UI review confirms no hosted/team, remote publish, browser scan, remediation, repository mutation, or agent-write control. | `FR-511` |
+
+## Remaining decisions and approval gates
+
+ADR-0004's proposed schema-v1 and lifecycle were owner-approved and merged in PR #407. The ADR remains Proposed pending independent architecture/security review; its numeric payload/store bounds and retention-risk disposition remain open.
+
+1. Approve or revise the candidate history-capture trigger and CLI compatibility behavior, including persistence-failure/exit-code precedence.
+2. Select evidence-backed per-entry, response, and store bounds, or explicitly accept unbounded growth; record disk-full refusal behavior.
+3. Complete and validate the exact OpenAPI resource fields, pagination/cursor behavior, error mapping, version policy, and numeric request/response limits.
+4. Review local listener bind/port/lifetime, Host/Origin/CORS/CSRF/authentication, and shutdown behavior.
+5. Select the shadcn/ui-compatible component/dependency strategy and freeze supported browser/OS/accessibility combinations.
+6. Name the independent architecture/security reviewer and record their approval separately from owner approval.
+7. Disposition each #356 follow-up with owner, target, and evidence; no item is inferred complete.
+
+No implementation issue map is authorized until these decisions and the complete Definition of Ready have linked evidence and separate reviewer/owner approval. Refer to the release plan for the design-first sequence.

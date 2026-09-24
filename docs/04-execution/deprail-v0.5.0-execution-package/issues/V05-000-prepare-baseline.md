@@ -9,7 +9,7 @@
 - Risk: R2
 - Area: docs
 - Owner: `@geoffrey-xiao`
-- Reviewer: Independent architecture/security reviewer remains to be named; the owner's planning-ticket exception does not change #387's separate review gate.
+- Reviewer: `@geoffreyxiaoai` is the owner-designated independent architecture/security reviewer and approved the then-current package in PR #412; the current OpenAPI/security additions still require a separate decision before their DoR gates pass.
 - Dependencies: #356; product, architecture, roadmap, release-plan, and execution-package reconciliation.
 
 ## Value

@@ -1,0 +1,952 @@
+openapi: 3.1.0
+jsonSchemaDialect: https://spec.openapis.org/oas/3.1/dialect/base
+info:
+  title: DepRail Local History API
+  version: 1.0.0
+  summary: Read-only API for the local scan-history console.
+  description: |
+    Candidate contract for v0.5 review. This API is served by the same local
+    process and origin as the embedded console. Every API operation requires
+    the process-scoped bearer credential described in API-DESIGN.md. This
+    contract is not approved for runtime implementation until the owner and
+    independent architecture/security reviewer accept the v0.5 Definition of
+    Ready.
+servers:
+  - url: /
+    description: Same-origin base URL selected by the local console process.
+tags:
+  - name: local-history
+    description: Bounded, read-only access to saved scan-operation history.
+security:
+  - localBearer: []
+x-deprail-runtime-profile:
+  status: proposed-for-review
+  bindAddress: 127.0.0.1
+  portSelection: operating-system-ephemeral-port-zero
+  requestBodiesAllowed: false
+  maxRequestTargetBytes: 2048
+  maxHeaderBytes: 8192
+  maxConcurrentRequests: 8
+  requestDeadlineSeconds: 10
+  shutdownGraceSeconds: 10
+  maxResponseBytes: 1048576
+  defaultPageSize: 25
+  maximumPageSize: 50
+  maximumCursorBytes: 512
+  notes:
+    - These are candidate bounds, not accepted limits; payload and platform evidence remains required before implementation.
+    - No handler may truncate a response into an apparent success.
+    - The server must not fall back to a wildcard, LAN, or public bind.
+paths:
+  /api/v1/health:
+    get:
+      tags: [local-history]
+      operationId: getLocalHealth
+      summary: Report local API process readiness
+      description: |
+        Reports only that the local API process is serving. It does not assert
+        that the history store is available; history operations report storage
+        failures explicitly. No host, environment, database path, or build
+        secrets are returned.
+      responses:
+        '200':
+          description: The local API process is ready.
+          headers:
+            Cache-Control:
+              $ref: '#/components/headers/NoStore'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HealthResponse'
+              examples:
+                ready:
+                  value:
+                    apiVersion: v1
+                    status: ready
+        '400':
+          $ref: '#/components/responses/InvalidRequest'
+        '414':
+          $ref: '#/components/responses/RequestTargetTooLong'
+        '431':
+          $ref: '#/components/responses/RequestHeadersTooLarge'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/OriginRejected'
+        '405':
+          $ref: '#/components/responses/MethodNotAllowed'
+        '500':
+          $ref: '#/components/responses/InternalFailure'
+        '503':
+          $ref: '#/components/responses/ServiceBusy'
+  /api/v1/scans:
+    get:
+      tags: [local-history]
+      operationId: listHistoryEntries
+      summary: List saved history entries
+      description: |
+        Returns a page ordered by recordedAt descending, then historyEntryID
+        descending. Pagination uses an opaque, versioned keyset cursor; it is
+        not an offset and contains no credential or sensitive repository data.
+        A new pagination sequence is required to include entries added after
+        the first page. Filters and arbitrary sort expressions are not accepted.
+        A successful empty page is distinct from an unavailable store.
+      parameters:
+        - $ref: '#/components/parameters/PageSize'
+        - $ref: '#/components/parameters/Cursor'
+      responses:
+        '200':
+          description: A bounded page of history summaries.
+          headers:
+            Cache-Control:
+              $ref: '#/components/headers/NoStore'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HistoryPage'
+              examples:
+                oneEntry:
+                  value:
+                    items:
+                      - historyEntryID: 3d6f0a1e-6d72-4f03-a933-9cde477b4d11
+                        recordedAt: '2026-09-25T12:34:56.123456Z'
+                        sourceScanID: scan-0123456789abcdef
+                        operationOutcome: completed
+                        reportStatus: complete
+                        repositoryLabel: example-repository
+                        workspaceCount: 1
+                        findingCount: 1
+                        sourceReportSchemaVersion: v1alpha
+                    nextCursor: null
+        '400':
+          $ref: '#/components/responses/InvalidRequest'
+        '414':
+          $ref: '#/components/responses/RequestTargetTooLong'
+        '431':
+          $ref: '#/components/responses/RequestHeadersTooLarge'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/OriginRejected'
+        '405':
+          $ref: '#/components/responses/MethodNotAllowed'
+        '500':
+          $ref: '#/components/responses/InternalFailure'
+        '503':
+          $ref: '#/components/responses/StoreUnavailable'
+        '504':
+          $ref: '#/components/responses/RequestTimeout'
+  /api/v1/scans/{historyEntryID}:
+    parameters:
+      - $ref: '#/components/parameters/HistoryEntryID'
+    get:
+      tags: [local-history]
+      operationId: getHistoryEntry
+      summary: Load one saved history entry
+      description: |
+        Returns only the allowlisted history-v1 projection. A missing report is
+        null, not an empty report. Artifact bytes and filesystem paths are never
+        returned. Artifact integrity is represented per reference so trustworthy
+        summary metadata can remain visible when an artifact is missing or
+        mismatched.
+      responses:
+        '200':
+          description: The requested history entry and its safe detail metadata.
+          headers:
+            Cache-Control:
+              $ref: '#/components/headers/NoStore'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HistoryEntryDetail'
+              examples:
+                completeEntry:
+                  value:
+                    summary:
+                      historyEntryID: 3d6f0a1e-6d72-4f03-a933-9cde477b4d11
+                      recordedAt: '2026-09-25T12:34:56.123456Z'
+                      sourceScanID: scan-0123456789abcdef
+                      operationOutcome: completed
+                      reportStatus: complete
+                      repositoryLabel: example-repository
+                      workspaceCount: 1
+                      findingCount: 1
+                      sourceReportSchemaVersion: v1alpha
+                    report:
+                      sourceSchemaVersion: v1alpha
+                      repositoryState: aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+                    diagnostics: []
+                    artifactReferences:
+                      - digest: bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb
+                        integrity: verified
+        '400':
+          $ref: '#/components/responses/InvalidRequest'
+        '414':
+          $ref: '#/components/responses/RequestTargetTooLong'
+        '431':
+          $ref: '#/components/responses/RequestHeadersTooLarge'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/OriginRejected'
+        '404':
+          $ref: '#/components/responses/HistoryEntryNotFound'
+        '405':
+          $ref: '#/components/responses/MethodNotAllowed'
+        '500':
+          $ref: '#/components/responses/InternalFailure'
+        '503':
+          $ref: '#/components/responses/StoreUnavailable'
+        '504':
+          $ref: '#/components/responses/RequestTimeout'
+  /api/v1/scans/{historyEntryID}/workspaces:
+    parameters:
+      - $ref: '#/components/parameters/HistoryEntryID'
+    get:
+      tags: [local-history]
+      operationId: listHistoryWorkspaces
+      summary: List same-operation workspace summaries
+      description: |
+        Workspaces are returned only when validated ProjectGraph context from
+        the same scan operation was captured. Discovery completeness is not
+        scanner success. An unavailable collection is distinct from a confirmed
+        empty collection.
+      parameters:
+        - $ref: '#/components/parameters/PageSize'
+        - $ref: '#/components/parameters/Cursor'
+      responses:
+        '200':
+          description: A bounded available page or an explicitly unavailable collection.
+          headers:
+            Cache-Control:
+              $ref: '#/components/headers/NoStore'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WorkspaceCollection'
+              examples:
+                available:
+                  value:
+                    collectionState: available
+                    items:
+                      - workspaceID: npm:packages/api:package.json
+                        relativePath: packages/api
+                        ecosystem: npm
+                        packageManager: npm
+                        discoveryCompleteness: complete
+                    nextCursor: null
+                unavailable:
+                  value:
+                    collectionState: unavailable
+                    reason: source_graph_unavailable
+                    items: null
+                    nextCursor: null
+        '400':
+          $ref: '#/components/responses/InvalidRequest'
+        '414':
+          $ref: '#/components/responses/RequestTargetTooLong'
+        '431':
+          $ref: '#/components/responses/RequestHeadersTooLarge'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/OriginRejected'
+        '404':
+          $ref: '#/components/responses/HistoryEntryNotFound'
+        '405':
+          $ref: '#/components/responses/MethodNotAllowed'
+        '500':
+          $ref: '#/components/responses/InternalFailure'
+        '503':
+          $ref: '#/components/responses/StoreUnavailable'
+        '504':
+          $ref: '#/components/responses/RequestTimeout'
+  /api/v1/scans/{historyEntryID}/findings:
+    parameters:
+      - $ref: '#/components/parameters/HistoryEntryID'
+    get:
+      tags: [local-history]
+      operationId: listHistoryFindings
+      summary: List stable finding summaries
+      description: |
+        Findings are ordered by stableFindingKey ascending. A missing or
+        untrustworthy source report produces an unavailable collection; a
+        confirmed empty collection remains distinct. Finding keys are generated
+        by the existing normalize.StableFindingKey contract and never use
+        adapter.Finding.TargetID as the key.
+      parameters:
+        - $ref: '#/components/parameters/PageSize'
+        - $ref: '#/components/parameters/Cursor'
+      responses:
+        '200':
+          description: A bounded available page or an explicitly unavailable collection.
+          headers:
+            Cache-Control:
+              $ref: '#/components/headers/NoStore'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FindingCollection'
+              examples:
+                available:
+                  value:
+                    collectionState: available
+                    reportStatus: complete
+                    items:
+                      - stableFindingKey: cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
+                        componentName: example-lib
+                        componentPURL: pkg:npm/example-lib@2.3.0
+                        version: 2.3.0
+                        workspaceID: npm:packages/api:package.json
+                        relativePath: packages/api
+                        ecosystem: npm
+                        vulnerabilityID: GHSA-0000-0000-0000
+                        aliases: [CVE-2026-0001]
+                        severity: high
+                        fixedVersion: 2.4.1
+                    nextCursor: null
+                unavailable:
+                  value:
+                    collectionState: unavailable
+                    reason: source_report_unavailable
+                    reportStatus: null
+                    items: null
+                    nextCursor: null
+        '400':
+          $ref: '#/components/responses/InvalidRequest'
+        '414':
+          $ref: '#/components/responses/RequestTargetTooLong'
+        '431':
+          $ref: '#/components/responses/RequestHeadersTooLarge'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/OriginRejected'
+        '404':
+          $ref: '#/components/responses/HistoryEntryNotFound'
+        '405':
+          $ref: '#/components/responses/MethodNotAllowed'
+        '500':
+          $ref: '#/components/responses/InternalFailure'
+        '503':
+          $ref: '#/components/responses/StoreUnavailable'
+        '504':
+          $ref: '#/components/responses/RequestTimeout'
+components:
+  securitySchemes:
+    localBearer:
+      type: http
+      scheme: bearer
+      bearerFormat: opaque, process-scoped 256-bit token
+      description: |
+        Candidate local-console capability token. It is generated from a
+        cryptographically secure random source for one process lifetime, sent
+        only in the Authorization header, held in browser memory, never stored
+        in local/session storage, and revoked on process shutdown. The
+        bootstrap transfer and fragment-removal rules are specified in
+        API-DESIGN.md; no token is accepted in a path or query parameter.
+        A reload or new tab loses the in-memory token; the UI must show safe
+        reopen guidance from the active CLI session and must not fall back to
+        cookies or browser storage.
+  headers:
+    NoStore:
+      description: Prevents shared or browser caches from retaining local history.
+      schema:
+        type: string
+        const: no-store
+    AllowGet:
+      description: Only GET is accepted on this route.
+      schema:
+        type: string
+        const: GET
+    BearerChallenge:
+      description: Generic bearer authentication challenge.
+      schema:
+        type: string
+        const: Bearer
+  parameters:
+    PageSize:
+      name: pageSize
+      in: query
+      required: false
+      description: Requested page size. The default and maximum are provisional runtime bounds.
+      schema:
+        type: integer
+        minimum: 1
+        maximum: 50
+        default: 25
+      example: 25
+    Cursor:
+      name: cursor
+      in: query
+      required: false
+      description: Opaque, versioned keyset cursor returned by the previous page; never an offset or credential.
+      schema:
+        type: string
+        minLength: 1
+        maxLength: 512
+        pattern: '^[A-Za-z0-9_-]+$'
+      example: AQAAAAAAAAB7P-9f9iJE
+    HistoryEntryID:
+      name: historyEntryID
+      in: path
+      required: true
+      description: Unique UUIDv4 for one stored operation occurrence, not the source scan ID.
+      schema:
+        type: string
+        format: uuid
+        pattern: '^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$'
+      example: 3d6f0a1e-6d72-4f03-a933-9cde477b4d11
+  responses:
+    InvalidRequest:
+      description: Invalid identifier, query value, cursor, unknown filter, or prohibited request body.
+      headers:
+        Cache-Control:
+          $ref: '#/components/headers/NoStore'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ApiErrorResponse'
+          example:
+            error:
+              code: API_REQUEST_INVALID
+              message: The request parameters are invalid.
+    RequestTargetTooLong:
+      description: The request target exceeded 2,048 bytes and was rejected before route execution. No API error envelope is guaranteed.
+    RequestHeadersTooLarge:
+      description: The request headers exceeded 8,192 bytes and were rejected before route execution. No API error envelope is guaranteed.
+    Unauthorized:
+      description: The process-scoped bearer credential is absent or invalid.
+      headers:
+        Cache-Control:
+          $ref: '#/components/headers/NoStore'
+        WWW-Authenticate:
+          $ref: '#/components/headers/BearerChallenge'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ApiErrorResponse'
+          example:
+            error:
+              code: API_AUTH_UNAUTHORIZED
+              message: Local API authorization is required.
+    OriginRejected:
+      description: Host, Origin, or Fetch Metadata violates the exact loopback same-origin boundary.
+      headers:
+        Cache-Control:
+          $ref: '#/components/headers/NoStore'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ApiErrorResponse'
+          example:
+            error:
+              code: API_ORIGIN_REJECTED
+              message: The request origin is not allowed.
+    RouteNotFound:
+      description: The path is not part of the approved API route table.
+      headers:
+        Cache-Control:
+          $ref: '#/components/headers/NoStore'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ApiErrorResponse'
+          example:
+            error:
+              code: API_ROUTE_NOT_FOUND
+              message: The requested route was not found.
+    VersionUnsupported:
+      description: A versioned API prefix is recognized but is not supported.
+      headers:
+        Cache-Control:
+          $ref: '#/components/headers/NoStore'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ApiErrorResponse'
+          example:
+            error:
+              code: API_VERSION_UNSUPPORTED
+              message: The requested API version is not supported.
+    HistoryEntryNotFound:
+      description: The valid history-entry UUID does not exist.
+      headers:
+        Cache-Control:
+          $ref: '#/components/headers/NoStore'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ApiErrorResponse'
+          example:
+            error:
+              code: HISTORY_ENTRY_NOT_FOUND
+              message: The requested history entry was not found.
+    MethodNotAllowed:
+      description: The known route accepts GET only; the Allow header is exactly GET.
+      headers:
+        Cache-Control:
+          $ref: '#/components/headers/NoStore'
+        Allow:
+          $ref: '#/components/headers/AllowGet'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ApiErrorResponse'
+          example:
+            error:
+              code: API_METHOD_UNSUPPORTED
+              message: The method is not allowed for this route.
+    InternalFailure:
+      description: The response exceeded its bound, stored projection is corrupt, or an unexpected internal failure occurred.
+      headers:
+        Cache-Control:
+          $ref: '#/components/headers/NoStore'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ApiErrorResponse'
+          examples:
+            responseTooLarge:
+              value:
+                error:
+                  code: API_RESPONSE_TOO_LARGE
+                  message: The response exceeds the configured limit.
+            corruptHistory:
+              value:
+                error:
+                  code: HISTORY_CORRUPT
+                  message: The stored history entry is invalid.
+            internal:
+              value:
+                error:
+                  code: API_INTERNAL_ERROR
+                  message: The local API request could not be completed.
+    StoreUnavailable:
+      description: History storage is unavailable, incompatible, busy, or failed migration.
+      headers:
+        Cache-Control:
+          $ref: '#/components/headers/NoStore'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ApiErrorResponse'
+          examples:
+            unavailable:
+              value:
+                error:
+                  code: HISTORY_UNAVAILABLE
+                  message: Local scan history is unavailable.
+            unsupportedSchema:
+              value:
+                error:
+                  code: HISTORY_SCHEMA_UNSUPPORTED
+                  message: The local history version is not supported.
+            migrationFailed:
+              value:
+                error:
+                  code: HISTORY_MIGRATION_FAILED
+                  message: Local scan history could not be opened safely.
+            busy:
+              value:
+                error:
+                  code: API_BUSY
+                  message: The local API is temporarily busy.
+    ServiceBusy:
+      description: The bounded local request capacity is temporarily full.
+      headers:
+        Cache-Control:
+          $ref: '#/components/headers/NoStore'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ApiErrorResponse'
+          example:
+            error:
+              code: API_BUSY
+              message: The local API is temporarily busy.
+    RequestTimeout:
+      description: The bounded history request deadline elapsed.
+      headers:
+        Cache-Control:
+          $ref: '#/components/headers/NoStore'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ApiErrorResponse'
+          example:
+            error:
+              code: API_TIMEOUT
+              message: The local API request timed out.
+  schemas:
+    HealthResponse:
+      type: object
+      additionalProperties: false
+      required: [apiVersion, status]
+      properties:
+        apiVersion:
+          type: string
+          const: v1
+        status:
+          type: string
+          const: ready
+    ApiErrorResponse:
+      type: object
+      additionalProperties: false
+      required: [error]
+      properties:
+        error:
+          $ref: '#/components/schemas/ApiError'
+    ApiError:
+      type: object
+      additionalProperties: false
+      required: [code, message]
+      properties:
+        code:
+          type: string
+          enum:
+            - API_AUTH_UNAUTHORIZED
+            - API_BUSY
+            - API_INTERNAL_ERROR
+            - API_METHOD_UNSUPPORTED
+            - API_ORIGIN_REJECTED
+            - API_REQUEST_INVALID
+            - API_RESPONSE_TOO_LARGE
+            - API_ROUTE_NOT_FOUND
+            - API_TIMEOUT
+            - API_VERSION_UNSUPPORTED
+            - HISTORY_CORRUPT
+            - HISTORY_ENTRY_NOT_FOUND
+            - HISTORY_MIGRATION_FAILED
+            - HISTORY_SCHEMA_UNSUPPORTED
+            - HISTORY_UNAVAILABLE
+        message:
+          type: string
+          minLength: 1
+          maxLength: 256
+          description: Safe, static user-facing message; never echoes untrusted input or local paths.
+    HistoryEntryID:
+      type: string
+      format: uuid
+      pattern: '^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$'
+      description: Unique identity for one history operation occurrence.
+      examples: [3d6f0a1e-6d72-4f03-a933-9cde477b4d11]
+    HistoryEntrySummary:
+      type: object
+      additionalProperties: false
+      required:
+        - historyEntryID
+        - recordedAt
+        - sourceScanID
+        - operationOutcome
+        - reportStatus
+        - repositoryLabel
+        - workspaceCount
+        - findingCount
+        - sourceReportSchemaVersion
+      properties:
+        historyEntryID:
+          $ref: '#/components/schemas/HistoryEntryID'
+        recordedAt:
+          type: string
+          format: date-time
+          description: UTC time recorded with microsecond precision.
+          examples: ['2026-09-25T12:34:56.123456Z']
+        sourceScanID:
+          type: [string, 'null']
+          minLength: 1
+          maxLength: 128
+          description: Existing source ScanReport.ScanID; it is not unique across history entries.
+        operationOutcome:
+          type: string
+          enum: [completed, failed, cancelled]
+        reportStatus:
+          type: [string, 'null']
+          enum: [complete, partial, failed, null]
+          description: Null means no trustworthy source report; it is never equivalent to complete with zero findings.
+        repositoryLabel:
+          type: [string, 'null']
+          minLength: 1
+          maxLength: 256
+          description: Reviewed display label only; never an absolute repository path.
+        workspaceCount:
+          type: [integer, 'null']
+          minimum: 0
+          maximum: 9223372036854775807
+          description: Null when same-operation validated graph context is unavailable.
+        findingCount:
+          type: [integer, 'null']
+          minimum: 0
+          maximum: 9223372036854775807
+          description: Null when no trustworthy source report exists.
+        sourceReportSchemaVersion:
+          type: [string, 'null']
+          minLength: 1
+          maxLength: 64
+          description: Original report schema version, not the history projection or API version.
+    HistoryPage:
+      type: object
+      additionalProperties: false
+      required: [items, nextCursor]
+      properties:
+        items:
+          type: array
+          maxItems: 50
+          items:
+            $ref: '#/components/schemas/HistoryEntrySummary'
+        nextCursor:
+          $ref: '#/components/schemas/NextCursor'
+    NextCursor:
+      type: [string, 'null']
+      minLength: 1
+      maxLength: 512
+      pattern: '^[A-Za-z0-9_-]+$'
+      description: Null indicates the end of this collection.
+    HistoryEntryDetail:
+      type: object
+      additionalProperties: false
+      required: [summary, report, diagnostics, artifactReferences]
+      properties:
+        summary:
+          $ref: '#/components/schemas/HistoryEntrySummary'
+        report:
+          anyOf:
+            - $ref: '#/components/schemas/HistoryReportMetadata'
+            - type: 'null'
+          description: Null when no trustworthy source report was captured.
+        diagnostics:
+          type: array
+          maxItems: 128
+          items:
+            $ref: '#/components/schemas/HistoryDiagnostic'
+        artifactReferences:
+          type: array
+          maxItems: 4096
+          description: Digests and integrity states only; the API never serves artifact bytes or filesystem paths.
+          items:
+            $ref: '#/components/schemas/ArtifactReference'
+    HistoryReportMetadata:
+      type: object
+      additionalProperties: false
+      required: [sourceSchemaVersion, repositoryState]
+      properties:
+        sourceSchemaVersion:
+          type: string
+          minLength: 1
+          maxLength: 64
+        repositoryState:
+          type: string
+          pattern: '^[a-f0-9]{64}$'
+          description: Opaque source repository-state digest; not a path or host identity.
+    HistoryDiagnostic:
+      type: object
+      additionalProperties: false
+      required: [code, message, scope]
+      properties:
+        code:
+          type: string
+          pattern: '^[A-Z][A-Z0-9_]{1,63}$'
+          description: Stable approved error-model code; raw ScanReport.Errors are never copied.
+        message:
+          type: string
+          minLength: 1
+          maxLength: 512
+          description: Redacted safe message created from typed application context.
+        scope:
+          type: string
+          enum: [repository, workspace]
+        workspaceID:
+          type: string
+          minLength: 1
+          maxLength: 256
+          description: Required by the projection contract when scope is workspace.
+    ArtifactReference:
+      type: object
+      additionalProperties: false
+      required: [digest, integrity]
+      properties:
+        digest:
+          type: string
+          pattern: '^[a-f0-9]{64}$'
+        integrity:
+          type: string
+          enum: [verified, missing, digest_mismatch, unavailable]
+          description: |
+            Missing or mismatched evidence does not invalidate otherwise
+            trustworthy entry metadata. The API returns the status in the
+            successful detail response and never returns artifact bytes.
+    WorkspaceCollection:
+      oneOf:
+        - $ref: '#/components/schemas/WorkspacePageAvailable'
+        - $ref: '#/components/schemas/WorkspacePageUnavailable'
+      discriminator:
+        propertyName: collectionState
+        mapping:
+          available: '#/components/schemas/WorkspacePageAvailable'
+          unavailable: '#/components/schemas/WorkspacePageUnavailable'
+    WorkspacePageAvailable:
+      type: object
+      additionalProperties: false
+      required: [collectionState, items, nextCursor]
+      properties:
+        collectionState:
+          type: string
+          const: available
+        items:
+          type: array
+          maxItems: 50
+          items:
+            $ref: '#/components/schemas/WorkspaceSummary'
+        nextCursor:
+          $ref: '#/components/schemas/NextCursor'
+    WorkspacePageUnavailable:
+      type: object
+      additionalProperties: false
+      required: [collectionState, reason, items, nextCursor]
+      properties:
+        collectionState:
+          type: string
+          const: unavailable
+        reason:
+          type: string
+          const: source_graph_unavailable
+        items:
+          type: 'null'
+        nextCursor:
+          type: 'null'
+    WorkspaceSummary:
+      type: object
+      additionalProperties: false
+      required: [workspaceID, relativePath, ecosystem, packageManager, discoveryCompleteness]
+      properties:
+        workspaceID:
+          type: string
+          minLength: 1
+          maxLength: 256
+        relativePath:
+          type: string
+          minLength: 1
+          maxLength: 4096
+          description: Repository-relative path using slash separators; never absolute or resolved outside the repository.
+        ecosystem:
+          type: string
+          enum: [npm, pnpm, yarn, python, maven, gradle, unknown]
+        packageManager:
+          type: string
+          minLength: 1
+          maxLength: 128
+        discoveryCompleteness:
+          type: string
+          enum: [complete, partial, failed]
+          description: Discovery state only; it does not assert scanner success for this workspace.
+    FindingCollection:
+      oneOf:
+        - $ref: '#/components/schemas/FindingPageAvailable'
+        - $ref: '#/components/schemas/FindingPageUnavailable'
+      discriminator:
+        propertyName: collectionState
+        mapping:
+          available: '#/components/schemas/FindingPageAvailable'
+          unavailable: '#/components/schemas/FindingPageUnavailable'
+    FindingPageAvailable:
+      type: object
+      additionalProperties: false
+      required: [collectionState, reportStatus, items, nextCursor]
+      properties:
+        collectionState:
+          type: string
+          const: available
+        reportStatus:
+          type: string
+          enum: [complete, partial, failed]
+        items:
+          type: array
+          maxItems: 50
+          items:
+            $ref: '#/components/schemas/FindingSummary'
+        nextCursor:
+          $ref: '#/components/schemas/NextCursor'
+    FindingPageUnavailable:
+      type: object
+      additionalProperties: false
+      required: [collectionState, reason, reportStatus, items, nextCursor]
+      properties:
+        collectionState:
+          type: string
+          const: unavailable
+        reason:
+          type: string
+          const: source_report_unavailable
+        reportStatus:
+          type: 'null'
+        items:
+          type: 'null'
+        nextCursor:
+          type: 'null'
+    FindingSummary:
+      type: object
+      additionalProperties: false
+      required:
+        - stableFindingKey
+        - componentName
+        - componentPURL
+        - version
+        - workspaceID
+        - relativePath
+        - ecosystem
+        - vulnerabilityID
+        - aliases
+        - severity
+        - fixedVersion
+      properties:
+        stableFindingKey:
+          type: string
+          pattern: '^[a-f0-9]{64}$'
+          description: Existing normalize.StableFindingKey result; never adapter.Finding.TargetID.
+        componentName:
+          type: string
+          minLength: 1
+          maxLength: 256
+        componentPURL:
+          type: [string, 'null']
+          minLength: 1
+          maxLength: 2048
+          pattern: '^pkg:'
+          description: Null when the source provides no PURL; never synthesize one.
+        version:
+          type: string
+          minLength: 1
+          maxLength: 128
+        workspaceID:
+          type: string
+          minLength: 1
+          maxLength: 256
+        relativePath:
+          type: string
+          minLength: 1
+          maxLength: 4096
+          description: Repository-relative path using slash separators.
+        ecosystem:
+          type: string
+          enum: [npm, pnpm, yarn, python, maven, gradle, unknown]
+        vulnerabilityID:
+          type: string
+          minLength: 1
+          maxLength: 256
+          description: Source adapter.Finding.TargetID, retained as the vulnerability identifier only.
+        aliases:
+          type: array
+          maxItems: 32
+          uniqueItems: true
+          items:
+            type: string
+            minLength: 1
+            maxLength: 256
+          description: Sorted aliases used by the stable finding identity contract.
+        severity:
+          type: [string, 'null']
+          enum: [unknown, low, moderate, high, critical, null]
+        fixedVersion:
+          type: [string, 'null']
+          minLength: 1
+          maxLength: 128

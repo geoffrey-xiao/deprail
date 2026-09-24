@@ -1,23 +1,23 @@
 # v0.5 Local API Design Contract
 
-**Status:** Draft proposal; no OpenAPI schema or runtime API is approved.
+**Status:** Candidate OpenAPI 3.1 artifact and local security profile are available for owner and independent architecture/security review; no API or runtime implementation is approved.
 **Design inputs:** [`PRD-v0.5.md`](PRD-v0.5.md), [`UX-DESIGN.md`](UX-DESIGN.md), [`ARCHITECTURE-v0.5.md`](ARCHITECTURE-v0.5.md).
 
 ## 1. Goal and constraints
 
-Define the smallest same-origin local API needed by the approved history and scan-detail UX. The API delegates to shared application services and returns versioned domain meaning. It does not reimplement scan logic, become a general extension platform, or imply team/cloud functionality. The proposed initial surface is read-only; browser-triggered scanning or mutation is excluded unless explicitly reconsidered through release change control.
+Define the smallest same-origin local API needed by the candidate history and scan-detail UX. The API delegates to shared application services and returns versioned domain meaning. It does not reimplement scan logic, become a general extension platform, or imply team/cloud functionality. The proposed initial surface is read-only; browser-triggered scanning or mutation is excluded unless explicitly reconsidered through release change control.
 
-An OpenAPI 3.1 document with JSON Schema-compatible examples and validation is a required design-stage deliverable before API implementation. This Markdown proposal is not a substitute for that artifact.
+The candidate OpenAPI 3.1 contract is [`schemas/openapi/v1/openapi.yaml`](../../../schemas/openapi/v1/openapi.yaml). It is a required design-stage artifact before API implementation, not an approved runtime contract.
 
 ## 2. Proposed resource model (unapproved)
 
 - **HistoryEntrySummary:** unique `historyEntryID` per stored operation, recorded time, `sourceScanID` from the existing report, `operationOutcome` (`completed|failed|cancelled`), optional `reportStatus` (`complete|partial|failed`), root display label under privacy contract, counts, and minimal provenance summary.
-- **HistoryEntryDetail:** summary plus approved, projected report metadata (if any), safe diagnostics, workspace/finding collection links, and verified artifact-reference states; never raw report or project JSON.
+- **HistoryEntryDetail:** summary plus allowlisted projected report metadata (if any), safe diagnostics, and explicit artifact-integrity states; never raw report or project JSON.
 - **WorkspaceSummary:** stable workspace ID, repository-relative path and safe ecosystem/manager fields only when captured from the same operation's validated graph. Any exposed `discoveryCompleteness` is discovery-only, not per-workspace scan success; absent graph context is unavailable, not a confirmed empty workspace collection.
 - **FindingSummary:** key derived through the existing stable-finding identity rule, package identity, aliases, available severity and fixed version, and validated repository-relative workspace context. Raw artifact digests are report-level references; do not attach one to a finding or invent a dependency path/evidence source without a verified source mapping.
-- **ApiError:** stable API error code, concise safe message, retryability only when meaningful, request/correlation ID if approved, and no stack trace/secrets/raw paths by default.
+- **ApiError:** stable API error code and concise safe message; no request ID, stack trace, secrets, raw paths, or echoed input.
 
-Existing CLI/report semantics remain the source of scan meaning; the API must not invent vulnerability, completeness or workspace-scan states. Exact representation of an approved privacy-safe projection (bounded embedded detail versus paged child resources) remains open pending size, UX, and compatibility evidence.
+Existing CLI/report semantics remain the source of scan meaning; the API must not invent vulnerability, completeness, or workspace-scan states. The OpenAPI candidate uses separately paged workspace/finding collections; response fields remain a strict projection of the candidate `history-v1` model, not a copy of its stored JSON.
 
 **Owner-selected report boundary, not yet accepted:** [ADR-0004's direction](../../adr/ADR-0004-local-scan-history.md#owner-selected-direction-independent-history-projection-not-accepted) keeps existing `ScanReport`/CLI serialization unchanged and proposes a separate, allowlisted `history-v1` storage projection. `HistoryEntryDetail` and child collections translate only approved projected fields; they must not embed the stored JSON wholesale, raw `ScanReport`, raw errors, absolute host paths, or fabricated tool/evidence provenance. [`FAILURE-AND-DATA-CONTRACT.md`](requirements/FAILURE-AND-DATA-CONTRACT.md#candidate-history-v1-projection-object) defines candidate source-to-projection fields, including stable keys from `normalize.StableFindingKey`, nullable report/collections and safe diagnostics. The owner and independent reviewer must approve that exact field/unknown-data/redaction mapping before OpenAPI schemas/examples are frozen. A missing or unsafe projection is a typed failure, not an empty successful detail.
 
@@ -25,74 +25,94 @@ Existing CLI/report semantics remain the source of scan meaning; the API must no
 
 | Method and path | Purpose | Proposed result | Write? |
 | --- | --- | --- | --- |
-| `GET /api/v1/health` | Local service readiness/schema version | Bounded readiness response; no environment dump | No |
+| `GET /api/v1/health` | Local API process readiness and API version | Bounded readiness response; no environment dump | No |
 | `GET /api/v1/scans` | List saved history | Ordered page of HistoryEntrySummary plus opaque continuation token | No |
-| `GET /api/v1/scans/{historyEntryID}` | Load one history entry | HistoryEntryDetail or typed not-found/integrity error | No |
-| `GET /api/v1/scans/{historyEntryID}/workspaces` | Load bounded workspace list if not embedded | Ordered page of WorkspaceSummary | No |
-| `GET /api/v1/scans/{historyEntryID}/findings` | Load bounded finding list if not embedded | Ordered page of FindingSummary | No |
+| `GET /api/v1/scans/{historyEntryID}` | Load one history entry | Projected detail with artifact-integrity states, or typed not-found error | No |
+| `GET /api/v1/scans/{historyEntryID}/workspaces` | Load the bounded workspace collection | Ordered page of WorkspaceSummary | No |
+| `GET /api/v1/scans/{historyEntryID}/findings` | Load the bounded finding collection | Ordered page of FindingSummary | No |
 
-Only include separate child collection endpoints if UX/resource size needs justify them. Avoid parallel duplicate ways to fetch the same data. No `POST /scan`, delete, export/upload, policy mutation, remediation, approval, or exception endpoint is proposed.
+The candidate OpenAPI file includes the five operations above. The separate child collections are paged to keep finding/workspace responses bounded. No `POST /scan`, delete, export/upload, policy mutation, remediation, approval, or exception endpoint is specified.
 
-## 4. Query and deterministic ordering proposal
+## 4. Query and deterministic ordering
 
-- List order should be explicit and stable (candidate: recorded timestamp descending, unique `historyEntryID` as tie-breaker); final semantics require approval.
-- Pagination must be bounded, opaque to clients, and stable under concurrent insertion. Prefer a cursor over unbounded offset paging if the chosen storage/index contract supports it.
-- Maximum page size, filter allowlist, cursor version/expiry, and behavior when records are deleted between pages are open contract fields; never accept arbitrary SQL/order expressions.
-- Query values and path identifiers are validated. Unknown filters/fields fail clearly rather than being silently ignored.
+The versioned candidate is [`schemas/openapi/v1/openapi.yaml`](../../../schemas/openapi/v1/openapi.yaml). It defines `pageSize` (default 25, range 1–50) and an opaque, URL-safe keyset `cursor` (maximum 512 characters); there are no filters, offsets, arbitrary sort expressions, or client-provided SQL.
+
+- History is ordered by `recordedAt DESC, historyEntryID DESC`.
+- Workspaces are ordered by `workspaceID ASC`; findings are ordered by `stableFindingKey ASC`.
+- A cursor is bound to API version, resource, parent history-entry ID where applicable, and the last ordering tuple. It is not an authorization token and contains no repository data.
+- No cursor expiry is proposed because v0.5 has no history deletion or automatic eviction. A contract-version change invalidates cursors from the older API version.
+- Keyset pagination avoids offset shifts. It does not promise a database snapshot across requests; clients restart pagination to include newly recorded entries.
+- Unknown query parameters, malformed cursors, unsupported cursor versions, and page sizes outside the contract fail with `API_REQUEST_INVALID`.
+
+Every successful response is bounded to 1 MiB. A response that would exceed the bound fails explicitly with `API_RESPONSE_TOO_LARGE`; it is never truncated into success. The listed values are review candidates, not accepted performance or storage limits.
 
 ## 5. Response and error semantics
 
-- Responses carry an explicit API/schema version according to the reviewed OpenAPI design; avoid redundant ad hoc version markers if URL versioning is sufficient.
-- Existing report completeness values (`complete`, `partial`, `failed`) remain unchanged end-to-end. Cancellation is an execution outcome on the history entry, not a `ScanReport.Status` value or report-schema extension.
-- Empty scan history is a successful empty page. Store unavailable, migration rejected, unsupported version, corrupt row, artifact digest mismatch, or timeout are explicit non-success responses.
-- A missing history entry is distinct from an entry whose optional report has zero findings.
-- Use consistent JSON error envelope and HTTP status mapping; candidate codes in [`requirements/ERROR-MODEL.md`](requirements/ERROR-MODEL.md) must be cross-walked with existing stable contracts before implementation. No new stable code is finalized here.
-- User-visible errors are redacted and actionable; server diagnostics never include credentials, full environment, or untrusted raw content.
+- `/api/v1` is the transport-version boundary. Responses do not repeat an ad hoc API `schemaVersion`; the source report version and `history-v1` projection version remain distinct.
+- Existing report completeness (`complete|partial|failed`) and operation outcome (`completed|failed|cancelled`) remain independent. A missing report is `null`, not a zero-finding report.
+- A successful empty history page differs from store/API failure. Unavailable, incompatible, corrupt, timed-out, unauthorized, invalid, or response-size-limited outcomes use the typed error envelope in [`requirements/ERROR-MODEL.md`](requirements/ERROR-MODEL.md). Parser-level request-target/header rejections are the explicit 414/431 exceptions described below.
+- A valid detail record remains a `200` response when an associated raw artifact is missing, unreadable, or digest-mismatched. Each artifact reference carries an explicit integrity state; the API never serves artifact bytes or filesystem paths. This preserves trustworthy report metadata without claiming the evidence is available or verified.
+- The API error envelope contains only a stable code and safe static message. It does not echo input, expose SQL/driver errors, or add a request ID without an approved use case.
+- All API routes are bodyless; a prohibited body is `400 API_REQUEST_INVALID`, and there is no `API_REQUEST_TOO_LARGE` body error. Request targets above 2,048 bytes are rejected with transport-level 414; headers above 8,192 bytes with transport-level 431. These parser-boundary responses do not promise an API JSON error envelope. A disconnected client cancels work without a fabricated response; listener startup errors are CLI diagnostics, not HTTP responses.
+- Existing v0.1/v0.2 scan error codes and CLI output/exit meanings remain unchanged.
 
-## 6. Local security model — decisions required
+## 6. Local security profile — candidate for independent review
 
-Proposed baseline for review: bind loopback only, serve UI and API from the same origin, reject unexpected Host/Origin values, no arbitrary CORS, no forwarded-header trust, no network fetches, no credentials in URLs, no mutation routes, and bounded bodies/timeouts/concurrency. A local API remains reachable by other local processes and can be targeted by hostile web origins; loopback alone is not sufficient protection.
+The following decisions are explicit proposals for the OpenAPI/security review. None authorizes a listener implementation.
 
-The security review must decide and test:
+- Bind only `127.0.0.1:0`; let the OS allocate an ephemeral port. Never retry on wildcard, LAN, or public interfaces. The browser URL uses exactly `http://127.0.0.1:<selected-port>`; `localhost`, forwarded headers, and alternate host aliases are not trusted.
+- Run the listener only within an explicit local-console command, not as a background service and never as a side effect of `deprail scan`. The command remains alive until shutdown, stops accepting requests on termination, drains bounded requests for at most 10 seconds, then closes storage. The command name is a separate CLI-contract decision.
+- Require an opaque 256-bit process-scoped bearer token on every API route, including health. Generate it from a cryptographically secure random source; revoke it on process shutdown; keep it in browser memory only; never store it in local/session storage or cookies. Missing/invalid credentials return `401 API_AUTH_UNAUTHORIZED`.
+- Candidate bootstrap transfers the token only in an initial URL fragment; fragments are not sent in HTTP requests. The client must read it and immediately remove it with `history.replaceState` before making a request. The token is then sent only in the `Authorization` header. It must never appear in a path, query, referrer, log, diagnostic, or persisted browser storage. A reload or new tab loses the in-memory token; show a safe recovery state instructing the user to reopen the console from the active local CLI session, with no cookie/storage fallback. Fragment bootstrap remains a material security-review decision because it can be visible briefly in browser/OS launch state.
+- Require the exact `Host` for the selected loopback port. If `Origin` is present, require an exact same-origin match; reject `null` and mismatched origins. If `Sec-Fetch-Site` is present, require `same-origin`. Do not emit CORS allow headers or trust forwarded headers. The bearer token remains required when `Origin` is absent.
+- Accept `GET` only. Reject `HEAD`, `OPTIONS`, other methods, unknown query parameters, and all request bodies; return `405` for an unsupported method and `400 API_REQUEST_INVALID` for a prohibited body or invalid input. No filesystem path, SQL fragment, process operation, or artifact bytes are accepted from or returned to the client.
+- Candidate finite bounds: request target 2,048 bytes (over-limit transport 414); headers 8,192 bytes (over-limit transport 431); eight concurrent requests; 10-second request deadline; 10-second shutdown drain; 1 MiB maximum response; page size 1–50 (default 25); cursor at most 512 characters. Saturation returns `503 API_BUSY`; a deadline returns `504 API_TIMEOUT`; an oversized response returns `500 API_RESPONSE_TOO_LARGE` without truncation. Parser-level 414/431 responses may not carry the API JSON envelope.
+- Return `Cache-Control: no-store` for API responses. Never log authorization headers, tokens, sensitive request headers, raw paths, repository data, or database/stack details. Make no external network requests.
+- If binding fails, report `API_LISTENER_UNAVAILABLE` safely and leave existing CLI commands usable.
 
-- Bind address, port selection, port conflict, URL disclosure, process lifetime, and shutdown.
-- Browser origin validation, DNS rebinding/Host handling, CORS, CSRF implications, and whether local authentication/token is needed.
-- Strict method/path/content-type handling; request, response, page, and concurrency limits; cancellation/deadline propagation.
-- Static asset/API route separation, encoded path normalization, traversal/symlink behavior, and no host filesystem exposure.
-- Error, access, and debug log redaction and local data access/privacy expectations.
-
-No LAN/public binding or authentication bypass is approved by this draft.
+The profile addresses DNS rebinding, hostile browser origins, local API authorization, request/resource bounds, and lifecycle behavior as one reviewable proposal. Exact controls, token bootstrap, browser behavior, and residual risks require independent architecture/security approval.
 
 ## 7. Compatibility and versioning
 
-The design package must include an OpenAPI 3.1 file, schemas/examples, contract version policy, and consumer compatibility rules before code. Additive response evolution is not automatically safe if strict clients or generated types are used. Breaking changes need a new API contract/version or explicit migration. Existing CLI JSON and v1alpha report contracts are unaffected absent separate approval. Static UI asset version and API version mismatch must fail visibly and safely.
+The candidate source uses OpenAPI `3.1.0`, contract `info.version: 1.0.0`, and the `/api/v1` URL boundary. These versions are distinct from SQLite `user_version`, the `history-v1` projection, and a source `ScanReport` version. The OpenAPI file and examples must be validated before implementation; additive response evolution is not assumed safe for strict clients.
+
+Breaking API changes require a new API version or an explicit reviewed migration. Existing CLI JSON, v1alpha report meaning, scan error codes, and exit-code behavior remain unchanged absent a separate compatibility decision. The embedded UI and API must ship as a matching version; mismatch fails visibly rather than serving empty or stale success.
 
 ## 8. API design acceptance checklist
 
-- [ ] Approved UX maps each endpoint to an observable screen/action.
-- [ ] Resource representation and pagination are chosen from payload/usage evidence.
-- [ ] OpenAPI 3.1 operations, schemas, examples, security, limits, and error responses are complete and validated.
-- [ ] Data scope/provenance and sensitive-field redaction are reviewed.
-- [ ] Bind/origin/CORS/CSRF/auth and path-serving decisions have independent security review.
-- [ ] Cancellation, timeouts, malformed/oversized inputs, missing/corrupt records, and storage errors are mapped.
-- [ ] API/CLI shared-service boundary and no-mutation scope are explicit.
-- [ ] Compatibility and UI/API asset-version behavior are approved.
-- [ ] Owner and independent reviewer accept the API contract before API implementation issues are created.
+The OpenAPI structure, local references, response examples, and schema-bounded response sizes have been checked for this review candidate. These technical checks do not constitute owner or independent-review acceptance.
 
-## 9. Recommended draft profile (unapproved)
+- [ ] UX acceptance maps every operation to a reviewed screen/action.
+- [ ] Resource representation and pagination are accepted against payload and usage evidence.
+- [ ] OpenAPI 3.1 operations, schemas, examples, error mappings, and candidate bounds are independently reviewed and accepted.
+- [ ] Exact `history-v1` projection fields, provenance, diagnostics, and sensitive-field redaction are accepted.
+- [ ] Bind/origin/CORS/CSRF/authentication, token transfer, process lifecycle, and path-serving decisions have independent security review.
+- [ ] Cancellation, timeouts, malformed/oversized inputs, missing/corrupt records, artifact-integrity states, and storage errors are mapped.
+- [ ] API/CLI shared-service boundary and no-mutation scope are explicit and compatible.
+- [ ] API/UI version behavior and the supported-client compatibility policy are accepted.
+- [ ] Owner and independent reviewer separately accept the API contract before API implementation issues are created.
 
-The following recommendations make the candidate API reviewable. They do not approve an OpenAPI contract, numeric limits, listener behavior, or runtime implementation.
+## 9. Candidate profile and remaining review decisions
 
-| Decision | Draft recommendation | Rationale and remaining evidence |
+The OpenAPI file is a concrete review candidate, not an accepted public contract. It defines the five read-only operations in §3 and rejects unbounded, duplicate, or mutation-oriented alternatives.
+
+| Decision | Candidate | Evidence or remaining risk |
 | --- | --- | --- |
-| Read surface | Keep the listed endpoints `GET`-only; reject request bodies and unsupported methods. Do not add scan, delete, export, or mutation routes. | Matches the read-only v0.5 scope. |
-| History representation | Return bounded summaries from history rows; detail and separately paged workspace/finding collections translate only approved `history-v1` projected fields. A null report is unavailable, not zero findings; do not expose a stored JSON blob or the original report. | Validate projection schema/row agreement, error states, exact API fields and representative payload sizes in OpenAPI examples. |
-| Artifact access | Do not expose raw artifact bytes or arbitrary artifact paths through the browser API. Return only approved evidence references and explicit missing/integrity outcomes. | Preserves the artifact-store boundary and prevents filesystem disclosure. |
-| Ordering and pagination | Order by recorded timestamp descending, then `historyEntryID` descending; use an opaque keyset cursor bound to the API version and ordering. | Gives a deterministic tie-breaker and avoids offset drift under new history inserts. Cursor encoding, expiry, deletion behavior, and numeric page limits remain unapproved. |
-| Versioning | Keep `/api/v1` as the candidate version boundary; do not repeat a response-level schema version unless embedding another independently versioned contract requires it. | Avoids redundant version fields while preserving an explicit transport version. |
-| Local boundary | Retain loopback-only and same-origin serving as the candidate baseline; reject unexpected Host/Origin values, do not enable CORS or trust forwarded headers, and make no external network requests. | A local listener is still reachable by local processes and hostile browser origins; exact validation, port/lifecycle, DNS-rebinding, and authentication/token decisions require security review. |
-| Bounds and cancellation | Require finite request, response, page, concurrency, and deadline bounds; reject an out-of-range page-size value as `API_REQUEST_INVALID`; report a server response-limit failure with the candidate `API_RESPONSE_TOO_LARGE` without truncation. | The actual numeric limits must follow payload and platform evidence; none is selected here. |
-| Errors | Use the single candidate HTTP mapping in [`requirements/ERROR-MODEL.md`](requirements/ERROR-MODEL.md); preserve typed history/API codes and never substitute an empty success. | The mappings remain proposals until the OpenAPI source, mixed-integrity cases, and compatibility crosswalk are reviewed. |
-| Error envelope | Prefer only `code` and a safe `message`; omit `requestId` unless a stable correlation use case is approved. | Avoids adding a field without a demonstrated consumer contract. |
+| Resources | `GET /health`, `/scans`, `/scans/{historyEntryID}`, and paged `/workspaces` and `/findings` child collections. | Each operation maps to history/detail workflows in `UX-DESIGN.md`; no scan, delete, export, publish, remediation, or mutation route exists. |
+| History projection | Strict response allowlists; null report and unavailable collections remain distinct from confirmed empty collections. Finding identity uses `normalize.StableFindingKey`; `TargetID` remains only the vulnerability ID. | Exact persisted `history-v1` fields, typed diagnostics, unknown-data policy, and same-operation graph capture remain separate review gates. The current `app.ScanReport` has no tool/database metadata field, so none is invented. |
+| Artifact integrity | Detail returns digest plus `verified`, `missing`, `digest_mismatch`, or `unavailable`; a safe detail remains `200` when metadata is trustworthy. | The API exposes neither artifact bytes nor paths. Owner/reviewer must accept this mixed-integrity behavior against `SEC-09` and UX. |
+| Pagination | Deterministic keyset; page size 25 by default, maximum 50; 512-character versioned cursor; no expiry while v0.5 has no deletion/eviction. | No snapshot-isolation guarantee across requests. Cursor and insertion behavior require review; consumers restart to include new entries. |
+| Response bounds | Maximum 1 MiB per JSON response; no truncation. Schema maxima yield 37,939 bytes for a maximum history page, 557,783 for detail, 230,219 for workspaces, and 786,844 for findings. | Worst-case values were generated from declared field and item limits and validated against the corresponding schemas. These calculations are not representative runtime payload, memory, or platform-performance evidence. |
+| Listener and auth | `127.0.0.1:0`, same-origin UI/API, process-scoped 256-bit bearer token, no CORS, strict Host/Origin/Fetch-Metadata checks. | Fragment-only bootstrap is not sent over HTTP but is visible briefly in the browser/OS launch state; independent reviewer must accept or replace this mechanism. |
+| Runtime bounds | 2,048-byte request target, 8,192-byte headers, eight concurrent requests, 10-second request deadline and shutdown drain. | These remain proposed limits; actual platform/load evidence and owner/reviewer acceptance remain required before implementation. |
+| Errors | Typed, safe API envelope; 400/401/403/404/405/500/503/504 mappings, plus parser-level 414/431 rejection for request-target/header limits without a JSON-envelope guarantee. No request bodies. Artifact-integrity states are part of a successful detail response. | Candidate stable API codes and transport mappings are cross-walked in `requirements/ERROR-MODEL.md`; runtime behavior remains unverified. |
+| Versioning | `/api/v1`, OpenAPI 3.1, `info.version: 1.0.0`; no redundant response API-version field. | UI/API mismatch must fail visibly. Any breaking change requires a separately reviewed version change. |
 
-Still unresolved before an OpenAPI artifact can be accepted: approval of the `history-v1` schema and safe diagnostic/unknown-field mapping, exact response fields and examples, numeric bounds, cursor format/lifetime, mixed artifact-integrity responses, local authentication, port selection/process lifecycle, and the crosswalk to existing report/error schemas. The independent-review and Definition of Ready gates remain unchanged.
+The remaining acceptance gates are independent review of this exact artifact, owner acceptance of the candidate decisions, exact storage-projection approval, supported browser and platform decisions, and the complete v0.5 Definition of Ready. Until those gates are linked, this contract remains proposed and no implementation issue is ready.
+
+## 10. Candidate validation evidence
+
+- `openapi-spec-validator 0.9.0` accepted the parsed OpenAPI 3.1 document with local references.
+- `openapi_schema_validator.OAS31Validator` validated all 66 operation-response examples, including available/unavailable collection states and error envelopes.
+- Maximum schema-shaped JSON response sizes were measured using maximum declared field/item lengths: history list 37,939 bytes; history detail 557,783 bytes; workspace page 230,219 bytes; finding page 786,844 bytes. Every case is below the proposed 1,048,576-byte response cap.
+- These are offline contract checks only. They do not claim runtime, real-payload, browser, platform, performance, or security-test evidence.

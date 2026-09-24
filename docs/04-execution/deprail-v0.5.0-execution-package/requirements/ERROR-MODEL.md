@@ -1,6 +1,6 @@
 # v0.5 Error Model
 
-**Status:** Candidate history/API codes and OpenAPI mappings are documented in [`schemas/openapi/v1/openapi.yaml`](../../../../schemas/openapi/v1/openapi.yaml); owner and independent architecture/security approval remain pending.
+**Status:** Candidate history/API codes and OpenAPI mappings are documented in [`schemas/openapi/v1/openapi.yaml`](../../../../schemas/openapi/v1/openapi.yaml); owner technical acceptance remains pending. External review is optional under [ADR-0005](../../../adr/ADR-0005-solo-owner-review-policy.md).
 
 ## 1. Contract
 
@@ -81,14 +81,14 @@ Messages are static and do not echo input or expose secrets, raw paths, SQL, dat
 
 ## 5. Acceptance checklist
 
-- [x] Candidate codes are cross-walked to existing stable scan contracts without changing established meanings; see §6. Owner/reviewer approval remains outstanding.
-- [ ] Owner and independent reviewer accept history/API codes, scope, safe messages, and guidance.
-- [ ] Owner and independent reviewer accept one HTTP mapping per reachable semantic category.
+- [x] Candidate codes are cross-walked to existing stable scan contracts without changing established meanings; see §6. Owner acceptance remains outstanding.
+- [ ] Owner accepts history/API codes, scope, safe messages, and guidance.
+- [ ] Owner accepts one HTTP mapping per reachable semantic category.
 - [ ] Mixed artifact-integrity behavior is accepted; trustworthy detail remains distinct from missing/unverified evidence.
 - [ ] Cancellation, timeout, listener startup, storage failure, and malformed/oversized inputs remain explicit without false success.
 - [ ] No raw SQL, database message, stack trace, token, credential URL, or full environment is returned/logged.
 - [x] OpenAPI candidate examples and status-specific error constraints were validated offline; runtime response-byte enforcement and contract/integration tests remain future work.
-- [ ] Owner and independent reviewer record separate approval; no runtime implementation before the complete DoR passes.
+- [ ] Owner records acceptance of the error contract; no runtime implementation before the complete technical DoR passes. External review is optional under ADR-0005.
 
 ## 6. Candidate code-to-state and evidence crosswalk
 
@@ -110,4 +110,4 @@ These mappings connect consumer-visible behavior to the planned scenario IDs in 
 | `API_TIMEOUT`, `API_CANCELLED` | End only the affected request; do not rewrite saved history or scan outcome. | `FR-502`, `FR-503` |
 | `API_LISTENER_UNAVAILABLE` | Safe startup failure with no public-bind fallback; existing CLI remains usable. | `FR-505`, `SEC-11` |
 
-Existing v0.1/v0.2 scan codes, CLI exit meanings, report schemas, and artifact identities remain unchanged. New history/API codes and any CLI persistence exit behavior require separate owner and independent-review approval before they become stable.
+Existing v0.1/v0.2 scan codes, CLI exit meanings, report schemas, and artifact identities remain unchanged. New history/API codes and any CLI persistence exit behavior require a separate owner decision before they become stable.

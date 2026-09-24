@@ -53,7 +53,7 @@ The exact method for creating history fixtures and whether CLI scan automaticall
 
 ## 8. Release manual evidence
 
-Record reviewed binary/version/commit, OS/architecture/browser/version, exact commands, exit codes, listener address, history DB location/state, API results, screenshot/accessibility observations, tree comparison, artifact/checksum/SBOM/signature/provenance status, independent reviewer, owner decision, and remaining gaps. Follow `docs/RELEASE-CHECKLIST.md`; tests alone do not approve a release.
+Record reviewed binary/version/commit, OS/architecture/browser/version, exact commands, exit codes, listener address, history DB location/state, API results, screenshot/accessibility observations, tree comparison, artifact/checksum/SBOM/signature/provenance status, optional external reviewer (if invited), owner decision, and remaining gaps. Follow `docs/RELEASE-CHECKLIST.md`; tests alone do not approve a release.
 
 ## 9. Requirement and threat evidence matrix
 

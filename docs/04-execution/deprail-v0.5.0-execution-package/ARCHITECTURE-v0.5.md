@@ -1,6 +1,6 @@
 # DepRail v0.5 Architecture
 
-**Status:** Draft; owner and independent architecture/security review required. No code authorization.
+**Status:** Draft; owner technical acceptance pending. Independent review is optional under [ADR-0005](../../adr/ADR-0005-solo-owner-review-policy.md). No runtime implementation is authorized until technical DoR passes.
 
 ## 1. Context
 
@@ -64,13 +64,13 @@ Proposed [ADR-0004](../../adr/ADR-0004-local-scan-history.md) recommends a per-u
 
 ## 5. Local HTTP trust boundary (unapproved)
 
-Candidate baseline: loopback-only bind, UI and API served from one origin, no remote publishing, no cross-origin API access, bounded request/response bodies, restrictive Host/Origin checks, and no browser mutation routes in the initial proposal. These choices require independent review, platform verification, and threat analysis before implementation. Do not bind to wildcard/LAN/public interfaces, trust arbitrary forwarded headers, serve arbitrary file paths, or weaken browser-origin checks for convenience.
+Candidate baseline: loopback-only bind, UI and API served from one origin, no remote publishing, no cross-origin API access, bounded request/response bodies, restrictive Host/Origin checks, and no browser mutation routes in the initial proposal. These choices require owner review, platform verification, and threat analysis before implementation; independent review is optional. Do not bind to wildcard/LAN/public interfaces, trust arbitrary forwarded headers, serve arbitrary file paths, or weaken browser-origin checks for convenience.
 
 The API contract must define address/port selection, port conflict behavior, lifecycle, origin and DNS-rebinding defenses, CORS, CSRF relevance, authentication needs for local browser access, request limits, timeouts, cancellation, logging/redaction, and shutdown. A local listener is still a security boundary.
 
 ## 6. Frontend and asset boundary
 
-React, TypeScript, and Vite follow the architecture baseline. The user asks for a shadcn/ui style; UX review must choose actual primitives/components and tokens. Build output is static and embedded into the binary using the repository's approved mechanism. The runtime must serve only compiled embedded assets, enforce SPA fallback only for known routes, and never join untrusted URL paths to the host filesystem. Asset version must be compatible with the API contract. Missing/invalid assets are an explicit startup or serving failure, not a blank success page.
+React, TypeScript, and Vite follow the architecture baseline. The user asks for a shadcn/ui style; the owner must choose actual primitives/components and tokens. Build output is static and embedded into the binary using the repository's approved mechanism. The runtime must serve only compiled embedded assets, enforce SPA fallback only for known routes, and never join untrusted URL paths to the host filesystem. Asset version must be compatible with the API contract. Missing/invalid assets are an explicit startup or serving failure, not a blank success page.
 
 Frontend toolchain pinning, lockfile policy, supply-chain review, code generation/ownership, bundle size and binary impact remain open decisions for the execution package.
 

@@ -9,7 +9,7 @@ Make saved local scan results easy to find and trustworthy to interpret. The con
 
 ## 2. Visual direction
 
-User preference: shadcn/ui style. Proposed characteristics, pending design review:
+User preference: shadcn/ui style. Proposed characteristics, pending owner design review:
 
 - Quiet neutral surfaces with semantic accent colors, subtle borders, restrained shadows, clear typography, consistent spacing, and dense but readable tables/cards.
 - Composable, accessible controls rather than bespoke interactions; visual consistency across history, scan detail, dialogs, and banners.
@@ -43,7 +43,7 @@ These are proposal artifacts, not accepted schemas or implementation authorizati
 - The mockups use system UI fonts and local vector shapes only; no remote fonts, icons, or images are required. The shadcn/ui direction remains a visual reference, not a dependency or component-source decision.
 - Repository-controlled strings must render as inert text. Review cases include a label such as `<script>alert(1)</script>` and a long path; text wraps or truncates without changing meaning or causing horizontal page overflow.
 
-Exact color tokens and dependency/build decisions require owner and independent UX/security review. Contrast, keyboard, screen-reader, responsive, and reduced-motion acceptance remain to be verified on the eventual implementation surface.
+Exact color tokens and dependency/build decisions require owner acceptance. Contrast, keyboard, screen-reader, responsive, and reduced-motion acceptance remain to be verified on the eventual implementation surface; independent UX/security review is optional.
 
 
 ## 3. Information architecture (proposal)
@@ -52,7 +52,7 @@ Exact color tokens and dependency/build decisions require owner and independent 
 2. **Scan Detail** — selected scan metadata, completeness/diagnostics, finding summary, workspace list, findings, and provenance.
 3. **About/Local data help — included by owner decision:** a static, read-only view explains the local workflow and that exact storage location, retention, and permissions remain subject to the approved data contract. Do not expose absolute host paths or offer reset, delete, or export controls.
 
-Navigation includes a persistent product identity and clear return-to-history path. The About/Local data help view is read-only and has no scan, publish, team, agent-write, remediation, reset, delete, or export controls. The owner selected inclusion; final copy/design remains subject to independent UX/security review. Exact data location, retention, and permissions remain deferred until the storage contract is approved.
+Navigation includes a persistent product identity and clear return-to-history path. The About/Local data help view is read-only and has no scan, publish, team, agent-write, remediation, reset, delete, or export controls. The owner selected inclusion; final copy/design requires owner acceptance. Exact data location, retention, and permissions remain deferred until the storage contract is accepted.
 
 ## 4. Primary workflows
 
@@ -138,12 +138,12 @@ The visual direction is shadcn/ui-inspired, not a commitment to install shadcn/u
 | --- | --- | --- |
 | Primitives | Native links, buttons, headings, lists, semantic tables, status text, alerts, skeletons, and pagination; use links for history-to-detail navigation. Avoid dialogs for primary detail navigation. | Verify keyboard and assistive-technology behavior on the actual browser surface. |
 | Component ownership | Hand-authored components and styles belong to DepRail and are reviewed in the repository. | If shadcn/ui source or another library is later preferred, record copied-source ownership, package/version, license, maintenance, and bundle impact before adoption. |
-| Dependencies | No third-party component, icon, chart, or font dependency is selected by this UX proposal. | Any runtime package remains subject to owner and independent review; this document does not approve installation. |
-| Tokens | Project-owned CSS custom properties for background, foreground, border, muted, primary, destructive, warning, success, and focus states. | Exact palette, spacing, type scale, and contrast values remain design-review decisions. |
+| Dependencies | No third-party component, icon, chart, or font dependency is selected by this UX proposal. | Any runtime package requires owner approval and dependency/license evidence; independent review is optional. |
+| Tokens | Project-owned CSS custom properties for background, foreground, border, muted, primary, destructive, warning, success, and focus states. | Exact palette, spacing, type scale, and contrast values remain owner design decisions. |
 | Icons and fonts | System font stack and local/inline SVG icons; no remote fonts, images, CDN, or analytics. | Keep assets local and review any future dependency or license change. |
 | Embedded build | React, TypeScript, and Vite static output embedded in the Go application, consistent with the architecture baseline. | `web/` is the source ownership boundary; package manager, pinned versions, embed path/tool, and bundle/startup budget remain execution-package decisions. |
 
-The proposal preserves the requested shadcn/ui visual characteristics without freezing a library or implementation. Owner and independent UX/security review must approve the actual design-system, dependency, and build decisions before runtime work.
+The proposal preserves the requested shadcn/ui visual characteristics without freezing a library or implementation. The owner must approve the actual design-system, dependency, and build decisions before runtime work.
 
 ## 7. Accessibility and responsive acceptance
 
@@ -151,7 +151,7 @@ The proposal preserves the requested shadcn/ui visual characteristics without fr
 - The history-to-detail flow works with keyboard only: focus a row/card link, open detail, use the visible return link, then browser Back and Forward. Focus returns to a predictable location.
 - Headings and landmarks express page structure; controls have programmatic labels; tables identify column headers; links have distinguishable names.
 - Loading, errors, cancellation, and status changes are announced without repeatedly interrupting assistive technology. Outcome and report completeness are both conveyed in text.
-- Proposed contrast target is WCAG 2.2 AA: at least 4.5:1 for normal text, 3:1 for large text, and 3:1 for meaningful UI/focus indicators. Verify all interactive and status states; this target remains subject to design review.
+- Proposed contrast target is WCAG 2.2 AA: at least 4.5:1 for normal text, 3:1 for large text, and 3:1 for meaningful UI/focus indicators. The owner accepts the target; verify all interactive and status states.
 - At 320 CSS px width and 200% zoom, essential status, identity, findings information, and navigation remain available without page-level horizontal scrolling; wide tables use an intentional responsive pattern. The 390 px narrow-detail mockup is illustrative and does not verify this acceptance.
 - Reduced-motion preferences are respected; movement is nonessential and disabled or simplified when `prefers-reduced-motion` is enabled.
 - Repository-controlled strings remain inert text. Review markup-like labels such as `<script>alert(1)</script>`, long paths, Unicode, and direction-control characters; they must not become executable markup, navigation targets, or misleading visual labels.
@@ -161,13 +161,13 @@ Color alone never communicates status. PNG/SVG inspection can verify layout and 
 
 ## 8. UX evidence package required before implementation
 
-The design package links draft history (desktop/narrow), detail (desktop/narrow), outcome/report-state variants, About/local-data help, empty/loading/recovery wireframes, and editable sources above. Before UX acceptance, the owner and design reviewer must review and record:
+The design package links draft history (desktop/narrow), detail (desktop/narrow), outcome/report-state variants, About/local-data help, empty/loading/recovery wireframes, and editable sources above. Before UX acceptance, the owner records the decision and evidence for:
 
 - The owner-approved inclusion of About/Local data help; verify its copy does not claim an unapproved data location, retention policy, or permission model.
 - History/detail navigation, direct-route behavior, and browser back/forward behavior, including stale-selection recovery.
 - The response-to-state map from API success, candidate errors, and report/operation values to visible UI states.
 - The component/dependency, code ownership, icon/font, token, and embedded-build proposal, with every unapproved choice clearly marked.
 - Responsive breakpoints, keyboard flow, focus behavior, contrast target, screen-reader names/status, reduced-motion behavior, and hostile-data cases.
-- Owner and independent reviewer acceptance separately; neither is implied by a merged design PR.
+- Owner acceptance is recorded separately from browser/accessibility evidence; a merged design PR alone is not evidence for either.
 
 The SVG/PNG examples are synthetic proposal artifacts. They do not approve an API, dependency, storage behavior, visual system, or runtime implementation, and they do not replace browser accessibility evidence.

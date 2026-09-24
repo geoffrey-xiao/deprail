@@ -3,7 +3,7 @@
 | Attribute | Value |
 | --- | --- |
 | Version | v0.5.0 |
-| Status | Planning draft; owner and independent architecture/security review required |
+| Status | Planning draft; owner technical decisions remain open; external review is optional under [ADR-0005](../../adr/ADR-0005-solo-owner-review-policy.md) |
 | Roadmap outcome | Local web application and scan history |
 | Release plan | [`../../03-planning/deprail-development-plan-v0.5.0.md`](../../03-planning/deprail-development-plan-v0.5.0.md) |
 | Preparation issue | [#387](https://github.com/geoffrey-xiao/deprail/issues/387) |
@@ -19,8 +19,8 @@ History is local-only. Each stored operation has a unique history-entry identity
 - Product design defines local-first operation, scan history, an embedded React local console, SQLite local storage, and the web layer as a collaboration/presentation layer.
 - Architecture defines a Go core, inward dependencies, REST/OpenAPI 3.1, React/TypeScript/Vite embedded assets, SQLite with migration and backup discipline, and the local mode as one binary with optional browser and private data directory.
 - The roadmap assigns local web and history to v0.5; team services, identity/RBAC/PostgreSQL are v0.6.
-- The v0.5 development plan selects only this local outcome and makes UX, API, persistence design and independent review prerequisites to implementation.
-- The v0.4.0-preview.2 closeout issue #356 remains open. This PRD does not close or waive its review, rollback, Python/Java, platform-smoke, or artifact follow-ups.
+- The v0.5 development plan selects only this local outcome and makes owner-accepted UX, API, and persistence decisions prerequisites to implementation; independent review is optional under ADR-0005.
+- The v0.4.0-preview.2 closeout issue #356 remains open for four technical follow-ups: rollback ownership/recovery, Python/Java, platform smoke, and artifact dispositions. Its fifth, independent-review follow-up is superseded by ADR-0005; preserve its historical record without treating it as open work or a release blocker.
 
 ## 3. User jobs
 
@@ -35,7 +35,7 @@ History is local-only. Each stored operation has a unique history-entry identity
 - Persist an explicitly selected set of scan-operation history entries, each with a unique history-entry ID, optional unchanged normalized report, and stable references to existing raw artifacts.
 - List and inspect saved entries with bounded, deterministic pagination/ordering; retain `ScanReport.ScanID` separately as source provenance, not as the unique history key.
 - Provide an embedded local web console for history and scan details through the same application services used by CLI/core.
-- Provide a minimal local REST API for only the console workflows accepted by UX; read-only in v0.5 unless a reviewed decision justifies a narrow mutation.
+- Provide a minimal local REST API for only the console workflows accepted by UX; read-only in v0.5 unless an owner-approved decision justifies a narrow mutation.
 - Preserve report completeness, operation outcome, diagnostics, workspace and finding relationships, and provenance as distinct fields through persistence, API, and UI.
 - Version local storage/API contracts, document data location and lifecycle, and provide tested non-destructive migration/recovery semantics.
 - Package frontend static assets with the Go application and verify representative local workflows on supported platforms.
@@ -48,18 +48,18 @@ Exact records, endpoints, retention, UI routes, launch UX, and dependencies are 
 - Browser-triggered scanning, changing scan policy, scan deletion/annotation, exceptions, remediation, package-manager execution, repository mutation, patch creation, commits, pushes, pull requests, or merge.
 - MCP or agent write access, autonomous approval, new scanners, new vulnerability databases, and scanner semantic changes.
 - Web-specific reimplementation of scanner, normalizer, policy, completeness, or remediation logic.
-- Changes to existing CLI and stable JSON contracts unless a separate reviewed compatibility decision authorizes them.
+- Changes to existing CLI and stable JSON contracts unless an owner-approved compatibility decision authorizes them.
 - Telemetry, analytics, an extension/plugin framework, full-screen TUI, or capability expansion beyond the roadmap outcome.
 
 ## 6. UX and design-system requirement
 
-The console must follow a reviewed UX package before UI code. User preference is shadcn/ui-inspired: composed accessible primitives, clear typographic hierarchy, quiet surfaces, consistent tokens, responsive layouts, and deliberate empty/loading/error states. The design gate must select actual component source/library, package versions, code ownership, icon and font policy, and integration/build strategy; “shadcn style” alone does not approve adding dependencies or copying generated components.
+The console must follow an owner-accepted UX package before UI code. User preference is shadcn/ui-inspired: composed accessible primitives, clear typographic hierarchy, quiet surfaces, consistent tokens, responsive layouts, and deliberate empty/loading/error states. The design gate must select actual component source/library, package versions, code ownership, icon and font policy, and integration/build strategy; “shadcn style” alone does not approve adding dependencies or copying generated components.
 
 The UI must preserve meaning without color, support keyboard navigation and visible focus, expose status changes to assistive technology, respect reduced motion, and render repository-controlled values as untrusted text. Refer to [`UX-DESIGN.md`](UX-DESIGN.md).
 
 ## 7. API and persistence gate
 
-No endpoint or database schema is approved by this PRD. [`API-DESIGN.md`](API-DESIGN.md) proposes an intentionally small read-oriented surface for review. Before implementation, reviewers must approve a versioned OpenAPI contract, response/error mapping, bind and browser-origin controls, request limits, cancellation and compatibility semantics. A SQLite ADR must define schema, migrations, transaction/concurrency model, retention/deletion, artifact relationships, disk-full/corruption recovery, permissions, and data export/removal behavior.
+No endpoint or database schema is approved by this PRD. [`API-DESIGN.md`](API-DESIGN.md) proposes an intentionally small read-oriented surface for owner review. Before implementation, the owner must accept a versioned OpenAPI contract, response/error mapping, bind and browser-origin controls, request limits, cancellation and compatibility semantics. A SQLite ADR must define schema, migrations, transaction/concurrency model, retention/deletion, artifact relationships, disk-full/corruption recovery, permissions, and data export/removal behavior.
 
 ## 8. Observable acceptance criteria (proposed)
 
@@ -83,7 +83,7 @@ Storage open/lock/read/write errors, disk exhaustion, corruption, incompatible s
 
 ## 10. Compatibility and release
 
-v0.5 adds optional local history and web delivery; existing CLI operation and serialized v1alpha scan report meaning remain stable. Any incompatible schema or CLI/API change needs a separate decision and migration evidence. Preview release approval requires cross-platform binary and browser smoke, local-only/security evidence, migration and failure coverage, actual artifact verification, and separate owner/security review. A passing unit suite alone is insufficient.
+v0.5 adds optional local history and web delivery; existing CLI operation and serialized v1alpha scan report meaning remain stable. Any incompatible schema or CLI/API change needs a separate owner decision and migration evidence. Preview release approval requires cross-platform binary and browser smoke, local-only/security evidence, migration and failure coverage, actual artifact verification, and separately recorded owner security review and release decision. A passing unit suite alone is insufficient.
 
 ## 11. Required human decisions
 
@@ -91,4 +91,4 @@ v0.5 adds optional local history and web delivery; existing CLI operation and se
 - Approve API version/path/resource and error contract, local listener/origin controls, and browser security model.
 - Approve storage content, artifact retention, deletion/export, migration, backup/recovery, and permission model.
 - Approve shadcn/ui implementation strategy, dependency policy, accessibility acceptance, and embedded build approach.
-- Name an independent architecture/security reviewer and disposition the open #356 predecessor gaps.
+- Make the security/architecture decision and disposition the open #356 predecessor gaps; external reviewers are optional under ADR-0005.

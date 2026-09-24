@@ -7,7 +7,7 @@ labels: "type:docs"
 
 ## Issue ID
 
-<!-- Before implementation: verify the four labels, milestone, Project fields, owner/reviewer, dependencies, and Definition of Ready. See docs/04-execution/deprail-v0.2-execution-package/tracking/WORKFLOW-GUIDE.md. -->
+<!-- Before implementation: verify the four labels, milestone, Project fields, owner and owner reviewer (default: `@geoffrey-xiao`), dependencies, and Definition of Ready. See docs/04-execution/deprail-v0.2-execution-package/tracking/WORKFLOW-GUIDE.md. -->
 
 ## Planning Metadata
 
@@ -18,7 +18,7 @@ labels: "type:docs"
 - Milestone:
 - Sprint:
 - Owner:
-- Reviewer:
+- Reviewer: `@geoffrey-xiao` (owner) by default; external review is optional
 - Dependencies: `None` or issue links
 
 ## Definition of Ready
@@ -27,7 +27,7 @@ labels: "type:docs"
 - [ ] Scope and exclusions are clear.
 - [ ] Commands, examples, versions, and compatibility limits requiring verification are named.
 - [ ] Acceptance evidence is defined.
-- [ ] Owner, reviewer, dependencies, and target version are recorded.
+- [ ] Owner reviewer, dependencies, and target version are recorded.
 
 ## Audience and Goal
 
@@ -47,7 +47,7 @@ labels: "type:docs"
 
 - Level: R0/R1/R2/R3
 
-## Human Review
+## Owner Review
 
 ## Evidence
 

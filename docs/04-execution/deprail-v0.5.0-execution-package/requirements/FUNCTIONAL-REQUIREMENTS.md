@@ -1,6 +1,6 @@
 # v0.5 Functional Requirements
 
-**Status:** Draft; acceptance requires owner and independent architecture/security review.
+**Status:** Draft; owner technical acceptance required. Independent review is optional under [ADR-0005](../../../adr/ADR-0005-solo-owner-review-policy.md).
 
 ## FR-501 — Preserve history and report identities
 

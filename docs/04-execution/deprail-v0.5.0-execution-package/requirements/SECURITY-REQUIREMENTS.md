@@ -1,6 +1,6 @@
 # v0.5 Security Requirements
 
-**Status:** Draft threat checklist; independent architecture/security review is mandatory.
+**Status:** Draft threat checklist; owner security assessment and evidence remain pending. Independent review is optional under [ADR-0005](../../../adr/ADR-0005-solo-owner-review-policy.md).
 
 ## 1. Assets and trust boundaries
 
@@ -26,12 +26,12 @@ Assets include local scan history, raw scanner artifacts, provenance/digests, fi
 
 Threat IDs link to the matching scenario and release-evidence contract in [`TEST-STRATEGY.md`](TEST-STRATEGY.md#9-requirement-and-threat-evidence-matrix). They are planned controls and evidence, not claims that security testing has passed.
 
-## 3. API minimum controls (candidate for independent review)
+## 3. API minimum controls (candidate for owner review)
 
 - Bind only to `127.0.0.1` on an OS-selected ephemeral port; never fall back to wildcard/LAN/public binding. Run only within an explicit foreground local-console command, not as a scan side effect or background service; stop accepting on shutdown and drain for at most the proposed 10 seconds.
 - Expose only the five candidate `GET /api/v1` routes. Reject all request bodies, unsupported methods, unknown query parameters, malformed IDs/cursors, and page sizes outside 1–50 before storage access. No state-changing route is specified.
 - Require exact `Host` for the selected loopback address/port. If `Origin` is present, require exact same-origin and reject `null`/mismatch; if `Sec-Fetch-Site` is present, require `same-origin`. Emit no CORS allow headers and trust no forwarded headers.
-- Require an opaque cryptographically random process-scoped 256-bit bearer token on every API route, including health. Accept it only in the `Authorization` header; revoke it when the process ends; keep it only in browser memory. Candidate bootstrap passes it in the initial URL fragment, which the client must clear with `history.replaceState` before any request. A reload/new tab loses the token and must show safe reopen guidance from the active CLI session, with no cookie/storage fallback. The token is never sent as a request target, referrer, or persisted browser value. Fragment exposure in browser/OS launch state is a material unresolved review risk.
+- Require an opaque cryptographically random process-scoped 256-bit bearer token on every API route, including health. Accept it only in the `Authorization` header; revoke it when the process ends; keep it only in browser memory. Candidate bootstrap passes it in the initial URL fragment, which the client must clear with `history.replaceState` before any request. A reload/new tab loses the token and must show safe reopen guidance from the active CLI session, with no cookie/storage fallback. The token is never sent as a request target, referrer, or persisted browser value. Fragment exposure in browser/OS launch state is a material unresolved owner security decision.
 - Candidate finite bounds are: request target 2,048 bytes (transport 414 over limit); headers 8,192 bytes (transport 431 over limit); eight concurrent requests; 10-second request deadline and shutdown drain; 1 MiB response; page size 1–50 (default 25); cursor at most 512 characters. These are design proposals, not accepted performance limits. Parser-boundary failures may not use the API error envelope; route-level failures are typed. Never truncate success or queue unbounded work.
 - No arbitrary paths, SQL, shell/process execution, artifact bytes, or filesystem paths; use parameterized bounded reads and propagate disconnect cancellation. No external network access.
 - Redact authorization headers/tokens, sensitive request headers, raw paths, repository data, SQL/driver details, stack traces, and full environment from logs, diagnostics, and responses.
@@ -50,11 +50,11 @@ Default to local-only processing. No telemetry, source upload, remote history, e
 
 ## 6. Security acceptance before implementation
 
-- [ ] Named independent reviewer examines API listener/origin and browser attack model.
+- [ ] Owner examines API listener/origin and browser attack model and records residual risk; independent review is optional.
 - [ ] Data classification and exact persisted/exposed fields are reviewed.
 - [x] Request/path/SQL/XSS/response-size threat cases are mapped to planned `SEC-*` verification IDs in [`TEST-STRATEGY.md`](TEST-STRATEGY.md#9-requirement-and-threat-evidence-matrix); actual security execution and review remain outstanding.
 - [ ] Migration/backup/corruption/disk-full controls preserve data and permissions.
 - [ ] Artifact digest and provenance verification behavior is explicit.
 - [ ] Cross-platform bind, path, permission, and shutdown behavior is specified.
 - [ ] No source upload, remote service, scanner install, or repository mutation enters scope implicitly.
-- [ ] Human security review and residual-risk dispositions are recorded separately from owner approval.
+- [ ] Owner records security assessment and residual-risk dispositions separately from technical owner acceptance; the same owner may complete both.

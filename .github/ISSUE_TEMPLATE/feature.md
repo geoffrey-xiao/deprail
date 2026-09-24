@@ -7,7 +7,7 @@ labels: "type:feature"
 
 ## Issue ID
 
-<!-- Before implementation: verify the four labels, milestone, Project fields, owner/reviewer, dependencies, and Definition of Ready. See docs/04-execution/deprail-v0.2-execution-package/tracking/WORKFLOW-GUIDE.md. -->
+<!-- Before implementation: verify the four labels, milestone, Project fields, owner and owner reviewer (default: `@geoffrey-xiao`), dependencies, and Definition of Ready. See docs/04-execution/deprail-v0.2-execution-package/tracking/WORKFLOW-GUIDE.md. -->
 
 ## Planning Metadata
 
@@ -18,7 +18,7 @@ labels: "type:feature"
 - Milestone:
 - Sprint:
 - Owner:
-- Reviewer:
+- Reviewer: `@geoffrey-xiao` (owner) by default; external review is optional
 - Dependencies: `None` or issue links
 
 ## Definition of Ready
@@ -28,7 +28,7 @@ labels: "type:feature"
 - [ ] Inputs, outputs, and failure behavior are defined.
 - [ ] Required tests or smoke scenarios are named.
 - [ ] Acceptance criteria are observable.
-- [ ] Owner, reviewer, dependencies, and target version are recorded.
+- [ ] Owner reviewer, dependencies, and target version are recorded.
 
 <!-- Use the local ID, for example DISC-001. -->
 
@@ -55,7 +55,7 @@ labels: "type:feature"
 
 ## Dependencies
 
-## Human Review
+## Owner Review
 
 ## Evidence
 

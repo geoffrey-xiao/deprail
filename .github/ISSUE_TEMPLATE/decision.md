@@ -7,7 +7,7 @@ labels: "type:decision"
 
 ## Issue ID
 
-<!-- Before implementation: verify the four labels, milestone, Project fields, owner/reviewer, dependencies, and Definition of Ready. See docs/04-execution/deprail-v0.2-execution-package/tracking/WORKFLOW-GUIDE.md. -->
+<!-- Before implementation: verify labels, milestone, Project fields, owner reviewer, dependencies, and Definition of Ready. See docs/04-execution/deprail-v0.2-execution-package/tracking/WORKFLOW-GUIDE.md. -->
 
 ## Planning Metadata
 
@@ -18,7 +18,7 @@ labels: "type:decision"
 - Milestone:
 - Sprint:
 - Owner:
-- Reviewer:
+- Reviewer: `@geoffrey-xiao` by default; external review is optional
 - Dependencies: `None` or issue links
 
 ## Definition of Ready
@@ -26,7 +26,7 @@ labels: "type:decision"
 - [ ] The decision question is bounded.
 - [ ] Options and trade-offs are documented.
 - [ ] Compatibility, security, and operational consequences are identified.
-- [ ] Required reviewers are named.
+- [ ] Owner decision-maker is named; external reviewers are optional.
 - [ ] Owner, dependencies, and target version are recorded.
 
 ## Context
@@ -39,7 +39,7 @@ labels: "type:decision"
 
 ## Security and Operational Impact
 
-## Required Reviewers
+## Optional Reviewers (if requested)
 
 ## Evidence
 
@@ -48,6 +48,6 @@ labels: "type:decision"
 ## Final Acceptance
 
 - [ ] Owner reviewed the decision and consequences during PR review.
-- [ ] Required human reviewers approved.
+- [ ] Optional reviewers approved, if invited; no external approval is required.
 - [ ] ADR and evidence links are attached.
 - [ ] PR review and merge evidence are linked.

@@ -80,7 +80,7 @@ jobs:
                 '## Contract Changes',
                 '## Verification',
                 '## Project Synchronization',
-                '## Human Review Focus',
+                '## Owner Review Focus',
                 '## Rollback',
               ]) {
                 if (!body.includes(section)) errors.push(`PR #${pullRequest.number} is missing section: ${section}`);

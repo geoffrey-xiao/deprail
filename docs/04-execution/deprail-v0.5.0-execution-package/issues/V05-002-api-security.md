@@ -3,13 +3,13 @@
 
 - Epic: [EPIC-001 / #390](https://github.com/geoffrey-xiao/deprail/issues/390)
 - Target: `v0.5.0`
-- Status: Review; candidate API profile in [PR #404](https://github.com/geoffrey-xiao/deprail/pull/404), owner-selected `history-v1` direction in [PR #411](https://github.com/geoffrey-xiao/deprail/pull/411), and the current OpenAPI/security candidate in [PR #413](https://github.com/geoffrey-xiao/deprail/pull/413). Exact projection/API decisions and independent review of this newer artifact remain pending.
+- Status: Review; OpenAPI/security candidate merged in [PR #413](https://github.com/geoffrey-xiao/deprail/pull/413), with five automated-review schema gaps corrected in follow-up [PR #414](https://github.com/geoffrey-xiao/deprail/pull/414). Exact contract acceptance and independent review remain pending.
 - Type: decision
 - Area: docs
 - Priority: P0
 - Risk: R3
 - Owner: `@geoffrey-xiao`
-- Reviewer: `@geoffreyxiaoai` (independent architecture/security reviewer); direct decision requested in PR #413 and #396; GitHub rejected formal assignment with HTTP 422 because the account is not a repository collaborator.
+- Reviewer: `@geoffreyxiaoai` (independent architecture/security reviewer); direct decision requested in PR #414 and #396; GitHub rejected formal assignment with HTTP 422 because the account is not a repository collaborator.
 - Dependencies: V05-001; V05-000 / #387
 
 ## Value

@@ -15,10 +15,10 @@ The existing scan-error inventory is [`v0.1 ERROR-MODEL.md`](../../deprail-v0.1-
 | Candidate code | Meaning | Required behavior |
 | --- | --- | --- |
 | `HISTORY_UNAVAILABLE` | Local store cannot be opened/read or access is denied | Report store unavailable; do not return empty history or weaken permissions. |
-| `HISTORY_WRITE_FAILED` | A history transaction could not be durably committed | Do not claim saved; retain scan outcome separately and report persistence failure. |
+| `HISTORY_WRITE_FAILED` | A selected history projection cannot be safely validated before write, or its transaction cannot be durably committed | Do not claim saved or create a partial row/reference set; retain original scan result and report persistence failure separately. |
 | `HISTORY_SCHEMA_UNSUPPORTED` | Store uses an unsupported newer/older schema | Refuse unsafe access/migration; preserve DB and offer version guidance. |
 | `HISTORY_MIGRATION_FAILED` | Approved migration failed or was interrupted | Preserve recoverable prior data; disclose recovery state. |
-| `HISTORY_CORRUPT` | DB/report row fails integrity or schema validation | Scope failure to store/record; do not silently repair/delete. |
+| `HISTORY_CORRUPT` | Stored DB/projection row fails integrity, projection-schema, or row/JSON consistency validation | Scope failure to store/record; do not silently repair/delete or present an empty successful entry. |
 | `HISTORY_ENTRY_NOT_FOUND` | Requested unique history-entry ID is absent | Return not found, distinct from a valid entry whose report has no findings. |
 | `HISTORY_ARTIFACT_MISSING` | Referenced raw artifact is unavailable | Preserve valid summary if allowed and disclose missing evidence. |
 | `HISTORY_ARTIFACT_DIGEST_MISMATCH` | Retrieved artifact does not match recorded digest | Treat artifact as untrusted; do not claim provenance verified. |
@@ -34,6 +34,8 @@ The existing scan-error inventory is [`v0.1 ERROR-MODEL.md`](../../deprail-v0.1-
 | `API_LISTENER_UNAVAILABLE` | Local service could not bind/serve on approved address | Do not fall back to wildcard/public binding; keep CLI usable. |
 
 The final code set may merge/remove candidate categories only after the corresponding failure semantics remain observable. Do not add retry semantics or claim retryability absent an explicit contract.
+
+For the owner-selected `history-v1` direction, projection construction is a pre-commit safety boundary: raw `ScanReport.Errors`, absolute roots, missing stable finding identity, and unreviewed required fields are not silently stored or discarded. Candidate `HISTORY_WRITE_FAILED` covers an unsafe selected save as well as transaction failure; the exact code/CLI exit precedence still needs separate compatibility and independent-review approval. An unsupported future projection schema is `HISTORY_SCHEMA_UNSUPPORTED`; a malformed row at a supported version is `HISTORY_CORRUPT`. Neither is a successful empty history response.
 
 ## 3. Candidate HTTP mapping (not approved)
 
@@ -92,7 +94,7 @@ Each candidate maps to a consumer-visible outcome and a planned scenario in [`TE
 | Candidate code | Required visible behavior | Verification ID |
 | --- | --- | --- |
 | `HISTORY_UNAVAILABLE` | Failed list/detail state, distinct from valid empty history; safe retry only when appropriate. | `FR-502` |
-| `HISTORY_WRITE_FAILED` | For separately approved CLI capture only: safe stderr persistence diagnostic, no saved claim, scan report/outcome preserved; no read-only API response. | `STORE-01` |
+| `HISTORY_WRITE_FAILED` | For separately approved capture only: projection-validation or transaction failure yields safe stderr persistence diagnostic, no saved claim/partial row, and unchanged scan report/outcome; no read-only API response. | `STORE-01`, `SEC-07` |
 | `HISTORY_SCHEMA_UNSUPPORTED`, `HISTORY_MIGRATION_FAILED`, `HISTORY_CORRUPT` | Explicit incompatibility/recovery state; preserve existing DB/backup and never suggest automatic reset or downgrade. | `FR-508`, `SEC-08` |
 | `HISTORY_ENTRY_NOT_FOUND` | Stale-selection/not-found state, distinct from an entry with no report or findings. | `FR-503` |
 | `HISTORY_ARTIFACT_MISSING`, `HISTORY_ARTIFACT_DIGEST_MISMATCH` | Preserve only trustworthy metadata; disclose unavailable/unverified evidence, never fabricate or trust bytes. | `FR-503`, `SEC-09` |

@@ -24,9 +24,9 @@ The per-requirement verification IDs are defined in [`requirements/TEST-STRATEGY
 
 | Requirement | Design and failure contract | Required observable guard | Verification ID |
 | --- | --- | --- | --- |
-| FR-501 | PRD; [ADR-0004](../../adr/ADR-0004-local-scan-history.md); failure/data §§1, 4 | Repeated `ScanReport.ScanID` values remain separate entries with unique history IDs; report identity and provenance remain unchanged. | `FR-501` |
+| FR-501 | PRD; [ADR-0004](../../adr/ADR-0004-local-scan-history.md); failure/data §§1, 4 | Repeated source `ScanReport.ScanID` values remain separate history entries; independently versioned `history-v1` retains source identity and only trustworthy, allowlisted provenance without altering CLI report bytes. | `FR-501` |
 | FR-502 | API §§2–5; UX §§3–5; error model | Bounded, deterministic pages; empty results are distinct from loading, unavailable store, and API failure. | `FR-502` |
-| FR-503 | API §§2–5; UX §§4–5; failure/data §3 | Detail retains allowed scope/provenance; no report, missing artifact, and digest mismatch remain explicit rather than fabricated evidence. | `FR-503` |
+| FR-503 | API §§2–5; UX §§4–5; failure/data §§3–4 | Detail translates only safe projected fields; absent report, missing artifact, digest mismatch and invalid projection remain distinct, never fabricated evidence or empty success. | `FR-503` |
 | FR-504 | Failure/data §§1–2; UX §5 | Operation outcome and optional report completeness remain independent through persistence, API, UI, and announcements. | `FR-504` |
 | FR-505 | Architecture §§3, 6; v0.1 CLI contract; compatibility matrix | CLI command/output/exit behavior remains unchanged when the console or history store is absent/unavailable, unless a separate compatibility decision is approved. | `FR-505` |
 | FR-506 | Architecture §§3, 5; API §1 | CLI and HTTP paths expose the same application/domain result; transport failures do not duplicate policy or scanner behavior. | `FR-506` |
@@ -38,11 +38,11 @@ The per-requirement verification IDs are defined in [`requirements/TEST-STRATEGY
 
 ## Remaining decisions and approval gates
 
-ADR-0004's proposed schema-v1 and lifecycle were owner-approved and merged in PR #407. The ADR remains Proposed pending independent architecture/security review; its numeric payload/store bounds and retention-risk disposition remain open.
+ADR-0004's original schema-v1 and lifecycle proposal was owner-approved and merged in PR #407. Source-report validation exposed a conflict with its raw `report_json` assumption; the owner then selected the independent history-projection direction recorded in ADR-0004's additive section. The amended exact projection and all remaining lifecycle choices are still Proposed pending independent architecture/security review, numeric bounds, and retention-risk disposition.
 
-**New validation blocker:** [ADR-0004's additive finding](../../adr/ADR-0004-local-scan-history.md#post-proposal-validation-finding-source-report-is-not-the-proposed-stored-document) demonstrates that the current `ScanReport` is not the unchanged, schema-valid, privacy-safe document assumed by the proposed `report_json` column. Owner and independent reviewer must resolve the storage projection versus CLI/schema compatibility decision and update the persistence, API and verification contracts before OpenAPI acceptance or implementation issue creation. A merged planning PR is not evidence that the inconsistency is resolved.
+**Owner-selected direction, exact contract not accepted:** [ADR-0004's additive finding and direction](../../adr/ADR-0004-local-scan-history.md#owner-selected-direction-independent-history-projection-not-accepted) show why existing `ScanReport` cannot be stored unchanged as a schema-valid privacy-safe v1alpha document. A separate allowlisted `history-v1` projection, distinct from SQLite schema v1, source report v1alpha, and `/api/v1`, leaves CLI JSON unchanged. The candidate storage layout, read projection, error mapping and future evidence matrix now reflect that decision; owner sign-off on exact fields, safe diagnostics, unknown-data policy and independent review are still needed before OpenAPI acceptance or implementation issues. A merged planning PR is not evidence of implementation readiness.
 
-1. Approve or revise the candidate history-capture trigger and CLI compatibility behavior, including persistence-failure/exit-code precedence.
+1. Approve or revise exact `history-v1` field mapping/validation and the candidate history-capture trigger and CLI compatibility behavior, including projection/persistence-failure and exit-code precedence.
 2. Select evidence-backed per-entry, response, and store bounds, or explicitly accept unbounded growth; record disk-full refusal behavior.
 3. Complete and validate the exact OpenAPI resource fields, pagination/cursor behavior, error mapping, version policy, and numeric request/response limits.
 4. Review local listener bind/port/lifetime, Host/Origin/CORS/CSRF/authentication, and shutdown behavior.

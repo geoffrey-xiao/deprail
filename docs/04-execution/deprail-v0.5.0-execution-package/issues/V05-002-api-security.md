@@ -3,7 +3,7 @@
 
 - Epic: [EPIC-001 / #390](https://github.com/geoffrey-xiao/deprail/issues/390)
 - Target: `v0.5.0`
-- Status: Review; candidate API profile and error mapping in [PR #404](https://github.com/geoffrey-xiao/deprail/pull/404). OpenAPI schema, report-history projection, numeric bounds, listener/auth decisions, independent security review, and Definition of Ready remain pending.
+- Status: Review; candidate API profile and error mapping in [PR #404](https://github.com/geoffrey-xiao/deprail/pull/404); owner-selected `history-v1` projection direction in [PR #411](https://github.com/geoffrey-xiao/deprail/pull/411). Exact projection/OpenAPI schemas, numeric bounds, listener/auth decisions, independent security review, and Definition of Ready remain pending.
 - Type: decision
 - Area: docs
 - Priority: P0
@@ -42,4 +42,4 @@ Validate OpenAPI syntax and examples against the selected validator; crosswalk s
 
 ## Source-report validation blocker
 
-The proposed persisted `report_json` cannot be treated as unchanged, schema-validated v1alpha scan data: [`app.ScanReport`](../../../../internal/app/scan.go) contains an absolute repository root and `adapter.Finding`/string-error shapes that differ from [`deprail.schema.json`](../../../../schemas/v1alpha/deprail.schema.json). See the [additive ADR-0004 finding](../../../adr/ADR-0004-local-scan-history.md#post-proposal-validation-finding-source-report-is-not-the-proposed-stored-document). #396 cannot freeze `HistoryEntryDetail`, child-collection schemas or examples until owner and independent reviewer approve a privacy-safe persisted projection or a separately reviewed CLI/schema compatibility change. Do not embed an unvalidated raw scan or expose the host path as an OpenAPI shortcut; an invalid/unsafe selected save is a typed persistence failure, not empty success. This finding does not authorize runtime work or close #391/#396.
+The proposed persisted `report_json` cannot be treated as unchanged, schema-validated v1alpha scan data: [`app.ScanReport`](../../../../internal/app/scan.go) contains an absolute repository root and `adapter.Finding`/string-error shapes that differ from [`deprail.schema.json`](../../../../schemas/v1alpha/deprail.schema.json). The owner selected the [separate `history-v1` projection direction in ADR-0004](../../../adr/ADR-0004-local-scan-history.md#owner-selected-direction-independent-history-projection-not-accepted), leaving existing CLI JSON unchanged. #396 still cannot freeze `HistoryEntryDetail`, child-collection schemas or examples until exact allowlisted fields, unknown/safe-diagnostic handling, row/API mapping and independent review are accepted. Do not embed an unvalidated raw scan or expose the host path as an OpenAPI shortcut; an invalid/unsafe selected save is a typed persistence failure, not empty success. This direction does not authorize runtime work or reverse #391's closure.

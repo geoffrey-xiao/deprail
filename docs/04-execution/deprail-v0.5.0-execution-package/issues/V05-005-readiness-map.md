@@ -3,13 +3,13 @@
 
 - Epic: [EPIC-001 / #390](https://github.com/geoffrey-xiao/deprail/issues/390)
 - Target: `v0.5.0`
-- Status: Review in GitHub; readiness proposal in PR #409; owner-selected history projection revision merged in PR #411; independent architecture/security review requested from owner-designated `@geoffreyxiaoai` in [#392](https://github.com/geoffrey-xiao/deprail/issues/392#issuecomment-5807824469); approval and v0.5 DoR pending.
+- Status: Open in Project Review; readiness proposal merged in PR #409. Owner comment [#392](https://github.com/geoffrey-xiao/deprail/issues/392#issuecomment-5807906998) says all then-current DoR items were checked and authorizes task creation; reviewer approved that then-current package in PR #412. Both precede PR #414, which the owner merged without an independent APPROVED review. The current API candidate gate must be reconciled before issue creation.
 - Type: decision
 - Area: docs
 - Priority: P0
 - Risk: R3
 - Owner: `@geoffrey-xiao`
-- Reviewer: `@geoffrey-xiao` for planning-ticket oversight only; independent architecture/security reviewer `@geoffreyxiaoai` designated by owner, review requested, decision pending
+- Reviewer: `@geoffrey-xiao` for planning-ticket oversight; independent reviewer `@geoffreyxiaoai` approved the then-current package in PR #412. The current OpenAPI/security corrections in PR #414 have no independent approval recorded; formal reviewer assignment failed with HTTP 422.
 - Dependencies: V05-000 through V05-004
 
 ## Value
@@ -22,7 +22,7 @@ Integrate accepted UX, OpenAPI/API security, SQLite ADR/schema/lifecycle, failur
 
 ## Out of scope
 
-No runtime code, implementation branch, implementation issue creation/activation, release tag/publication, #356 closure, or claim of independent approval before the named reviewer records a decision.
+No runtime code, implementation branch, issue publication or activation, release tag/publication, or #356 closure. The owner authorized task creation in #392 before PR #414; do not publish implementation issues until the current API review and versioned Definition of Ready are reconciled.
 
 ## Inputs, outputs, and failure behavior
 
@@ -41,7 +41,7 @@ Validate all local links and crosswalks; verify every proposed implementation is
 
 ## Readiness snapshot
 
-The [execution-package DoR map](../README.md#readiness-evidence-and-blockers) links every outstanding gate to evidence, owner, and next decision. Draft UX [#394](https://github.com/geoffrey-xiao/deprail/issues/394) and SQLite [#391](https://github.com/geoffrey-xiao/deprail/issues/391) issue closure do not constitute independent approval; API [#396](https://github.com/geoffrey-xiao/deprail/issues/396) and quality [#393](https://github.com/geoffrey-xiao/deprail/issues/393) remain in Review. Owner-designated independent reviewer `@geoffreyxiaoai` has been asked to review the complete package in [#392](https://github.com/geoffrey-xiao/deprail/issues/392#issuecomment-5807824469); no approval is recorded yet. [#387](https://github.com/geoffrey-xiao/deprail/issues/387) and this issue remain open. The five owner-dispositioned v0.4 follow-ups remain in [#356](https://github.com/geoffrey-xiao/deprail/issues/356), outside v0.5 scope.
+The [execution-package DoR map](../README.md#readiness-evidence-and-blockers) links current evidence and blockers. UX [#394](https://github.com/geoffrey-xiao/deprail/issues/394) and SQLite [#391](https://github.com/geoffrey-xiao/deprail/issues/391) are closed; API [#396](https://github.com/geoffrey-xiao/deprail/issues/396) was reopened in Project Review after PR #414 inadvertently auto-closed it; quality [#393](https://github.com/geoffrey-xiao/deprail/issues/393) remains in Review. The independent reviewer approved PR #412's earlier package, but no approval of the later PR #414 candidate is recorded. The owner's #392 task-creation authorization predates that candidate; #387 and #392 remain open, and the five v0.4 follow-ups remain tracked in #356.
 
 ## Conditional post-DoR delivery map
 
@@ -56,10 +56,10 @@ These are **candidate outcomes, not issue contracts, GitHub issues, an authorize
 | E. Reproducible embedded delivery | `FR-505`, `FR-509`, `SEC-10`, `SEC-12`, `SEC-13`; C–D, selected pinned toolchains/dependencies and packaging targets. | Version-matched assets/API, visible mismatch and missing-asset failures, no filesystem fallback/CDN; clean builds and package identity/size/startup evidence on Linux/macOS/Windows. | Roll back to a matching reviewed binary/assets without downgrading or replacing the store. R2. |
 | F. Release verification and evidence | `FR-501`–`FR-511`, `SEC-01`–`SEC-13`, `STORE-01`; A–E and [release checklist](../../../RELEASE-CHECKLIST.md). | Real representative workflows, browser and hostile-input evidence, release binary/tree comparison, version/checksum/SBOM/signature/provenance dispositions, separate reviewer and owner decisions; no unit-only release claim. | Document rollback owner, preserve immutable tags/data and publish a new corrected preview rather than moving a tag. R3. |
 
-Proposed milestone for any future issue is [`v0.5.0`](https://github.com/geoffrey-xiao/deprail/milestone/11); each would be linked beneath an approved implementation epic in the [DepRail Project](https://github.com/orgs/geoffrey-xiao/projects/1/views/6). `area:storage`, `area:api`, and `area:web` are **not** in the current label set; the owner must select existing matching labels or approve a label-set change before publishing an issue. Owner-designated independent reviewer `@geoffreyxiaoai` has been asked to review the package; until a separate decision is recorded, no reviewer approval or implementation authorization is inferred. The accepted contracts—not this provisional table—determine final issue boundaries and sequencing.
+Proposed milestone for any future issue is [`v0.5.0`](https://github.com/geoffrey-xiao/deprail/milestone/11); each would be linked beneath an approved implementation epic in the [DepRail Project](https://github.com/orgs/geoffrey-xiao/projects/1/views/6). `area:storage`, `area:api`, and `area:web` are not in the current label set. The owner authorized task creation in #392 before PR #414; the exact current API candidate still lacks independent review. Under the current plan, do not publish implementation issues until that review and the complete DoR are reconciled. The accepted contracts determine final issue boundaries and sequencing.
 
 ## Tracking verification (planning only)
 
 - `gh api repos/geoffrey-xiao/deprail/issues/390/sub_issues` lists exactly the six planning children #387, #394, #396, #391, #393, and #392. No candidate delivery outcome above has a GitHub implementation issue.
-- `gh project view 1 --owner geoffrey-xiao` resolves the live DepRail Project; its `Release · v0.5.0` view is number `6` with filter `milestone:v0.5.0`. #392 is open, assigned to the `v0.5.0` milestone, carries `area:docs`, `risk:R3`, `priority:P0`, `type:decision`, and is in Project `Review` after [PR #409](https://github.com/geoffrey-xiao/deprail/pull/409) opened; this is workflow state, not DoR approval.
-- [#394](https://github.com/geoffrey-xiao/deprail/issues/394) and [#391](https://github.com/geoffrey-xiao/deprail/issues/391) are closed; [#396](https://github.com/geoffrey-xiao/deprail/issues/396) and [#393](https://github.com/geoffrey-xiao/deprail/issues/393) remain open in Project `Review`; [#387](https://github.com/geoffrey-xiao/deprail/issues/387) remains open in `In Progress`. Closure or Project state is not an independent contract acceptance record.
+- `gh project view 1 --owner geoffrey-xiao` resolves the live DepRail Project; its `Release · v0.5.0` view is number `6`, filtered to `milestone:v0.5.0`. #392 is open in Project Review after PR #409 merged, with the v0.5.0 milestone and required labels; its status is workflow state, not DoR approval. The latest owner authorization predates PR #414.
+- [#394](https://github.com/geoffrey-xiao/deprail/issues/394) and [#391](https://github.com/geoffrey-xiao/deprail/issues/391) are closed; [#396](https://github.com/geoffrey-xiao/deprail/issues/396) is open in Project Review after correction; [#393](https://github.com/geoffrey-xiao/deprail/issues/393) remains open in Review; [#387](https://github.com/geoffrey-xiao/deprail/issues/387) remains open in In Progress. Closure or Project state is not independent contract acceptance.

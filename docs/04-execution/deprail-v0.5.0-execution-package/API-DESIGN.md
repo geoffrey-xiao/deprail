@@ -1,6 +1,6 @@
 # v0.5 Local API Design Contract
 
-**Status:** Candidate OpenAPI 3.1 artifact and local security profile are available for owner and independent architecture/security review; no API or runtime implementation is approved.
+**Status:** The owner merged schema/security corrections in [PR #414](https://github.com/geoffrey-xiao/deprail/pull/414), but independent review of that exact candidate is not recorded. The OpenAPI and local security profile remain proposed; no API or runtime implementation is approved.
 **Design inputs:** [`PRD-v0.5.md`](PRD-v0.5.md), [`UX-DESIGN.md`](UX-DESIGN.md), [`ARCHITECTURE-v0.5.md`](ARCHITECTURE-v0.5.md).
 
 ## 1. Goal and constraints
@@ -80,7 +80,7 @@ Breaking API changes require a new API version or an explicit reviewed migration
 
 ## 8. API design acceptance checklist
 
-The OpenAPI structure, local references, response examples, and status-specific error constraints have been checked for this review candidate. No schema-derived maximum response size is claimed: `maxLength` counts Unicode code points, not serialized bytes. The 1 MiB UTF-8 response cap is a runtime byte check and remains unverified. These checks do not constitute owner or independent-review acceptance.
+The OpenAPI structure, local references, response examples, and status-specific error constraints have been checked. These offline checks do not constitute independent-review acceptance; the owner merged PR #414, but its only review record is Codex COMMENTED. The 1 MiB UTF-8 response cap is a runtime byte check and remains unverified.
 
 - [ ] UX acceptance maps every operation to a reviewed screen/action.
 - [ ] Resource representation and pagination are accepted against payload and usage evidence.
@@ -108,7 +108,7 @@ The OpenAPI file is a concrete review candidate, not an accepted public contract
 | Errors | Typed, safe API envelope; 400/401/403/404/405/500/503/504 mappings, plus parser-level 414/431 rejection for request-target/header limits without a JSON-envelope guarantee. No request bodies. Artifact-integrity states are part of a successful detail response. | OpenAPI response schemas constrain each declared status to its allowed code set; runtime status/code behavior remains unverified. |
 | Versioning | `/api/v1`, OpenAPI 3.1, `info.version: 1.0.0`; no redundant response API-version field. | UI/API mismatch must fail visibly. Any breaking change requires a separately reviewed version change. |
 
-The remaining acceptance gates are independent review of this exact artifact, owner acceptance of the candidate decisions, exact storage-projection approval, supported browser and platform decisions, and the complete v0.5 Definition of Ready. Until those gates are linked, this contract remains proposed and no implementation issue is ready.
+The remaining acceptance gates are independent review of the exact merged PR #414 candidate, owner acceptance of API decisions beyond that correction, exact storage-projection approval, supported browser/platform decisions, and the complete v0.5 Definition of Ready. Closing #396 or setting its Project item Done does not substitute for current-version review evidence; until the gates are linked, no implementation issue is ready.
 
 ## 10. Candidate validation evidence
 

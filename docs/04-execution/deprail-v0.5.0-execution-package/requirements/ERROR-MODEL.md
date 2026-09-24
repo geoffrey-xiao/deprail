@@ -1,6 +1,6 @@
 # v0.5 Error Model
 
-**Status:** Draft proposal; code strings and transport mappings require owner and independent architecture/security review.
+**Status:** Candidate history/API codes and OpenAPI mappings are documented in [`schemas/openapi/v1/openapi.yaml`](../../../../schemas/openapi/v1/openapi.yaml); owner and independent architecture/security approval remain pending.
 
 ## 1. Contract
 
@@ -10,99 +10,104 @@ The existing scan-error inventory is [`v0.1 ERROR-MODEL.md`](../../deprail-v0.1-
 
 `operationOutcome=cancelled` is a history-entry state, not a candidate stable error code and not a `ScanReport.Status`. `API_CANCELLED` applies only to a cancelled read/API request; it does not describe or mutate a scan operation.
 
-## 2. Candidate history/API errors
+## 2. Candidate history/API errors and integrity states
 
-| Candidate code | Meaning | Required behavior |
+Errors are stable application codes with safe messages. HTTP status describes the transport result and does not replace the application code. The OpenAPI candidate exposes only the read/API codes listed in its `ApiError` schema.
+
+| Candidate code or state | Meaning | Required behavior |
 | --- | --- | --- |
 | `HISTORY_UNAVAILABLE` | Local store cannot be opened/read or access is denied | Report store unavailable; do not return empty history or weaken permissions. |
-| `HISTORY_WRITE_FAILED` | A selected history projection cannot be safely validated before write, or its transaction cannot be durably committed | Do not claim saved or create a partial row/reference set; retain original scan result and report persistence failure separately. |
-| `HISTORY_SCHEMA_UNSUPPORTED` | Store uses an unsupported newer/older schema | Refuse unsafe access/migration; preserve DB and offer version guidance. |
+| `HISTORY_WRITE_FAILED` | A selected history projection cannot be safely validated or durably committed | Do not claim saved or create partial rows/references; retain the original scan result and report persistence failure separately. Not reachable through the read-only API. |
+| `HISTORY_SCHEMA_UNSUPPORTED` | Store uses an unsupported schema | Refuse unsafe access/migration; preserve the database and offer version guidance. |
 | `HISTORY_MIGRATION_FAILED` | Approved migration failed or was interrupted | Preserve recoverable prior data; disclose recovery state. |
-| `HISTORY_CORRUPT` | Stored DB/projection row fails integrity, projection-schema, or row/JSON consistency validation | Scope failure to store/record; do not silently repair/delete or present an empty successful entry. |
-| `HISTORY_ENTRY_NOT_FOUND` | Requested unique history-entry ID is absent | Return not found, distinct from a valid entry whose report has no findings. |
-| `HISTORY_ARTIFACT_MISSING` | Referenced raw artifact is unavailable | Preserve valid summary if allowed and disclose missing evidence. |
-| `HISTORY_ARTIFACT_DIGEST_MISMATCH` | Retrieved artifact does not match recorded digest | Treat artifact as untrusted; do not claim provenance verified. |
-| `API_REQUEST_INVALID` | Query, header, content shape, path identifier, filter, or page-size value is invalid | Reject before expensive work; provide safe field/context detail. |
-| `API_REQUEST_TOO_LARGE` | A request body exceeds an approved body limit | Reject with 413 and no partial success; this candidate applies only to a body-bearing operation if one is approved. |
-| `API_RESPONSE_TOO_LARGE` | A valid request would require a response above the server's approved response bound | Return an explicit bounded failure; never truncate into an apparently successful response. Candidate code requires review. |
-| `API_ROUTE_NOT_FOUND` | Path is not part of the approved API route table | Return not found; do not classify an unknown route as an unsupported method. |
-| `API_VERSION_UNSUPPORTED` | Client requests an unsupported contract version | Fail explicitly and identify supported API version safely. |
-| `API_METHOD_UNSUPPORTED` | Method is not allowed for a known route | Reject without invoking side effects; distinguish from an unknown route. |
-| `API_ORIGIN_REJECTED` | Host/origin violates the approved local boundary | Reject without disclosing listener internals. |
-| `API_TIMEOUT` | Bounded read/API request deadline elapsed | Report timeout; do not change persisted history or scan operation outcome. |
-| `API_CANCELLED` | A read/API request was cancelled by the caller or deadline | Terminate the request without changing scan operation outcome or persisted report state. |
-| `API_LISTENER_UNAVAILABLE` | Local service could not bind/serve on approved address | Do not fall back to wildcard/public binding; keep CLI usable. |
+| `HISTORY_CORRUPT` | Stored row/projection fails integrity, version, or consistency checks | Scope failure to the record/store; never silently repair, delete, or present empty success. |
+| `HISTORY_ENTRY_NOT_FOUND` | Requested valid history-entry ID is absent | Return 404, distinct from a valid entry with no report/findings. |
+| `HISTORY_ARTIFACT_MISSING` | Referenced raw artifact is absent | Preserve trustworthy metadata and disclose unavailable evidence. In API detail, represented as integrity state `missing`, not an error envelope. |
+| `HISTORY_ARTIFACT_DIGEST_MISMATCH` | Retrieved artifact digest differs from the recorded digest | Do not trust bytes or claim verified provenance. In API detail, represented as integrity state `digest_mismatch`, not an error envelope. |
+| `API_REQUEST_INVALID` | Identifier, query, cursor, or prohibited body is invalid | Reject before expensive work; use safe generic guidance and do not echo input. |
+| `API_AUTH_UNAUTHORIZED` | Required process-scoped bearer credential is absent or invalid | Return 401 with a generic message and `WWW-Authenticate: Bearer`; do not distinguish secret values. |
+| `API_RESPONSE_TOO_LARGE` | A valid request would exceed the proposed 1 MiB response bound | Return an explicit bounded 500 response; never truncate into success. |
+| `API_ROUTE_NOT_FOUND` | Path is not part of the candidate route table | Return 404; distinguish from unsupported method. |
+| `API_VERSION_UNSUPPORTED` | Versioned API prefix is recognized but unsupported | Return 404 with a safe supported-version message. |
+| `API_METHOD_UNSUPPORTED` | Method is not allowed for a known route | Return 405 with `Allow: GET`; invoke no side effect. |
+| `API_ORIGIN_REJECTED` | Host, Origin, or Fetch Metadata violates the local boundary | Return 403 without disclosing listener details. |
+| `API_BUSY` | The proposed bounded concurrent-request capacity is full | Return 503; do not queue unbounded work or retry implicitly. |
+| `API_TIMEOUT` | Bounded read request deadline elapsed | Return 504; do not change history or scan outcome. |
+| `API_CANCELLED` | Client disconnect cancels a read | Stop affected work; the disconnected client receives no fabricated response. |
+| `API_INTERNAL_ERROR` | Unexpected internal API failure | Return a generic 500; keep driver details, SQL, paths, and stack traces out of the response. |
+| `API_LISTENER_UNAVAILABLE` | Local service cannot bind/serve on the candidate loopback address | Report a safe startup diagnostic; never fall back to wildcard/public binding; keep CLI usable. |
 
-The final code set may merge/remove candidate categories only after the corresponding failure semantics remain observable. Do not add retry semantics or claim retryability absent an explicit contract.
+All API routes are bodyless, so the candidate has no body-size error code or 413 response; a prohibited body fails as `API_REQUEST_INVALID`. Request-target and header-block size failures are rejected at the HTTP parser boundary with 414 or 431 and do not promise a stable API code or JSON envelope.
 
-For the owner-selected `history-v1` direction, projection construction is a pre-commit safety boundary: raw `ScanReport.Errors`, absolute roots, missing stable finding identity, and unreviewed required fields are not silently stored or discarded. Candidate `HISTORY_WRITE_FAILED` covers an unsafe selected save as well as transaction failure; the exact code/CLI exit precedence still needs separate compatibility and independent-review approval. An unsupported future projection schema is `HISTORY_SCHEMA_UNSUPPORTED`; a malformed row at a supported version is `HISTORY_CORRUPT`. Neither is a successful empty history response.
+For the owner-selected `history-v1` direction, projection construction remains a pre-commit safety boundary: raw `ScanReport.Errors`, absolute roots, missing stable finding identity, and unreviewed required fields are not silently stored or discarded. An unsupported future projection schema is `HISTORY_SCHEMA_UNSUPPORTED`; a malformed row at a supported version is `HISTORY_CORRUPT`. Neither is empty success.
 
-## 3. Candidate HTTP mapping (not approved)
+## 3. Candidate HTTP mapping
 
-The table recommends one candidate HTTP status per API error category to make the draft deterministic. These mappings remain unapproved until the OpenAPI contract is reviewed.
+These mappings are concrete OpenAPI review proposals, not accepted stable behavior.
 
-| Category | Recommended candidate HTTP status |
-| --- | ---: |
-| Invalid path identifier, query, content type, filter, or page-size value (`API_REQUEST_INVALID`) | 400 |
-| Request body exceeds its bound (`API_REQUEST_TOO_LARGE`) | 413; candidate only for an approved body-bearing operation |
-| A valid request would exceed the response-size bound (`API_RESPONSE_TOO_LARGE`) | 500; do not truncate the response |
-| Unknown API route (`API_ROUTE_NOT_FOUND`) | 404 |
-| Unsupported API version (`API_VERSION_UNSUPPORTED`) | 404 |
-| Unsupported method on a known route (`API_METHOD_UNSUPPORTED`) | 405 with an `Allow` header |
-| Host or origin rejected (`API_ORIGIN_REJECTED`) | 403 |
-| History entry missing (`HISTORY_ENTRY_NOT_FOUND`) | 404 |
-| Store unavailable/locked, unsupported schema, or migration failure | 503 |
-| Corrupt store/report or required artifact missing/digest mismatch | 500 |
-| Server-side request deadline (`API_TIMEOUT`) | 504 |
-| Unexpected internal failure | 500 |
+| HTTP status | Candidate code/condition |
+| ---: | --- |
+| 400 | `API_REQUEST_INVALID` |
+| 401 | `API_AUTH_UNAUTHORIZED` |
+| 403 | `API_ORIGIN_REJECTED` |
+| 404 | `HISTORY_ENTRY_NOT_FOUND`; router-level `API_ROUTE_NOT_FOUND` or `API_VERSION_UNSUPPORTED` |
+| 405 | `API_METHOD_UNSUPPORTED`, with `Allow: GET` |
+| 414 | Request target exceeds 2,048 bytes; parser-level rejection before route execution, no stable API code/body guaranteed. |
+| 431 | Request headers exceed 8,192 bytes; parser-level rejection before route execution, no stable API code/body guaranteed. |
+| 500 | `API_RESPONSE_TOO_LARGE`, `HISTORY_CORRUPT`, or `API_INTERNAL_ERROR` |
+| 503 | `HISTORY_UNAVAILABLE`, `HISTORY_SCHEMA_UNSUPPORTED`, `HISTORY_MIGRATION_FAILED`, or `API_BUSY` |
+| 504 | `API_TIMEOUT` |
 
-`API_CANCELLED` describes a cancelled read request; when the client has disconnected, stop work and return no fabricated response. `API_LISTENER_UNAVAILABLE` is a startup failure, not an HTTP response. `HISTORY_WRITE_FAILED` is not reachable through the proposed read-only API and remains a distinct application/CLI persistence outcome. The current GET-only surface has no request-body route, so `API_REQUEST_TOO_LARGE` is unreachable unless a body-bearing operation is separately approved. Page-size bounds are invalid request parameters; output-limit failures use the distinct candidate `API_RESPONSE_TOO_LARGE`.
+`HISTORY_ARTIFACT_MISSING` and `HISTORY_ARTIFACT_DIGEST_MISMATCH` are represented in a successful detail response as per-reference `integrity` states (`missing` and `digest_mismatch`), preserving trustworthy metadata without claiming evidence is available or verified. An unreadable reference is `unavailable`. Artifact bytes and filesystem paths are never returned.
 
-Do not expose DB driver messages, SQL, stack traces, filesystem absolute paths, credentials, or untrusted input verbatim. The recommended statuses and their mapping to existing stable error contracts require owner and independent architecture/security review before acceptance.
+`API_CANCELLED` and `API_LISTENER_UNAVAILABLE` do not produce HTTP responses: the former ends when the client disconnects; the latter is a startup diagnostic. `HISTORY_WRITE_FAILED` is an application/CLI persistence outcome, not reachable via the read-only API. A response over the size cap fails explicitly and is never truncated. Parser-level 414/431 rejections occur before API routing and may not use the JSON error envelope.
 
-## 4. Error envelope proposal
+Do not expose DB driver messages, SQL, stack traces, filesystem absolute paths, credentials, or untrusted input verbatim. Router-level unknown-route and unsupported-version outcomes use the same safe JSON error envelope as declared operations.
 
-A candidate JSON envelope:
+## 4. Error envelope
+
+The candidate JSON envelope contains only a stable code and safe message:
 
 ```json
 {
   "error": {
     "code": "HISTORY_UNAVAILABLE",
-    "message": "Local scan history is unavailable.",
-    "requestId": "opaque-request-id"
+    "message": "Local scan history is unavailable."
   }
 }
 ```
 
-`requestId` is optional and remains undecided. Add fields only when they have a stable consumer contract. The success schema must never be overloaded as an error envelope, and `errors: []` is not a substitute for a failed HTTP request.
+Messages are static and do not echo input or expose secrets, raw paths, SQL, database-driver errors, or stack traces. The success schema is never overloaded as an error envelope, and `errors: []` is not a substitute for a failed HTTP request. A request ID is omitted because no stable consumer use case is established.
 
 ## 5. Acceptance checklist
 
-- [x] Crosswalk candidate codes to existing stable error contracts and retain established codes unchanged; candidate-code/state/evidence mapping is in §6. Owner/reviewer approval remains outstanding.
-- [ ] Approve history/API candidate code strings, scope, safe message, and actionable guidance.
-- [ ] Approve one OpenAPI status mapping per semantic category.
-- [ ] Define behavior for mixed failures, e.g. valid scan metadata with a missing raw artifact.
-- [ ] Define cancellation, timeout, listener startup and storage-write failure without false success.
-- [ ] Ensure no raw SQL, DB messages, stack trace, token, credential URL, or full environment leaks.
-- [ ] Validate OpenAPI examples and exercise each code/status through contract/integration tests.
-- [ ] Record owner and independent reviewer approval; no runtime implementation before acceptance.
+- [x] Candidate codes are cross-walked to existing stable scan contracts without changing established meanings; see §6. Owner/reviewer approval remains outstanding.
+- [ ] Owner and independent reviewer accept history/API codes, scope, safe messages, and guidance.
+- [ ] Owner and independent reviewer accept one HTTP mapping per reachable semantic category.
+- [ ] Mixed artifact-integrity behavior is accepted; trustworthy detail remains distinct from missing/unverified evidence.
+- [ ] Cancellation, timeout, listener startup, storage failure, and malformed/oversized inputs remain explicit without false success.
+- [ ] No raw SQL, database message, stack trace, token, credential URL, or full environment is returned/logged.
+- [x] OpenAPI candidate examples and schema-bounded response shapes were validated offline; runtime contract/integration tests remain future work.
+- [ ] Owner and independent reviewer record separate approval; no runtime implementation before the complete DoR passes.
 
 ## 6. Candidate code-to-state and evidence crosswalk
 
-Each candidate maps to a consumer-visible outcome and a planned scenario in [`TEST-STRATEGY.md`](TEST-STRATEGY.md#9-requirement-and-threat-evidence-matrix). These are future verification requirements, not completed tests or finalized wire semantics.
+These mappings connect consumer-visible behavior to the planned scenario IDs in [`TEST-STRATEGY.md`](TEST-STRATEGY.md#9-requirement-and-threat-evidence-matrix). They are contract proposals, not runtime test results.
 
-| Candidate code | Required visible behavior | Verification ID |
+| Code/state | Required visible behavior | Verification ID |
 | --- | --- | --- |
-| `HISTORY_UNAVAILABLE` | Failed list/detail state, distinct from valid empty history; safe retry only when appropriate. | `FR-502` |
-| `HISTORY_WRITE_FAILED` | For separately approved capture only: projection-validation or transaction failure yields safe stderr persistence diagnostic, no saved claim/partial row, and unchanged scan report/outcome; no read-only API response. | `STORE-01`, `SEC-07` |
-| `HISTORY_SCHEMA_UNSUPPORTED`, `HISTORY_MIGRATION_FAILED`, `HISTORY_CORRUPT` | Explicit incompatibility/recovery state; preserve existing DB/backup and never suggest automatic reset or downgrade. | `FR-508`, `SEC-08` |
-| `HISTORY_ENTRY_NOT_FOUND` | Stale-selection/not-found state, distinct from an entry with no report or findings. | `FR-503` |
-| `HISTORY_ARTIFACT_MISSING`, `HISTORY_ARTIFACT_DIGEST_MISMATCH` | Preserve only trustworthy metadata; disclose unavailable/unverified evidence, never fabricate or trust bytes. | `FR-503`, `SEC-09` |
-| `API_REQUEST_INVALID` | Safe client error before expensive work; no empty-success or side effect. | `FR-507`, `SEC-03`, `SEC-04` |
-| `API_REQUEST_TOO_LARGE`, `API_RESPONSE_TOO_LARGE` | Explicit bounded failure, never partial/truncated success. Request-body case applies only if a body-bearing route is separately approved. | `SEC-05` |
-| `API_ROUTE_NOT_FOUND`, `API_VERSION_UNSUPPORTED`, `API_METHOD_UNSUPPORTED` | Distinguish unknown route, unsupported contract version, and unsupported method using the candidate status mapping in §3; never render empty history. | `FR-507`, `FR-509` |
-| `API_ORIGIN_REJECTED` | Reject the hostile origin without disclosing listener internals. | `SEC-01` |
-| `API_TIMEOUT`, `API_CANCELLED` | End only the affected read/request; no fabricated response and no rewrite of stored history or scan outcome. | `FR-502`, `FR-503` |
-| `API_LISTENER_UNAVAILABLE` | Safe startup failure before the browser surface exists; existing CLI remains usable and no public-bind fallback occurs. | `FR-505`, `SEC-11` |
+| `HISTORY_UNAVAILABLE` | Failed list/detail state, distinct from valid empty history. | `FR-502` |
+| `HISTORY_WRITE_FAILED` | Explicitly selected capture fails safely with no partial row or saved claim; scan outcome/report remain unchanged. | `STORE-01`, `SEC-07` |
+| `HISTORY_SCHEMA_UNSUPPORTED`, `HISTORY_MIGRATION_FAILED`, `HISTORY_CORRUPT` | Explicit incompatibility/recovery; preserve data and never suggest reset or downgrade. | `FR-508`, `SEC-08` |
+| `HISTORY_ENTRY_NOT_FOUND` | Stale-selection state, distinct from an entry with no report/findings. | `FR-503` |
+| Artifact integrity `verified|missing|digest_mismatch|unavailable` | Preserve trustworthy detail; disclose unavailable/unverified evidence and never fabricate bytes or a clean result. | `FR-503`, `SEC-09` |
+| `API_REQUEST_INVALID` | Reject malformed IDs, query values, cursors, or prohibited bodies without side effects or empty success. | `FR-507`, `SEC-03`, `SEC-04` |
+| Transport-level 414/431 | Reject over-limit request targets/headers before routing; no stable API error body is promised. | `SEC-05` |
+| `API_AUTH_UNAUTHORIZED` | Reject absent/invalid bearer without disclosing token details or returning local data. | `SEC-01`, `SEC-02` |
+| `API_RESPONSE_TOO_LARGE`, `API_BUSY` | Explicit bounded failure; never truncate success or perform unbounded work. | `SEC-05` |
+| `API_ROUTE_NOT_FOUND`, `API_VERSION_UNSUPPORTED`, `API_METHOD_UNSUPPORTED` | Distinguish unknown route, unsupported version, and unsupported method. | `FR-507`, `FR-509` |
+| `API_ORIGIN_REJECTED` | Reject hostile Host/Origin/Fetch Metadata without listener disclosure. | `SEC-01`, `SEC-11` |
+| `API_TIMEOUT`, `API_CANCELLED` | End only the affected request; do not rewrite saved history or scan outcome. | `FR-502`, `FR-503` |
+| `API_LISTENER_UNAVAILABLE` | Safe startup failure with no public-bind fallback; existing CLI remains usable. | `FR-505`, `SEC-11` |
 
-Existing v0.1/v0.2 scan codes, CLI exit meanings, report schemas, and artifact identities remain unchanged. Candidate history/API codes and any additive CLI exit code require separate owner and independent-review approval before they become stable.
+Existing v0.1/v0.2 scan codes, CLI exit meanings, report schemas, and artifact identities remain unchanged. New history/API codes and any CLI persistence exit behavior require separate owner and independent-review approval before they become stable.

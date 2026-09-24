@@ -3,13 +3,13 @@
 
 - Epic: [EPIC-001 / #390](https://github.com/geoffrey-xiao/deprail/issues/390)
 - Target: `v0.5.0`
-- Status: Review; candidate API profile and error mapping in [PR #404](https://github.com/geoffrey-xiao/deprail/pull/404); owner-selected `history-v1` projection direction in [PR #411](https://github.com/geoffrey-xiao/deprail/pull/411). Exact projection/OpenAPI schemas, numeric bounds, listener/auth decisions, independent security review, and Definition of Ready remain pending.
+- Status: Review; candidate API profile in [PR #404](https://github.com/geoffrey-xiao/deprail/pull/404), owner-selected `history-v1` direction in [PR #411](https://github.com/geoffrey-xiao/deprail/pull/411), and a new OpenAPI/security candidate are documented. Exact projection/API decisions and independent review of this newer artifact remain pending.
 - Type: decision
 - Area: docs
 - Priority: P0
 - Risk: R3
 - Owner: `@geoffrey-xiao`
-- Reviewer: `@geoffrey-xiao` for planning-ticket oversight only, by explicit owner direction; not independent architecture/security approval
+- Reviewer: `@geoffreyxiaoai` (independent architecture/security reviewer); review of this post-#412 OpenAPI/security candidate is pending
 - Dependencies: V05-001; V05-000 / #387
 
 ## Value
@@ -26,19 +26,19 @@ No HTTP handler, listener, API client, browser fetch implementation, generated r
 
 ## Inputs, outputs, and failure behavior
 
-Inputs: accepted UX resource/state map, `API-DESIGN.md`, architecture, security/error requirements, and current versioned report contracts. Outputs: approved-ready OpenAPI 3.1 source/examples, decision record for unresolved local listener controls, and an endpoint/error/failure traceability table. Malformed, unknown, oversized, stale, unauthorized-origin, unavailable-store, corrupt-record, timeout, and cancellation outcomes remain explicit; they never become empty successful data. If a decision conflicts with existing report/CLI meaning, preserve the current meaning and record the unresolved compatibility decision.
+Inputs: UX resource/state proposal, `API-DESIGN.md`, architecture, security/error requirements, and current versioned report contracts. Outputs: review-ready OpenAPI 3.1 source/examples, explicit candidate listener/security decisions, and endpoint/error/failure traceability. Owner and independent reviewer must accept the exact projection/API decisions before the contract is frozen; no runtime implementation is authorized here. Malformed, unknown, oversized, stale, unauthorized-origin, unavailable-store, corrupt-record, timeout, and cancellation outcomes remain explicit; they never become empty successful data. If a decision conflicts with existing report/CLI meaning, preserve the current meaning and record the unresolved compatibility decision.
 
 ## Required verification and evidence
 
-Validate OpenAPI syntax and examples against the selected validator; crosswalk status/error codes and schema versions; map each operation to an accepted UI workflow and security case; document bounds and safe diagnostics. No runtime test is implied by this design issue.
+Validate OpenAPI syntax and examples against the selected validator; crosswalk status/error codes and schema versions; map each operation to a UX workflow and security case; document bounds and safe diagnostics. This verifies the review candidate only; no runtime test is implied by this design issue.
 
 ## Acceptance criteria
 
 - Every endpoint maps to a UX need and has request/response schemas, bounds, error mappings, and examples in OpenAPI 3.1.
 - Bind address, port conflict, origin/Host, DNS-rebinding, CORS/CSRF/auth, lifecycle, shutdown, and redaction decisions have explicit evidence and failure behavior.
-- Only approved read operations are specified; no arbitrary SQL, filesystem path, or process operation is exposed.
+- The candidate surface contains only the five read operations; no arbitrary SQL, filesystem path, or process operation is exposed.
 - Existing report completeness, operation outcome, CLI output, and error meanings remain compatible unless separately approved.
-- Independent security review and runtime authorization remain outstanding until the v0.5 Definition of Ready passes.
+- Independent security review and owner acceptance of this exact contract remain outstanding; runtime authorization and implementation issue creation remain gated on the complete current Definition of Ready.
 
 ## Source-report validation blocker
 

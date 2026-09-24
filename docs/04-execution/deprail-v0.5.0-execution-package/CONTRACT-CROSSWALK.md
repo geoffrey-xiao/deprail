@@ -38,19 +38,19 @@ The per-requirement verification IDs are defined in [`requirements/TEST-STRATEGY
 
 ## Remaining decisions and approval gates
 
-ADR-0004's original schema-v1 and lifecycle proposal was owner-approved and merged in PR #407. Source-report validation exposed a conflict with its raw `report_json` assumption; the owner then selected the independent history-projection direction recorded in ADR-0004's additive section. The amended exact projection and all remaining lifecycle choices are still Proposed pending independent architecture/security review, numeric bounds, and retention-risk disposition.
+ADR-0004's original schema-v1 and lifecycle proposal was owner-approved and merged in PR #407. Source-report validation exposed a conflict with its raw `report_json` assumption; the owner then selected the independent history-projection direction recorded in ADR-0004's additive section. The exact allowlist, safe-diagnostic mapping, storage lifecycle, numeric bounds, and retention-risk disposition remain proposed.
 
-**Owner-selected direction, exact contract not accepted:** [ADR-0004's additive finding and direction](../../adr/ADR-0004-local-scan-history.md#owner-selected-direction-independent-history-projection-not-accepted) show why existing `ScanReport` cannot be stored unchanged as a schema-valid privacy-safe v1alpha document. A separate allowlisted `history-v1` projection, distinct from SQLite schema v1, source report v1alpha, and `/api/v1`, leaves CLI JSON unchanged. The candidate storage layout, read projection, error mapping and future evidence matrix now reflect that decision; owner sign-off on exact fields, safe diagnostics, unknown-data policy and independent review are still needed before OpenAPI acceptance or implementation issues. A merged planning PR is not evidence of implementation readiness.
+**Owner-selected direction, exact contract not accepted:** [ADR-0004's additive finding and direction](../../adr/ADR-0004-local-scan-history.md#owner-selected-direction-independent-history-projection-not-accepted) keeps existing `ScanReport`/CLI serialization unchanged and proposes a separate allowlisted `history-v1` projection. The candidate storage layout, read projection, error mapping, and evidence matrix reflect that direction; exact field and unknown-data rules still need review before API schema acceptance or implementation.
 
-1. Approve or revise exact `history-v1` field mapping/validation and the candidate history-capture trigger and CLI compatibility behavior, including projection/persistence-failure and exit-code precedence.
+The owner recorded separate approval of the then-current package and the independent reviewer explicitly approved [PR #412](https://github.com/geoffrey-xiao/deprail/pull/412), whose review covered the full v0.5 package and DoR. That approval predates this OpenAPI artifact and local security profile; it is not acceptance of the newly added API details. The owner selected completing #396 before implementation-issue creation. No runtime work or implementation issue is authorized by this contract draft.
+
+1. Approve or revise exact `history-v1` field mapping/validation, safe diagnostics, unknown-data policy, and the candidate history-capture trigger/CLI compatibility behavior, including projection/persistence-failure and exit-code precedence.
 2. Select evidence-backed per-entry, response, and store bounds, or explicitly accept unbounded growth; record disk-full refusal behavior.
-3. Complete and validate the exact OpenAPI resource fields, pagination/cursor behavior, error mapping, version policy, and numeric request/response limits.
-4. Review local listener bind/port/lifetime, Host/Origin/CORS/CSRF/authentication, and shutdown behavior.
+3. Independently review the candidate [`OpenAPI 3.1 artifact`](../../../schemas/openapi/v1/openapi.yaml), including exact projection fields, pagination/cursors, error/status mapping, version policy, and numeric request/response limits. Offline structural/example/size checks are evidence, not acceptance.
+4. Review local listener bind/port/lifetime, Host/Origin/CORS/CSRF/authentication/token transfer, and shutdown behavior; explicitly disposition transient browser/OS token-fragment exposure.
 5. Select the shadcn/ui-compatible component/dependency strategy and freeze supported browser/OS/accessibility combinations.
-6. Name the independent architecture/security reviewer and record their approval separately from owner approval.
-7. Disposition each #356 follow-up with owner, target, and evidence; no item is inferred complete.
 
-No implementation issue map is authorized until these decisions and the complete Definition of Ready have linked evidence and separate reviewer/owner approval. Refer to the release plan for the design-first sequence.
+No implementation issue map is authorized until the remaining decisions, the complete Definition of Ready, and separate owner/reviewer approvals for the current contract version have linked evidence. Refer to the release plan for the design-first sequence.
 
 ## Conditional delivery trace
 

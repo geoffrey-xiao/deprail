@@ -15,7 +15,7 @@
 | Project view | [Release · v0.5.0](https://github.com/orgs/geoffrey-xiao/projects/1/views/6) |
 | Execution package | [`deprail-v0.5.0-execution-package/README.md`](../04-execution/deprail-v0.5.0-execution-package/README.md) |
 | Owner | `@geoffrey-xiao` |
-| Independent reviewer | To be named; required before Definition of Ready approval |
+| Independent reviewer | [`@geoffreyxiaoai`](https://github.com/geoffreyxiaoai), owner-designated; approved the then-current package in [PR #412](https://github.com/geoffrey-xiao/deprail/pull/412). Contract changes added after that review, including the current OpenAPI/security candidate, still require review before their DoR gates pass. |
 
 This is a release planning baseline, not an implementation authorization. Proposed scope and design decisions remain subject to owner and independent architecture/security review. Do not create implementation issues or start runtime work until the gates in this plan are accepted and the execution package is complete.
 
@@ -187,7 +187,7 @@ Runtime implementation remains blocked until all items below are linked with evi
 - [ ] This plan reconciled with product, architecture, roadmap, and v0.4 predecessor evidence.
 - [ ] Every #356 carry-forward item is explicitly accepted, assigned, or deferred by the owner; no pending item is implied complete.
 - [ ] Owner confirms included/excluded capabilities, compatibility boundary, failure model, preview mode, and acceptance gate.
-- [ ] Independent architecture/security reviewer is named and records review separately from owner acceptance.
+- [ ] Independent architecture/security reviewer is named and records a separate decision on the exact current contract version; prior package approval does not accept later contract changes.
 - [ ] UX package meets the design acceptance section and records shadcn/ui/library decisions.
 - [ ] API/OpenAPI and local API security contracts meet the API acceptance section.
 - [ ] SQLite/data lifecycle ADR and migration/failure contracts are reviewed.

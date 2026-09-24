@@ -97,7 +97,7 @@ Text labels and aria status announcements convey state. Color alone is never suf
 
 ### API response-to-state map (proposal)
 
-The endpoint names and error codes below are candidates from `API-DESIGN.md` and `requirements/ERROR-MODEL.md`. HTTP status mapping and wire schemas remain unapproved; this map defines the intended user-visible distinction, not a frozen transport contract.
+The OpenAPI candidate and error codes are documented in `API-DESIGN.md` and `requirements/ERROR-MODEL.md`. The map below defines the intended user-visible distinction; neither the wire contract nor these states have been accepted for implementation.
 
 | Response or condition | Required UI state and behavior |
 | --- | --- |
@@ -116,15 +116,19 @@ The endpoint names and error codes below are candidates from `API-DESIGN.md` and
 | `HISTORY_UNAVAILABLE` | Store-unavailable state; explain that history could not be read and offer only safe read retry. |
 | `HISTORY_SCHEMA_UNSUPPORTED`, `HISTORY_MIGRATION_FAILED`, or `HISTORY_CORRUPT` | Compatibility/recovery state; preserve existing data and do not suggest reset or deletion. |
 | `HISTORY_ENTRY_NOT_FOUND` | Stale-selection state with a visible return-to-history link; do not substitute another entry. |
-| `HISTORY_ARTIFACT_MISSING` or `HISTORY_ARTIFACT_DIGEST_MISMATCH` | Keep trustworthy metadata if permitted, disclose unavailable/unverified evidence, and never substitute an empty artifact or report. |
-| `API_REQUEST_INVALID`, `API_REQUEST_TOO_LARGE`, `API_VERSION_UNSUPPORTED`, `API_METHOD_UNSUPPORTED`, or `API_ORIGIN_REJECTED` | Explicit safe request/compatibility error; never render empty history or child data. |
+| Artifact integrity `missing`, `digest_mismatch`, or `unavailable` | Keep trustworthy metadata, disclose unavailable/unverified evidence, and never substitute an empty artifact or report. |
+| `API_REQUEST_INVALID`, `API_VERSION_UNSUPPORTED`, `API_METHOD_UNSUPPORTED`, or `API_ORIGIN_REJECTED` | Explicit safe request/compatibility error; never render empty history or child data. A prohibited request body is an invalid request, not a 413 case. |
+| Transport-level 414/431 | Show a safe request-size failure if the client exposes the response; preserve other loaded data and do not substitute empty history. Parser-level responses may have no API JSON envelope. |
+| `API_AUTH_UNAUTHORIZED` | Show a safe authentication/recovery state and keep history distinct from empty. Do not retry automatically; if the in-memory token was lost on reload, instruct the user to reopen the console from the active local CLI session. |
 | `API_TIMEOUT` or `API_CANCELLED` on a read | End the affected loading state with a request-level message. Do not rewrite saved operation outcome or report completeness. |
 | `API_RESPONSE_TOO_LARGE` | Show an explicit response-limit error for the affected collection; never truncate into success or replace the result with an empty state. |
+| `API_BUSY` | Keep the affected collection in an explicit temporary-error state; offer only a user-triggered retry, with no automatic retry loop. |
+| `API_INTERNAL_ERROR` | Show a generic operation failure and retain other trustworthy loaded data; never expose internal details or render empty success. |
 | `API_ROUTE_NOT_FOUND` | Keep an unknown API route distinct from empty history and a known route with an unsupported method. |
 | `API_LISTENER_UNAVAILABLE` | Startup failure occurs before the browser surface is available; provide safe CLI startup guidance and keep existing CLI use independent. |
 | `HISTORY_WRITE_FAILED` | Not reachable through the proposed read-only API. If explicit CLI capture is separately approved, report the persistence error on stderr and preserve the scan result; do not imply a browser write control. |
 
-The screen presents `operationOutcome` (`completed|failed|cancelled`) and, when a report exists, `reportStatus` (`complete|partial|failed`) as independent values. Candidate codes do not replace the approved error contract, and an error response is never treated as a successful empty page.
+The screen presents `operationOutcome` (`completed|failed|cancelled`) and, when a report exists, `reportStatus` (`complete|partial|failed`) as independent values. Candidate API errors do not replace established scan error contracts, and an error response is never treated as a successful empty page.
 
 ## 6. Component and implementation direction (proposal; not approved)
 

@@ -11,4 +11,4 @@ These local planning contracts map to GitHub issues. All new issues belong benea
 | V05-004 | [#393](https://github.com/geoffrey-xiao/deprail/issues/393) | EPIC-001 / #390 | V05-001 through V05-003 | Complete cross-cutting security, failure, compatibility, and test contracts |
 | V05-005 | [#392](https://github.com/geoffrey-xiao/deprail/issues/392) | EPIC-001 / #390 | V05-000 through V05-004 | Assemble the execution package and readiness map; no implementation issue before DoR |
 
-The existing #356 predecessor follow-ups remain separately tracked there by owner direction. The planning-ticket reviewer exception is limited to creating/tracking these design tasks; it does not satisfy the independent-review gate or authorize implementation.
+The five #356 predecessor follow-ups remain historically documented; ADR-0005 supersedes and owner-dispositions the external-review item, while the other four technical follow-ups remain open. External review is optional and is not a runtime or release readiness dependency; owner technical decisions, evidence, and runtime readiness remain required.

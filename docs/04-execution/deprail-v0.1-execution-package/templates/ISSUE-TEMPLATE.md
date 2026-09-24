@@ -1,6 +1,6 @@
 # {{ID}} {{Title}}
 
-<!-- Verify labels, milestone, Project fields, owner/reviewer, dependencies, and Definition of Ready before implementation. See the v0.2 WORKFLOW-GUIDE.md. -->
+<!-- Verify labels, milestone, Project fields, owner reviewer, dependencies, and Definition of Ready before implementation. See the v0.2 WORKFLOW-GUIDE.md. -->
 ## Planning metadata
 
 - Type: `bug` / `feature` / `test` / `docs` / `decision`
@@ -11,7 +11,7 @@
 - Milestone:
 - Sprint:
 - Owner:
-- Reviewer:
+- Reviewer: `@geoffrey-xiao` by default; external review is optional
 - Dependencies: `None` or issue links
 - Blocked reason: `None` unless Project Status is `Blocked`
 
@@ -22,7 +22,7 @@
 - [ ] Inputs, outputs, and failure behavior are defined.
 - [ ] Required tests or smoke scenarios are named.
 - [ ] Acceptance criteria are observable.
-- [ ] Owner and reviewer are assigned.
+- [ ] Owner reviewer is assigned; external reviewer is optional.
 - [ ] Dependencies and target version are recorded.
 
 ## Goal
@@ -41,7 +41,7 @@
 - [ ] Failure and incomplete-result behavior is defined.
 - [ ] Documentation and evidence requirements are identified.
 
-## Human Review
+## Owner Review
 
 ## Evidence Required
 
@@ -52,6 +52,6 @@
 
 - [ ] Owner reviewed every acceptance criterion during PR review.
 - [ ] Required verification and CI results were reviewed.
-- [ ] Human review and remaining risk are recorded.
+- [ ] Owner review and remaining risk are recorded.
 - [ ] Evidence links are attached.
-- [ ] PR review and merge evidence are linked.
+- [ ] Owner review and merge evidence are linked.

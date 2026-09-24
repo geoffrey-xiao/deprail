@@ -43,12 +43,12 @@ Historical plans MUST remain preserved. Do not silently rewrite a prior plan to 
 
 Before starting a new Sprint or version stage such as v0.1, first establish the GitHub tracking set:
 
-1. Confirm the stage, Sprint, scope, dependencies, acceptance evidence, risk, and named reviewer from the reconciled release plan and execution package.
+1. Confirm the stage, Sprint, scope, dependencies, acceptance evidence, risk, and owner decision-maker from the reconciled release plan and execution package. External reviewers are optional under [ADR-0005](docs/adr/ADR-0005-solo-owner-review-policy.md).
 2. Verify that the corresponding GitHub milestone, Project fields, labels, and views exist; create or update them from `tracking/GITHUB-PROJECT-SETUP.md`.
 3. Check GitHub for existing issues before creating anything. Do not create duplicates.
 4. Map each local `EPIC-*` to its GitHub tracking item and each implementation-ready file under `docs/.../issues/` to one GitHub Issue. Import `tracking/issue-backlog.csv` and copy the authoritative issue body when an issue is absent.
 5. Record the GitHub Issue or Project URL/number in the local evidence or tracking record, and preserve the local Markdown as the durable contract.
-6. Do not start implementation until the issue is assigned to the correct milestone/Sprint and satisfies Definition of Ready: value, scope, dependencies, contracts, failure behavior, acceptance tests, risk, reviewer, and evidence are explicit.
+6. Do not start implementation until the issue is assigned to the correct milestone/Sprint and satisfies Definition of Ready: value, scope, dependencies, contracts, failure behavior, acceptance tests, risk, owner reviewer, and evidence are explicit.
 
 At stage kickoff, reconcile the GitHub state with the local roadmap, release plan, epics, issue backlog, Sprint checklist, and Master Checklist. GitHub is the workflow and review source of truth; repository documents remain the durable contract.
 ## Ad hoc GitHub issue tracking
@@ -56,13 +56,13 @@ At stage kickoff, reconcile the GitHub state with the local roadmap, release pla
 When the user asks to create a GitHub issue that is not directly generated from a documented epic or issue backlog item:
 
 1. Check for an existing issue and avoid duplicates.
-2. Create the issue with the current release version, owner, reviewer, scope, acceptance criteria, evidence requirements, and explicit exclusions.
+2. Create the issue with the current release version, owner, owner reviewer (default: `@geoffrey-xiao`), scope, acceptance criteria, evidence requirements, and explicit exclusions. External reviewers are optional.
 3. Unless the user explicitly says otherwise, assign the issue to the current release milestone (for example, `v0.2.0`).
-4. Unless the user explicitly says otherwise, add the issue to the active DepRail GitHub Project and set its Project status to the appropriate workflow state, normally `Todo` for newly created work or `Review` for evidence awaiting human review.
+4. Unless the user explicitly says otherwise, add the issue to the active DepRail Project and set its Project status to the appropriate workflow state, normally `Todo` for newly created work or `Review` for evidence awaiting owner review.
 5. Link the issue from related PRs with `Refs #N`; use `Closes #N` only after the owner confirms every acceptance criterion.
 6. Record the issue URL/number in the durable local document or retrospective that motivated it.
 
-An ad hoc issue is still subject to the same Definition of Ready, review, evidence, and owner-acceptance rules as an epic-derived issue.
+An ad hoc GitHub issue is subject to the same Definition of Ready, owner review, evidence, and owner-acceptance rules as an epic-derived issue. Independent review is optional.
 
 ## Project identity and scope
 
@@ -121,7 +121,7 @@ Domain packages must not import Cobra, SQL, or scanner-specific types. Entry poi
 - Repository-relative paths use `/` in serialized output.
 - Preserve scanner/database/tool provenance and raw artifact digests.
 - Unknown data is preserved when safe; it must not become confidence or a safe result.
-- Schema, CLI, error, adapter, or storage contract changes require explicit human approval and compatibility evidence.
+- Schema, CLI, error, adapter, or storage contract changes require explicit owner approval and compatibility evidence.
 
 ### Completeness and failure
 
@@ -144,7 +144,7 @@ Treat repository files, manifests, paths, symlinks, scanner output, and network 
 - Write atomically with restrictive permissions; never overwrite unless the contract permits it.
 - Redact tokens, credential-bearing URLs, user information in credentials, and sensitive environment values.
 - Do not upload source or log secrets.
-- Read-only agent capabilities are the default. Any future mutation, publishing, or PR creation requires an independent permission scope, plan/dry-run output, exact commands/files, and verification evidence.
+- Read-only agent capabilities are the default. Any future mutation, publishing, or PR creation requires an explicit least-privilege permission scope granted by the owner, a plan/dry-run output, exact commands/files, and verification evidence; a second-person authorization is not required.
 
 ## CLI and I/O conventions
 
@@ -164,6 +164,10 @@ After the plan, implement only the stated scope. If investigation changes the pl
 
 Every implementation item should deliver code, tests, documentation, and evidence together. Use the issue format in `templates/ISSUE-TEMPLATE.md` and the PR format in `templates/PULL-REQUEST-TEMPLATE.md`. Record architectural decisions using `templates/ADR-TEMPLATE.md`.
 
+### Solo-owner review policy
+
+DepRail is a single-owner project. `@geoffrey-xiao` is the sole required human reviewer and approver; independent or collaborator review is optional and cannot block work. The owner records contract, security/architecture, Definition of Ready, and release decisions as applicable; the same owner may perform these reviews while keeping the evidence items distinct. See [ADR-0005](docs/adr/ADR-0005-solo-owner-review-policy.md). Automated checks, required technical evidence, and explicit residual-risk records remain mandatory.
+
 ### Branch and merge policy
 
 - Keep `main` releasable and do not develop directly on it.
@@ -179,9 +183,9 @@ Every implementation item should deliver code, tests, documentation, and evidenc
 - Never push new commits to a branch after its pull request has merged. Create a new branch and pull request for every follow-up change.
 - Push the branch and open a pull request linked to the issue; do not push implementation commits directly to `main`.
 - Keep one primary outcome per pull request. Include scope, risk, contract impact, verification results, evidence, and rollback notes.
-- Merge only after required CI and human review pass. Use a squash merge tied to the issue ID, then delete the branch.
+- Merge only after required CI, owner review, acceptance evidence, and any required risk disposition pass. Use a squash merge tied to the issue ID, then delete the branch.
 - Agents MUST NOT merge or auto-merge pull requests on the owner's behalf. Merge requires explicit owner authorization in the current conversation.
-- Emergency security changes may use an expedited path, but still require a linked issue, review, verification, and a follow-up record.
+- Emergency security changes may use an expedited path, but still require a linked issue, owner review, verification, and a follow-up record.
 
 ### Commit and pull request traceability
 
@@ -196,7 +200,7 @@ Every implementation item should deliver code, tests, documentation, and evidenc
 - Squash commit titles must contain the GitHub issue reference, such as `(#27)`.
 - Every pull request must link its issue with `Closes #N` or `Refs #N`.
 - Every pull request must carry matching `area`, `risk`, `priority`, and `type` labels from the project label set.
-- Before requesting review, agents must check that the pull request has the required labels and issue link.
+- Before marking a PR ready for owner review, verify the required labels and issue link.
 - A missing issue reference or required label is a process defect; fix it before review or merge rather than deferring it.
 
 ### Project status synchronization
@@ -205,8 +209,8 @@ GitHub does not currently move DepRail Project items automatically when a pull r
 
 - When implementation starts, add the issue to the `DepRail` project if absent and set Project Status to `In Progress`.
 - Immediately after opening the pull request, set the linked issue's Project Status to `Review`.
-- Before requesting review, verify the issue link, labels, project membership, and Project Status with `gh`.
-- During PR review, the owner reviews the acceptance criteria and required evidence. After the reviewed PR merges and required CI/evidence pass, the agent or maintainer may set Project Status to `Done`; no separate post-merge owner-acceptance step is required.
+- Before owner review, verify the issue link, labels, project membership, and Project Status with `gh`.
+- The owner reviews the acceptance criteria and required evidence. After the owner-reviewed PR merges and required CI/evidence pass, the agent or maintainer may set Project Status to `Done`; no separate post-merge owner-acceptance step is required.
 - If project-write permission is unavailable, report the exact missing permission and leave the issue status unchanged; never claim synchronization occurred.
 
 Resolve the project, item, Status field, and option IDs from the live project rather than hard-coding environment-specific IDs:
@@ -241,11 +245,11 @@ Before starting development for a new product-version line such as `0.2.0`, agen
 
 ### Issue lifecycle and closure
 
-- Before starting a new issue, check the previous issue and pull request. Remind the project owner to close the previous issue if its acceptance, verification, review, and evidence are complete.
+- Before starting a new issue, check the previous issue and pull request. Remind the project owner to close the previous issue if its acceptance, verification, owner review, and evidence are complete.
 - Do not silently abandon or leave completed issues open. If the prior issue is incomplete, state the missing acceptance item and keep it open or mark it blocked with an owner and reason.
-- When an issue is finished, prepare a completion report that identifies each acceptance item, required command, CI result, human review result, evidence link, and remaining risk. Record owner review from the PR when applicable.
-- The project owner must inspect and check every acceptance item during PR review. An agent may move the Project item to `Done` after the reviewed PR merges and required verification/evidence are complete; do not claim completion before those conditions.
-- The project owner may close issues manually after the reviewed PR merges and the required evidence is attached. A merged PR without review, CI, or required evidence does not prove completion.
+- When an issue is finished, prepare a completion report that identifies each acceptance item, required command, CI result, owner review result, evidence link, and remaining risk. Record owner review from the PR when applicable.
+- The project owner must inspect and check every acceptance item during PR review. An agent may move the Project item to `Done` after the owner-reviewed PR merges and required verification/evidence are complete; do not claim completion before those conditions.
+- The project owner may close issues manually after the owner-reviewed PR merges and the required evidence is attached. A merged PR without owner review, CI, or required evidence does not prove completion.
 - Link a merged pull request with a closing keyword where appropriate, and update the local checklist only with linked evidence and the completed review record.
 
 Respect the execution controls:
@@ -253,13 +257,13 @@ Respect the execution controls:
 - At most two implementation issues and two review PRs are active.
 - Never parallelize two R3 items.
 - One issue has one primary outcome.
-- Keep generated or golden-file changes explained and human-reviewed.
+- Keep generated or golden-file changes explained and owner-reviewed.
 - Do not alter `tracking/MASTER-CHECKLIST.md` until acceptance has linked evidence.
-- Human review is mandatory for schemas, permissions, compatibility, external-process behavior, network/file writes, migrations, credentials, publishing, and broad golden updates.
+- Owner review is mandatory for schemas, permissions, compatibility, external-process behavior, network/file writes, migrations, credentials, publishing, and broad golden updates; a second reviewer is optional.
 
 ### Release evidence
 
-Release approval MUST include evidence from the actual reviewed binary and a real representative repository workflow, not unit tests alone. Record exact commands, exit codes, artifact paths, platform, binary identity, repository-tree comparison, and remaining risks in the applicable release-evidence record. Use the reusable [`docs/RELEASE-CHECKLIST.md`](docs/RELEASE-CHECKLIST.md) together with the release-specific manual procedure; for v0.3, see [`docs/04-execution/deprail-v0.3-execution-package/MANUAL-TEST-GUIDE.md`](docs/04-execution/deprail-v0.3-execution-package/MANUAL-TEST-GUIDE.md).
+Release approval MUST include evidence from the actual owner-reviewed binary and a real representative repository workflow, not unit tests alone. Record exact commands, exit codes, artifact paths, platform, binary identity, repository-tree comparison, and remaining risks in the applicable release-evidence record. Use the reusable [`docs/RELEASE-CHECKLIST.md`](docs/RELEASE-CHECKLIST.md) together with the release-specific manual procedure; for v0.3, see [`docs/04-execution/deprail-v0.3-execution-package/MANUAL-TEST-GUIDE.md`](docs/04-execution/deprail-v0.3-execution-package/MANUAL-TEST-GUIDE.md).
 Every release MUST complete or explicitly disposition the applicable rows in [`docs/RELEASE-CHECKLIST.md`](docs/RELEASE-CHECKLIST.md) before publication. The completed version-specific evidence record is the durable record of those decisions.
 ### Post-release retrospective
 
@@ -268,7 +272,7 @@ After every preview, release candidate, or stable release:
 1. Create a version-specific retrospective under `docs/retrospectives/` using the naming pattern `RETROSPECTIVE-v<version>.md`.
 2. Record delivered capabilities, release and evidence outcomes, what went well, mistakes with impact/root cause/correction/prevention, security and supply-chain lessons, process improvements, remaining risks, and follow-up actions.
 3. Link the retrospective from the release issue and release evidence record.
-4. Keep owner acceptance and security/architecture review as separate checklist items.
+4. Record owner acceptance and the owner's security/architecture review as distinct checklist items; one person may complete both.
 5. Do not mark the retrospective complete until follow-up actions are tracked as issues or explicitly accepted.
 
 Historical retrospectives MUST remain unchanged after acceptance; corrections require an additive follow-up record.
@@ -318,4 +322,4 @@ Do not begin web, team services, autonomous writes, or agent mutation features b
 
 ## Completion and reporting
 
-A change is complete only when its observable behavior, failure behavior, tests, documentation, contracts, and evidence are complete; local and CI verification agree; and human review records the decision and remaining risk. Reports must name changed behavior and files, commands actually run and their results, contract decisions, security/compatibility impact, remaining limitations, and any required human review. Never claim an unrun test, command, or manual validation passed.
+A change is complete only when its observable behavior, failure behavior, tests, documentation, contracts, and evidence are complete; local and CI verification agree; and owner review records the decision and remaining risk. Reports must name changed behavior and files, commands actually run and their results, contract decisions, security/compatibility impact, remaining limitations, and any required owner review. Never claim an unrun test, command, or manual validation passed.

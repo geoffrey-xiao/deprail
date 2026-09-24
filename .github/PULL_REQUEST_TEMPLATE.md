@@ -1,7 +1,7 @@
 <!--
 Complete every section, remove guidance that does not apply, and report only checks
-that were actually run. Before requesting review, verify the Issue link, labels,
-and Project status.
+that were actually run. Before marking ready for owner review, verify the issue link,
+labels, and Project status.
 -->
 
 ## Summary
@@ -79,10 +79,10 @@ Refs #N
 - [ ] Updated tests and documentation where applicable.
 - [ ] Explained generated or golden-file changes.
 
-## Human Review Focus
+## Owner Review Focus
 
-- Reviewer focus:
-- Decisions requiring human approval: None / Describe the decision
+- Owner review focus:
+- Decisions requiring owner approval: None / Describe the decision
 
 ## Rollback
 

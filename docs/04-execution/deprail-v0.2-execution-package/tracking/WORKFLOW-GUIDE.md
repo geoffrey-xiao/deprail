@@ -6,7 +6,7 @@ This guide prevents metadata validation failures and keeps issue, PR, and Projec
 
 Use the applicable template under `.github/ISSUE_TEMPLATE/`. Before creating the issue, complete:
 
-- Planning metadata: type, area, priority, risk, target version, milestone, sprint, owner, reviewer, dependencies.
+- Planning metadata: type, area, priority, risk, target version, milestone, sprint, owner, owner reviewer (defaults to `@geoffrey-xiao`), dependencies.
 - Definition of Ready.
 - Goal, scope, exclusions, inputs, outputs, and failure behavior.
 - Required tests or smoke scenarios.
@@ -77,7 +77,7 @@ At minimum set:
 Status: Todo
 Target Version: 0.2.0
 Milestone: v0.2.0
-Priority, Risk, Area, Sprint, Owner, Reviewer, Dependencies
+Priority, Risk, Area, Sprint, Owner, Owner Reviewer, Dependencies
 ```
 
 Verify the item after editing:
@@ -103,7 +103,7 @@ gh project item-list <project-number> \
   --format json
 ```
 
-Verify the item reports `In Progress` before creating the branch. After the PR opens, the required next transition is `Review`; the issue is not closed until the reviewed PR merges and evidence is complete.
+Verify the item reports `In Progress` before creating the branch. After the PR opens, the required next transition is `Review`; the issue is not closed until the owner-reviewed PR merges and evidence is complete.
 
 
 ## 5. Verify and prepare the PR
@@ -117,7 +117,7 @@ The review must cover:
 - path containment, subprocess, file-write, credential, and permission risks;
 - focused tests, cross-platform evidence, documentation, issue link, labels, and rollback.
 
-Human review remains required after the PR opens. Schema, external-process, file-write, permission, credential, migration, compatibility, and publishing changes require the named human reviewer from the execution package.
+Owner review remains required after the PR opens. Schema, external-process, file-write, permission, credential, migration, compatibility, and publishing changes require owner inspection and recorded evidence. External reviewers are optional; see [ADR-0005](../../../adr/ADR-0005-solo-owner-review-policy.md).
 
 ## 6. Prepare and create the PR
 
@@ -169,7 +169,7 @@ After the PR opens, locate the linked issue’s Project item and set Status to `
 
 Do not claim synchronization if the token lacks Project write permission.
 
-## 8. Run checks before requesting review
+## 8. Run checks before owner review
 
 ```bash
 gh pr checks <pr-number> --repo geoffrey-xiao/deprail
@@ -195,4 +195,4 @@ During PR review, the owner reviews acceptance criteria, evidence, compatibility
 
 A `Refs #N` relationship does not provide the same automatic closure behavior.
 
-Release retrospectives are required for preview, release-candidate, and stable releases. Keep owner acceptance and security/architecture review separate, and do not mark the retrospective complete until follow-up actions are tracked or explicitly accepted.
+Release retrospectives are required for preview, release-candidate, and stable releases. Record owner acceptance and security/architecture assessment as distinct evidence items; the same owner may provide both. Do not mark the retrospective complete until follow-up actions are tracked or explicitly accepted.

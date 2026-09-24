@@ -12,7 +12,7 @@ This checklist is a release gate. It does not replace the version-specific devel
 - [ ] Release manifest matches the intended version.
 - [ ] The release tag is new and will be immutable.
 - [ ] DepRail CLI identity will match the version, tag, and source commit.
-- [ ] Release owner and named reviewer are recorded.
+- [ ] Release owner and owner-review record are identified; external reviewer is optional.
 
 ## Plan and scope completion
 
@@ -34,7 +34,7 @@ This checklist is a release gate. It does not replace the version-specific devel
 - [ ] Path containment and symlink boundaries are tested.
 - [ ] External-process, timeout, cancellation, and output-limit behavior is tested where applicable.
 - [ ] Network, package-script, credential, and file-write boundaries are documented.
-- [ ] Security/architecture review is assigned for schema, compatibility, process, file-write, credential, publishing, and release changes.
+- [ ] Owner security/architecture review and risk disposition are recorded for schema, compatibility, process, file-write, credential, publishing, and release changes.
 
 ## Automated and manual verification
 
@@ -81,9 +81,9 @@ This checklist is a release gate. It does not replace the version-specific devel
 - [ ] The version-specific retrospective is created under `docs/retrospectives/`.
 - [ ] The retrospective is linked from the release issue and release evidence record.
 - [ ] Retrospective follow-up actions have owners and acceptance evidence.
-- [ ] Owner acceptance and security/architecture review are recorded separately.
+- [ ] Owner acceptance and the owner's security/architecture review are recorded separately; one person may complete both.
 - [ ] The GitHub Project status reflects the actual release state.
-- [ ] The release issue is closed only after required evidence and review are complete.
+- [ ] The release issue is closed only after required evidence and owner review are complete.
 
 ## Evidence record
 
@@ -91,8 +91,7 @@ The completed release record must link, at minimum:
 
 - source commit, manifest value, and immutable tag;
 - development plan and master checklist status;
-- issue, PR, CI, and reviewer links;
-- exact verification commands and exit codes;
+- issue, PR, CI, and owner-review links;
 - platform matrix and smoke output;
 - artifact names, sizes, and SHA-256 checksums;
 - scanner/toolchain versions and representative scans;
@@ -113,4 +112,4 @@ A release candidate requires disposition of known preview defects, complete arti
 
 ### Stable
 
-A stable release requires complete checklist evidence, reviewed artifacts, platform smoke results, representative scans, security/architecture review, and an explicit owner go/no-go decision.
+A stable release requires complete checklist evidence, owner-reviewed artifacts, platform smoke results, representative scans, owner security/architecture assessment, and an explicit owner go/no-go decision.

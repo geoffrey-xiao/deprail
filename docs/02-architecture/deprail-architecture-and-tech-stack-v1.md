@@ -266,7 +266,7 @@ Create ADRs for the Go core, external-process adapter model, stable identifiers,
 - Supported OSV-Scanner range is pinned.
 - Fixtures cover npm, Python, Java, and a mixed monorepo.
 - CI commands work locally and in GitHub Actions.
-- High-risk operations have named human reviewers.
+- High-risk operations have an owner reviewer; independent review is optional.
 
 ## 20. v0.1 Definition of Done
 

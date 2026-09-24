@@ -3,13 +3,13 @@
 
 - Epic: [EPIC-001 / #390](https://github.com/geoffrey-xiao/deprail/issues/390)
 - Target: `v0.5.0`
-- Status: GitHub issue #396 was closed by PR #414, then reopened; Project status is Review. The owner merged the five schema/security corrections, but PR #414 has no independent human APPROVED review (only Codex COMMENTED). The exact current API contract and full v0.5 DoR remain blocked on that review.
+- Status: Issue #396 is open in Project Review after PR #414 accidentally closed it. The owner merged the five schema/security corrections; no independent APPROVED review is recorded, and ADR-0005 makes it optional. Remaining API design decisions and the technical v0.5 DoR remain open.
 - Type: decision
 - Area: docs
 - Priority: P0
 - Risk: R3
 - Owner: `@geoffrey-xiao`
-- Reviewer: `@geoffreyxiaoai` (independent architecture/security reviewer) approved the earlier package in PR #412; the direct review request for the later PR #414 candidate remains unanswered. Formal assignment failed with HTTP 422 because the account is not a repository collaborator.
+- Reviewer: `@geoffrey-xiao` (owner); independent review is optional under [ADR-0005](../../../adr/ADR-0005-solo-owner-review-policy.md).
 - Dependencies: V05-001; V05-000 / #387
 
 ## Value
@@ -26,7 +26,7 @@ No HTTP handler, listener, API client, browser fetch implementation, generated r
 
 ## Inputs, outputs, and failure behavior
 
-Inputs: UX resource/state proposal, `API-DESIGN.md`, architecture, security/error requirements, and current versioned report contracts. Outputs: review-ready OpenAPI 3.1 source/examples, explicit candidate listener/security decisions, and endpoint/error/failure traceability. Owner and independent reviewer must accept the exact projection/API decisions before the contract is frozen; no runtime implementation is authorized here. Malformed, unknown, oversized, stale, unauthorized-origin, unavailable-store, corrupt-record, timeout, and cancellation outcomes remain explicit; they never become empty successful data. If a decision conflicts with existing report/CLI meaning, preserve the current meaning and record the unresolved compatibility decision.
+Inputs: UX resource/state proposal, `API-DESIGN.md`, architecture, security/error requirements, and current versioned report contracts. Outputs: owner-reviewed OpenAPI 3.1 source/examples, explicit candidate listener/security decisions, and endpoint/error/failure traceability. The owner must accept the exact projection/API decisions before the contract is frozen; external review is optional under ADR-0005. Malformed, unknown, oversized, stale, unauthorized-origin, unavailable-store, corrupt-record, timeout, and cancellation outcomes remain explicit; they never become empty successful data. If a decision conflicts with existing report/CLI meaning, preserve the current meaning and record the unresolved compatibility decision.
 
 ## Required verification and evidence
 
@@ -38,8 +38,8 @@ Validate OpenAPI syntax and examples against the selected validator; crosswalk s
 - Bind address, port conflict, origin/Host, DNS-rebinding, CORS/CSRF/auth, lifecycle, shutdown, and redaction decisions have explicit evidence and failure behavior.
 - The candidate surface contains only the five read operations; no arbitrary SQL, filesystem path, or process operation is exposed.
 - Existing report completeness, operation outcome, CLI output, and error meanings remain compatible unless separately approved.
-- PR #414's owner merge accepts its correction patch; independent security review of the exact current API/security candidate is not recorded. The current-version review and complete Definition of Ready still gate implementation issue creation and runtime authorization.
+- PR #414's owner merge accepts its correction patch; external security review is optional under ADR-0005. The owner’s current-version technical decisions and the complete Definition of Ready still gate implementation issue creation and runtime authorization.
 
 ## Source-report validation blocker
 
-The proposed persisted `report_json` cannot be treated as unchanged, schema-validated v1alpha scan data: [`app.ScanReport`](../../../../internal/app/scan.go) contains an absolute repository root and `adapter.Finding`/string-error shapes that differ from [`deprail.schema.json`](../../../../schemas/v1alpha/deprail.schema.json). The owner selected the [separate `history-v1` projection direction in ADR-0004](../../../adr/ADR-0004-local-scan-history.md#owner-selected-direction-independent-history-projection-not-accepted), leaving existing CLI JSON unchanged. #396 still cannot freeze `HistoryEntryDetail`, child-collection schemas or examples until exact allowlisted fields, unknown/safe-diagnostic handling, row/API mapping and independent review are accepted. Do not embed an unvalidated raw scan or expose the host path as an OpenAPI shortcut; an invalid/unsafe selected save is a typed persistence failure, not empty success. This direction does not authorize runtime work or reverse #391's closure.
+The proposed persisted `report_json` cannot be treated as unchanged, schema-validated v1alpha scan data: [`app.ScanReport`](../../../../internal/app/scan.go) contains an absolute repository root and `adapter.Finding`/string-error shapes that differ from [`deprail.schema.json`](../../../../schemas/v1alpha/deprail.schema.json). The owner selected the [separate `history-v1` projection direction in ADR-0004](../../../adr/ADR-0004-local-scan-history.md#owner-selected-direction-independent-history-projection-not-accepted), leaving existing CLI JSON unchanged. #396 still cannot freeze `HistoryEntryDetail`, child-collection schemas or examples until exact allowlisted fields, unknown/safe-diagnostic handling, row/API mapping, and owner acceptance are complete. Do not embed an unvalidated raw scan or expose the host path as an OpenAPI shortcut; an invalid/unsafe selected save is a typed persistence failure, not empty success. This direction does not authorize runtime work or reverse #391's closure.

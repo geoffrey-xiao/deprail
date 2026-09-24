@@ -3,13 +3,13 @@
 
 - Epic: [EPIC-001 / #390](https://github.com/geoffrey-xiao/deprail/issues/390)
 - Target: `v0.5.0`
-- Status: Closed in GitHub after design PRs [#398](https://github.com/geoffrey-xiao/deprail/pull/398), [#399](https://github.com/geoffrey-xiao/deprail/pull/399), [#400](https://github.com/geoffrey-xiao/deprail/pull/400), [#401](https://github.com/geoffrey-xiao/deprail/pull/401), [#402](https://github.com/geoffrey-xiao/deprail/pull/402), and [#403](https://github.com/geoffrey-xiao/deprail/pull/403); owner selected About/local-data help, but independent UX/security review, component/dependency decisions, and v0.5 DoR remain outstanding.
+- Status: Closed in GitHub after design PRs [#398](https://github.com/geoffrey-xiao/deprail/pull/398), [#399](https://github.com/geoffrey-xiao/deprail/pull/399), [#400](https://github.com/geoffrey-xiao/deprail/pull/400), [#401](https://github.com/geoffrey-xiao/deprail/pull/401), [#402](https://github.com/geoffrey-xiao/deprail/pull/402), and [#403](https://github.com/geoffrey-xiao/deprail/pull/403); owner selected About/local-data help; independent UX/security review was not recorded and is optional under ADR-0005, while component/dependency decisions, browser evidence, and v0.5 DoR remain open.
 - Type: docs
 - Area: docs
 - Priority: P0
 - Risk: R2
 - Owner: `@geoffrey-xiao`
-- Reviewer: `@geoffrey-xiao` for planning-ticket oversight only, by explicit owner direction; not independent UX/security approval
+- Reviewer: `@geoffrey-xiao` (owner); external review is optional under [ADR-0005](../../../adr/ADR-0005-solo-owner-review-policy.md).
 - Dependencies: V05-000 / #387
 
 ## Value
@@ -26,7 +26,7 @@ No React implementation, component installation, generated source, API/schema ch
 
 ## Inputs, outputs, and failure behavior
 
-Inputs: PRD, architecture, UX draft, FR-501–FR-511, API/error proposals, and privacy/security constraints. Outputs: reviewed-workflow-ready design evidence linked from `UX-DESIGN.md`. Ambiguous API or persistence behavior is recorded as a dependency/open question, not invented in the mockup. Design examples distinguish empty history from unavailable/corrupt data and preserve cancellation separately from report completeness.
+Inputs: PRD, architecture, UX draft, FR-501–FR-511, API/error proposals, and privacy/security constraints. Outputs: owner-reviewed design evidence linked from `UX-DESIGN.md`. Ambiguous API or persistence behavior is recorded as a dependency/open question, not invented in the mockup. Design examples distinguish empty history from unavailable/corrupt data and preserve cancellation separately from report completeness.
 
 ## Required verification and evidence
 
@@ -41,4 +41,4 @@ Attach workflow assumptions, history/detail/empty/error wireframes or prototype,
 - Operation outcome and report completeness are visually and semantically distinct; partial/cancelled reports are never shown as clean completed runs.
 - Keyboard, focus, screen-reader, contrast, narrow viewport, reduced-motion, and hostile-text acceptance is observable.
 - The chosen UI primitives, dependencies, code ownership, and build direction are recorded without implying a dependency is already approved for runtime use.
-- Independent review and runtime authorization remain outstanding until the v0.5 Definition of Ready passes.
+- Owner acceptance and browser/accessibility evidence remain required before runtime work; external UX/security review is optional under ADR-0005.

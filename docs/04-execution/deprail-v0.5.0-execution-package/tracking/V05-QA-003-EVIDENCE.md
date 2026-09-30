@@ -65,3 +65,11 @@ Implementation and actual helper/targeted/full evidence are delivered for #432. 
 The owner can record the timeout readiness gate's resolution after reviewing this correction and its exact local/CI outcomes. That decision is distinct from starting any H05 issue, which still requires its own DoR, dependencies and reviewed-main synchronization. No history/UI feature, release approval, automatic merge or owner disposition is inferred from the local pass. Original uncertainty and failed runs remain linked permanently.
 
 Rollback: a reviewed revert restores the cold-copy fixture sensitivity without altering production/user data; preserve the evidence and reopen the relevant readiness gate rather than conceal the failure.
+
+## Additive owner-reviewed completion
+
+Three-platform [CI run 36725991235](https://github.com/geoffrey-xiao/deprail/actions/runs/36725991235) passed on tested head `b6a96ee34b1053b1c860fa9bf22dad17d19c741b`: Ubuntu 26s, macOS 1m5s, Windows 1m40s. Owner-merged [PR #433](https://github.com/geoffrey-xiao/deprail/pull/433) produced reviewed-main `6c74cf9861981928c29f7a8cb09799e63f3fd6dd`.
+
+[Owner acceptance](https://github.com/geoffrey-xiao/deprail/issues/432#issuecomment-5913275072) records the explicit “确认验收并完成关联” decision: all acceptance criteria confirmed, technical acceptance and separate security/architecture assessment recorded, remaining macOS cold-start cause uncertainty accepted. No native APPROVED review is invented. API readback verified #432 closed, Project Done, and native Linked pull requests contains #433. The accidentally introduced custom card-link display and repeated links on nine Todo items were removed; no browser inspection was performed.
+
+Earlier pending language describes review submission. This completion resolves QA, not a blanket runtime or release authorization. The later [H05-001 kickoff](https://github.com/geoffrey-xiao/deprail/issues/420#issuecomment-5913450360) separately records owner “可以 继续吧”, checked DoR and a branch from synchronized reviewed-main. Historical failed checks and unproven OS root cause remain unchanged.

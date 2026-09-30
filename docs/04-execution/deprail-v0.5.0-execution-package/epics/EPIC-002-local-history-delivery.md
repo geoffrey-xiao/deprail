@@ -107,3 +107,9 @@ Stop/withdraw the optional console/capture paths without altering default scanni
 ## Darwin fixture readiness follow-up
 
 Owner-merged capture fix PR #431 is included in the baseline for [V05-QA-003 / #432](../issues/V05-QA-003-darwin-helper-fixture.md). This follow-up changes only the darwin test helper to reference the already active test image; all production behavior, Linux/Windows copying, deadlines and assertions remain. Corrected-baseline targeted/full checks are recorded in its evidence; owner review/merge and the explicit runtime-start decision still precede H05 kickoff. Closed #419/#430 and Sprint assignment do not alone authorize feature code.
+
+## H05-001 runtime-start decision
+
+The earlier pending QA language records the publication and correction-review stages. [#432 owner acceptance](https://github.com/geoffrey-xiao/deprail/issues/432#issuecomment-5913275072), owner-merged [PR #433](https://github.com/geoffrey-xiao/deprail/pull/433), successful local verification and exact-head three-platform CI resolve the bounded QA correction gate; original failed runs and macOS root-cause uncertainty remain preserved.
+
+Owner “可以 继续吧” separately authorizes only [H05-001 / #420](../issues/H05-001-safe-history-projection.md), with its checked DoR, Sprint 4, Project In Progress and synchronized reviewed-main `6c74cf9`. [Kickoff decision](https://github.com/geoffrey-xiao/deprail/issues/420#issuecomment-5913450360) records the pure projection/validation, privacy/boundary tests and real scan-input smoke scope. No storage, API, UI, dependency introduction, other H05 implementation, merge or release is authorized. Epic acceptance stays unchecked until its complete integrated evidence exists.

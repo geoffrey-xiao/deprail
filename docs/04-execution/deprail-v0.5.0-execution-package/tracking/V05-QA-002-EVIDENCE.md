@@ -99,3 +99,11 @@ Code/regression/smoke evidence is delivered for #430; technical review, separate
 This correction bounds retained stream bytes, not all child resources or exact allocator capacity. Existing fixed-size pipe-copy buffers/allocator slack remain. Process-tree termination timing and error precedence are unchanged; no redesign is implied. Windows/Linux actual execution is still represented only by the eventual CI jobs, not local runtime.
 
 The original helper timeout requires its own bounded correction or explicit owner pre-start disposition. H05 #420–#427 stay unstarted until this capture correction is reviewed/merged and existing readiness gates are explicitly satisfied. This evidence creates no new release approval or automatic merge permission. Rollback would restore the vulnerability; preserve the failing regression and block dependent runtime starts rather than treating rollback as safe readiness.
+
+## Owner security/architecture decision — 2026-10-01
+
+The owner separately accepted the security/architecture assessment of merged [PR #431](https://github.com/geoffrey-xiao/deprail/pull/431) in the current conversation. The correction prevents `io.Copy`'s promoted `ReadFrom` fast path from bypassing the bounded writer, while preserving per-stream caps, existing output-limit classification, deadlines and cancellation. Real-child stdout/stderr tests cover below/at/over-cap and large single/chunked writes; runner and ordinary/noisy/race CLI smoke plus exact-head three-OS CI are linked above.
+
+Accepted residual risk: retained byte counts are bounded; total child CPU/output and allocator-capacity overhead are not. This separate assessment does not resolve the copied-helper timing uncertainty or authorize H05 runtime by itself; #419 remains the global gate.
+
+Durable owner record: [#430 comment](https://github.com/geoffrey-xiao/deprail/issues/430#issuecomment-5921486377).

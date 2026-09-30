@@ -54,11 +54,11 @@ Input: unchanged process.Request with positive output cap, explicit argument arr
 
 ## Acceptance Criteria
 
-- [ ] Real stdout/stderr captures retain exact deterministic prefixes of at most OutputCap bytes for all oversized/chunked cases.
-- [ ] Promoted fast-path root cause is supported by actual pre-fix observation; same consumer regression fails before and passes after the correction.
-- [ ] Below-cap output and current conservative at-cap/error precedence are preserved; no deadline, retry, API or error-code change.
-- [ ] Actual runner/CLI smoke, targeted/full verification and three-OS CI outcomes are separately linked accurately, including any original unresolved local timeout.
-- [ ] Owner performs technical and separate security/architecture review of the correction and records the remaining runtime-start gate; no H05 readiness inferred from this issue's creation.
+- [x] Real stdout/stderr captures retain exact deterministic prefixes of at most OutputCap bytes for all oversized/chunked cases.
+- [x] Promoted fast-path root cause is supported by actual pre-fix observation; same consumer regression fails before and passes after the correction.
+- [x] Below-cap output and current conservative at-cap/error precedence are preserved; no deadline, retry, API or error-code change.
+- [x] Actual runner/CLI smoke, targeted/full verification and three-OS CI outcomes are separately linked accurately, including any original unresolved local timeout.
+- [x] Owner performs technical and separate security/architecture review of the correction and records the remaining runtime-start gate; no H05 readiness inferred from this issue's creation.
 
 ## Owner Review
 
@@ -74,11 +74,11 @@ Revert the correction only through a reviewed change, retaining the vulnerabilit
 
 ## Final Acceptance
 
-- [ ] Owner reviewed each acceptance criterion.
-- [ ] Required local/CI results and remaining risk were reviewed.
-- [ ] Separate owner security/architecture decision is recorded.
-- [ ] Evidence and owner-reviewed merge are linked.
-- [ ] Runtime-start disposition is explicit; unrelated #419 diagnostic acceptance is not substituted.
+- [x] Owner reviewed each acceptance criterion.
+- [x] Required local/CI results and remaining risk were reviewed.
+- [x] Separate owner security/architecture decision is recorded.
+- [x] Evidence and owner-reviewed merge are linked.
+- [x] Runtime-start disposition is explicit; unrelated #419 diagnostic acceptance is not substituted.
 
 ## Contract links
 
@@ -87,3 +87,9 @@ Revert the correction only through a reviewed change, retaining the vulnerabilit
 ## Correction evidence
 
 [Actual before/after and runner/CLI evidence](../tracking/V05-QA-002-EVIDENCE.md) confirms the copy fast-path cause, six failing-before cases and ten passing-after boundaries, seven real-runner scenarios and ordinary/noisy/race-instrumented CLI behavior. Local `make verify` still exits 2 on the unchanged copied-helper timeout; no retry or helper fix is included. Owner review, separate security/architecture decision and merge remain pending. This correction does not authorize H05 runtime kickoff.
+
+## Additive owner security/architecture decision — 2026-10-01
+
+The owner separately accepted the security/architecture assessment of owner-merged [PR #431](https://github.com/geoffrey-xiao/deprail/pull/431) in the current conversation. The fix removes anonymous `*bytes.Buffer` embedding so `io.Copy` cannot select a promoted `ReadFrom` fast path around the bounded `Write`; it preserves the existing byte cap, error classification, deadlines, cancellation and APIs. Real-child tests exercise stdout and stderr at below/at/over cap and large single/chunked writes; actual runner, normal/noisy CLI and race-instrumented CLI smoke are linked above. Exact-head three-OS CI passed.
+
+Accepted residual risk: this bounds retained stream bytes, not total child CPU/output or allocator capacity; the pre-existing helper startup uncertainty is separate and remains under #419. The separate owner decision does not itself authorize H05 runtime work. The global start gate remains tracked in #419.

@@ -8,9 +8,9 @@ info:
     Candidate contract for v0.5 review. This API is served by the same local
     process and origin as the embedded console. Every API operation requires
     the process-scoped bearer credential described in API-DESIGN.md. This
-    contract is not approved for runtime implementation until the owner and
-    independent architecture/security reviewer accept the v0.5 Definition of
-    Ready.
+    contract is not approved for runtime implementation until the owner accepts
+    the complete technical Definition of Ready. External architecture/security
+    review is optional under ADR-0005.
 servers:
   - url: /
     description: Same-origin base URL selected by the local console process.
@@ -33,6 +33,7 @@ x-deprail-runtime-profile:
   defaultPageSize: 25
   maximumPageSize: 50
   maximumCursorBytes: 512
+  paginationByteBudget: whole-records-including-envelope-and-cursor
   notes:
     - These are candidate bounds, not accepted limits; payload and platform evidence remains required before implementation.
     - No handler may truncate a response into an apparent success.
@@ -369,7 +370,7 @@ components:
       name: pageSize
       in: query
       required: false
-      description: Requested page size. The default and maximum are provisional runtime bounds.
+      description: Requested item ceiling, not a guaranteed count. Whole-record pages may contain fewer items to remain within the serialized response byte cap; nextCursor retains all remaining items.
       schema:
         type: integer
         minimum: 1
@@ -801,7 +802,7 @@ components:
       minLength: 1
       maxLength: 512
       pattern: '^[A-Za-z0-9_-]+$'
-      description: Null indicates the end of this collection.
+      description: Null indicates the end of this collection. For a byte-limited short page, a non-null cursor advances from the last emitted record without skipping remaining records.
     HistoryEntryDetail:
       type: object
       additionalProperties: false

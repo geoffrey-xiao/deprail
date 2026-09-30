@@ -118,6 +118,11 @@ The owner accepted these high-level directions as the v0.5 design baseline on 20
 
 **Owner direction accepted; technical DoR incomplete.** The directions above do not close #387, #393, #396, or #356 and do not authorize implementation issues. Exact contracts and the listed design-stage evidence remain required; actual runtime/security/platform verification remains a release acceptance gate. External review is optional under [ADR-0005](../../adr/ADR-0005-solo-owner-review-policy.md).
 
+The assistant's [detailed engineering selections](../../adr/ADR-0004-local-scan-history.md#detailed-engineering-selections-for-owner-review) now choose a CGo-free driver candidate, 2-second busy timeout, 16 MiB entry budget, 1,000-entry/256 MiB logical projection quota, byte-aware paging and the existing memory-only fragment bootstrap. These are concrete recommendations for exact-contract reconciliation and owner review, not owner acceptance, dependency installation or measured runtime capacity. The logical quota does not cap WAL, backups, indexes or external artifacts. Earlier “remaining choice” cells above describe the preceding direction-only stage; use the ADR addendum for selected recommendations and outstanding evidence.
+
+Runtime, browser, recovery and platform checks remain post-implementation acceptance requirements. Planning readiness requires their scenarios and failure contracts to be specified, not falsely reported as already executed.
+
+
 ## Runtime work remains gated by technical readiness
 
 The owner authorized planning-task creation in [#392](https://github.com/geoffrey-xiao/deprail/issues/392#issuecomment-5807906998), and the independent reviewer approved the earlier package in PR #412; both are historical facts, not current contract acceptance. PR #414 was merged by the owner without an independent APPROVED review; that review is optional under ADR-0005. Do not begin runtime work until the remaining technical decisions, linked evidence, and owner acceptance of the complete DoR are recorded.

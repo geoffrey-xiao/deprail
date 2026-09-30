@@ -46,21 +46,21 @@ The Go domain remains free of Cobra, HTTP framework, SQLite/SQL, and scanner-spe
 
 ## 3. Proposed request and data flow
 
-1. User starts the approved local-console entry point (command and browser-open behavior not yet selected).
-2. The application chooses a canonical local data root and initializes/validates the history schema using the reviewed migration policy.
+1. User starts proposed foreground `deprail web`; explicit `--open` or interactive Enter controls browser launch as specified in API-DESIGN §11.
+2. The application resolves the canonical data root and validates existing history read-only. Missing storage is empty without file creation; console/query paths never initialize, migrate or repair the database. Only explicit CLI capture initializes a fresh store or applies an approved future migration.
 3. API requests are bounded, parsed, and translated into application queries; no query parameter becomes a path or SQL fragment.
 4. History adapter returns a unique history entry, its source `ScanReport.ScanID`, an operation outcome, unchanged report completeness when a report exists, and stable artifact references; the application verifies applicable integrity/provenance contracts.
 5. Transport returns a bounded response that keeps operation outcome (`completed|failed|cancelled`) distinct from report completeness (`complete|partial|failed`).
 6. The browser presents cancellation or fatal operation failure as the top-level outcome; it never treats a report's retained completeness as proof the operation completed.
 7. Shutdown stops accepting new requests, drains/cancels bounded work, closes storage cleanly, and reports lifecycle errors without exposing credentials.
 
-Whether scans are automatically recorded, how existing reports enter history, and how the console is started are unresolved product/architecture decisions. Do not implement implicit recording or start a background server until approved.
+Recording is explicitly opt-in through `scan --save-history`; no import, implicit capture, browser-triggered scan or background server. Proposed `deprail web` startup/launch behavior is detailed in API-DESIGN §11; owner acceptance remains required.
 
 ## 4. Persistence proposal (unapproved)
 
 The owner-selected, unapproved v1 schema candidate uses one `history_entries` row per explicitly selected operation, an independently versioned allowlisted `history-v1` projection (not raw v1alpha project/report snapshots), denormalized list summaries, and separate artifact-digest references; raw content-addressed artifacts remain external. The source `ScanReport`/CLI JSON and remediation inputs remain unchanged. See the [revised schema contract](requirements/FAILURE-AND-DATA-CONTRACT.md#4-proposed-persisted-schema-v1-unapproved) and [ADR-0004 addendum](../../adr/ADR-0004-local-scan-history.md#owner-selected-direction-independent-history-projection-not-accepted). Public API responses are a further reviewed projection, never the stored blob.
 
-Proposed [ADR-0004](../../adr/ADR-0004-local-scan-history.md) recommends a per-user data root, owner-only permissions, WAL with one serialized writer, transactional history/reference writes, forward-only `user_version` migrations, validated pre-migration backups, no automatic retention/deletion, and explicit persistence failures separate from scan outcomes. These are draft recommendations, not approved implementation requirements. Numeric payload/store bounds, busy timeout, driver/build strategy, and cross-platform recovery evidence remain open. No destructive migration, replacement, network sync, or implicit retention limit is approved.
+Proposed [ADR-0004](../../adr/ADR-0004-local-scan-history.md) selects a per-user private data root, WAL, one serialized writer, atomic history/reference transactions, forward-only versioning, validated pre-migration backups and no automatic deletion. Its detailed engineering addendum selects driver, numeric limits and admission refusal; runtime locking, disk-full and cross-platform recovery evidence follows implementation. These are concrete proposals, not approved runtime requirements.
 
 ## 5. Local HTTP trust boundary (unapproved)
 
@@ -72,7 +72,7 @@ The API contract must define address/port selection, port conflict behavior, lif
 
 React, TypeScript, and Vite follow the architecture baseline. The user asks for a shadcn/ui style; the owner must choose actual primitives/components and tokens. Build output is static and embedded into the binary using the repository's approved mechanism. The runtime must serve only compiled embedded assets, enforce SPA fallback only for known routes, and never join untrusted URL paths to the host filesystem. Asset version must be compatible with the API contract. Missing/invalid assets are an explicit startup or serving failure, not a blank success page.
 
-Frontend toolchain pinning, lockfile policy, supply-chain review, code generation/ownership, bundle size and binary impact remain open decisions for the execution package.
+Frontend pins, ownership, embedding and budgets are selected in §10 and the compatibility matrix. Supply-chain review, build measurements and actual browser/platform verification remain delivery gates, not alternative design choices.
 
 ## 7. Cross-cutting invariants
 
@@ -101,3 +101,19 @@ Storage unavailable, migration rejected, database corrupt/locked/full, artifact 
 - Platform matrix, bundle/startup budgets, supported browser versions, and release smoke.
 
 Resolve material changes through an ADR/versioned plan decision, not an implementation shortcut.
+
+## 10. Selected engineering contract (owner review; no runtime authorization)
+
+The UI is project-owned React/TypeScript/Vite with semantic HTML/CSS and inline SVG; no shadcn source or third-party component/font/icon runtime dependencies. Source and lockfile belong in `web/`; generated output belongs only in `web/dist`. The Go package defined by `web/assets.go` owns `//go:embed dist`, keeping embedding within its directory boundary. No runtime filesystem fallback, arbitrary path joining, or catch-all SPA fallback. Static allowlist: `/console/`, `/console/history`, `/console/scans/{historyEntryID}` (canonical UUIDv4), `/console/about`, and declared hashed embedded assets; unknown paths 404. API routing is separate.
+
+Exact selected frontend review candidates: Node `22.23.3`; npm `10.9.9`; React/React DOM `19.1.1`; TypeScript `5.9.2`; Vite `7.3.6`; `@vitejs/plugin-react` `5.0.2`; `@types/react` `19.1.10`, `@types/react-dom` `19.1.7`, `@types/node` `22.18.1`. No frontend pins are installed in this repository. Registry source: `https://registry.npmjs.org/{package}/{version}`. Isolated script-free lock resolution/audit rejected Vite `7.1.4` with known high-severity advisories and reported zero vulnerabilities for the amended `7.3.6` dependency set. Node/npm patch selections come from registry metadata, not exercised build versions. Expected licenses are MIT except TypeScript Apache-2.0; complete resolved license/SBOM/provenance, tarball-integrity and pinned-toolchain build evidence remains required. Audit is time-specific advisory evidence, not proof of safety or a frontend build.
+
+Budgets are policy, not benchmark: gzip JS ≤250 KiB, CSS ≤50 KiB, total embedded UI ≤1 MiB, frontend build ≤60s, asset-attributable binary growth ≤1 MiB compared against same Go/toolchain build without embedded frontend, and listener-ready ≤2s on recorded reference runner. Also report total binary delta including driver/runtime separately; no blanket 1MiB cap on SQLite driver growth.
+
+Shared application services own explicit CLI capture and history query/privacy projection. HTTP/UI is read-only and invokes query services only; it never invokes capture, owns domain rules, SQL or persistence access. Only storage adapter owns SQL. Artifact absence/unverifiable digest is visibly unavailable/integrity failure; do not persist absolute root, expose raw errors or unknown fields.
+
+Offline recovery: stop the affected binary. Preserve DB, matching `-wal`/`-shm`, and artifacts together; copy byte-for-byte to a separate recovery location and record SHA-256 hashes, retaining originals. Never reset, delete, repair in place, downgrade, or overwrite source files. Open recovery copies read-only for `PRAGMA quick_check` and schema-version inspection using SQLite tooling; record output. Unsupported future version is refused without writes. Restore only a previously validated backup to a new separate location by explicit operator action; verify quick_check, supported schema and artifact digests on that copy before deliberate switch. If no validated backup exists, retain all files and escalate; no network or destructive command is part of recovery.
+
+Reuse release targets in `.github/workflows/release.yml`: linux/amd64, darwin/amd64, darwin/arm64, windows/amd64. UI support policy: current stable Chrome + NVDA on Windows, Safari + VoiceOver on macOS, Firefox + Orca on Linux. Record exact OS/browser/AT versions actually exercised per run; do not infer installed versions or claim platform passes.
+
+Future release gates: locked reproducible build, dependency/license/SBOM review, budgets/embed integrity, four-target startup/API/static allowlist smoke, API/UI skew refusal, schema downgrade refusal, offline DB/WAL/SHM recovery rehearsal, artifact unavailability without absolute-root leakage, actual browser/AT keyboard/contrast/responsive evidence. Not executed by this planning contract.

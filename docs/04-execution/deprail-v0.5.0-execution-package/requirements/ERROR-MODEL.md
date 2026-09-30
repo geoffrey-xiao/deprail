@@ -111,3 +111,37 @@ These mappings connect consumer-visible behavior to the planned scenario IDs in 
 | `API_LISTENER_UNAVAILABLE` | Safe startup failure with no public-bind fallback; existing CLI remains usable. | `FR-505`, `SEC-11` |
 
 Existing v0.1/v0.2 scan codes, CLI exit meanings, report schemas, and artifact identities remain unchanged. New history/API codes and any CLI persistence exit behavior require a separate owner decision before they become stable.
+
+## 7. Detailed history diagnostic and failure contract
+
+The stable scan error codes and meanings from v0.1/v0.2 remain unchanged. The history/API codes and HTTP mappings above are the selected detailed proposal; they do not change OpenAPI or claim owner acceptance. `HISTORY_WRITE_FAILED` covers refusal before storage (unsafe projection, unknown required source data, missing/duplicate identity, invalid path/digest, size/quota admission) as well as atomic commit failure. `HISTORY_CORRUPT` is malformed/inconsistent data at the supported history projection version; a syntactically valid but unsupported future projection is `HISTORY_SCHEMA_UNSUPPORTED`. A missing trustworthy report is represented as null, not an error or empty success.
+
+### Safe scan-boundary diagnostic allowlist
+
+`ScanReport.Errors` is arbitrary text and MUST NOT be parsed or persisted. Emit diagnostics only from observed typed boundaries; use the static message paired with each code by `schemas/history-v1/history.schema.json`. Diagnostic `scope` is `repository` or `workspace`; `workspace_id` is null exactly for repository scope and required for workspace scope.
+
+| Source boundary | Code | Static message |
+| --- | --- | --- |
+| `Discover` error | `DISCOVERY_FAILED` | `Workspace discovery failed.` |
+| Graph diagnostic `DISCOVERY_INCOMPLETE` | `DISCOVERY_INCOMPLETE` | `Workspace discovery is incomplete.` |
+| Graph diagnostic `MANIFEST_INVALID` | `MANIFEST_INVALID` | `A workspace manifest is invalid.` |
+| Walker diagnostic `WALK_ENTRY_FAILED` | `WALK_ENTRY_FAILED` | `A repository entry could not be inspected.` |
+| Walker diagnostic `PATH_OUTSIDE_ROOT` | `PATH_OUTSIDE_ROOT` | `A path resolves outside the repository.` |
+| Walker diagnostic `SYMLINK_SKIPPED` | `SYMLINK_SKIPPED` | `A symlink was not traversed.` |
+| scan-plan validation / `adapter.ErrInvalidPlan` | `CONFIG_INVALID` | `The scan configuration is invalid.` |
+| `adapter.ErrUnsupportedTarget` | `SCANNER_VERSION_UNSUPPORTED` | `The scanner version is unsupported.` |
+| Execute `adapter.ErrScannerNotFound` / `ErrExecution` / `ErrTimeout` / `ErrOutputLimit` / `ErrInvalidOutput` | respectively `SCANNER_NOT_FOUND` / `SCANNER_EXIT_NONZERO` / `SCANNER_TIMEOUT` / `SCANNER_OUTPUT_LIMIT` / `SCANNER_OUTPUT_INVALID` | `The scanner executable is unavailable.` / `The scanner exited unsuccessfully.` / `The scanner timed out.` / `Scanner output exceeded its limit.` / `Scanner output is invalid.` |
+| Artifact store `Put` error | `ARTIFACT_STORE_FAILED` | `Scanner evidence could not be stored.` |
+| scanner Parse `adapter.ErrInvalidOutput` | `SCANNER_OUTPUT_INVALID` | `Scanner output is invalid.` |
+| scanner Normalize error | `FINDING_NORMALIZATION_FAILED` | `Findings could not be normalized.` |
+| `NormalizeComponent` rejects a finding | `COMPONENT_IDENTITY_INVALID` | `A finding lacked safe component identity.` |
+| typed cancellation observed at scan boundary | `CANCELLED` | `The scan operation was cancelled.` |
+
+For graph diagnostics, use workspace scope only if a validated containing workspace supplies its ID; repository walker diagnostics without a known workspace identity use repository scope. Copy neither source diagnostic message nor path. Unknown/unclassified boundary failures have no safe representation and make selected capture fail as `HISTORY_WRITE_FAILED`; do not invent scanner provenance. Diagnostics sort by `(scope, workspace_id-or-empty, code)`. Source report version must be supported `v1alpha`; unknown versions refuse capture rather than relabeling.
+
+Capture runs independently of canceled scan context under a fresh 3-second overall persistence context; SQLite busy timeout is at most 2 seconds. Capture cancellation/timeout aborts and rolls back the row and all refs, reporting `HISTORY_WRITE_FAILED`, while preserving scan operation outcome and report. A requested save failure is separate. Existing scan JSON on stdout remains unchanged; `--save-history` emits safe failure on stderr and exits 6 only when scan otherwise succeeded. Existing scan failure/cancellation exit takes precedence. No flag means no capture.
+
+## 8. Detailed crosswalk scenarios
+
+Reject absolute/traversal paths, missing display/component identity, version, workspace identity or TargetID, duplicate stable key, malformed/unsorted digest set, row/projection mismatch, unsupported source schema, or unclassified source condition; produce no row/ref or saved claim. Verify typed scanner timeout preserves `SCANNER_TIMEOUT` with its fixed message; symlink/walk diagnostics retain allowlisted codes without source paths; capture lock timeout after scan cancellation leaves a canceled scan and unchanged previous history. These are planned acceptance scenarios, not runtime test results.
+

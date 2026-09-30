@@ -9,16 +9,41 @@ Make saved local scan results easy to find and trustworthy to interpret. The con
 
 ## 2. Visual direction
 
-User preference: shadcn/ui style. Proposed characteristics, pending owner design review:
+User preference: shadcn/ui visual language. Selected implementation: a project-owned semantic HTML/CSS layer; no shadcn/ui source, component library, icon/font package, CDN, remote font, analytics, or UI runtime dependency.
 
-- Quiet neutral surfaces with semantic accent colors, subtle borders, restrained shadows, clear typography, consistent spacing, and dense but readable tables/cards.
-- Composable, accessible controls rather than bespoke interactions; visual consistency across history, scan detail, dialogs, and banners.
-- Use semantic tokens for background, foreground, border, muted, primary, destructive, warning, success, and focus-ring states. Exact palette, font, icon set, radius, and spacing scale remain to be selected.
+- Quiet neutral surfaces with semantic accents, subtle borders, restrained shadows, clear typography, and dense but readable tables/cards.
+- Status always has text/shape as well as color; critical states remain legible in monochrome and high-contrast modes.
+- Narrow layouts preserve identity/completeness; secondary provenance may be progressively disclosed but never omitted.
+
+### Frozen visual tokens (proposed)
+
+| Token | Value | Use |
+| --- | --- | --- |
+| `--color-page` | `#FFFFFF` | Main surface |
+| `--color-surface` | `#F8FAFC` | Cards |
+| `--color-text` | `#172033` | Body |
+| `--color-muted` | `#475569` | Secondary text |
+| `--color-border` | `#CBD5E1` | Decorative separators only; not a sole meaningful control boundary |
+| `--color-primary` | `#1D4ED8` | Links/actions |
+| `--color-danger` | `#B91C1C` | Error |
+| `--color-warning` | `#854D0E` | Warning |
+| `--color-success` | `#166534` | Success |
+| `--color-focus` | `#1D4ED8` | Focus |
+| `--color-control-border` | `#64748B` | Meaningful control boundaries (≥3:1 against both declared surfaces) |
+| Spacing | `4, 8, 12, 16, 24, 32, 48px` | 4px base |
+| Radius | `4px`, `8px` | Controls/cards |
+| Font | `system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif` | System only |
+
+Focus is a solid `3px` outline offset `2px`, never removed. Breakpoints: narrow `0–639px`, medium `640–1023px`, wide `≥1024px`; content max width `1200px`, gutter `16px` narrow / `24px` wide. At 320 CSS px and 200% zoom no page-level horizontal scroll. Contrast targets (not claimed checked): WCAG 2.2 AA ≥4.5:1 normal text, ≥3:1 large text and meaningful UI/focus boundaries; measure every shipped state including hover/disabled/error.
 - Status communicates through text/icon/shape as well as color. Critical state remains legible in monochrome and high-contrast modes.
 - Mobile/narrow desktop layout preserves identity and completeness first; secondary provenance is progressively disclosed without being dropped.
 
-This brief does not select package versions, copy generated components, or approve a dependency. The design gate must compare using shadcn/ui source components, compatible accessible primitives, or a small project-owned layer against React/Vite embedding, license, maintenance, build, and accessibility needs.
+This brief selects a project-owned layer, no copied components or UI dependencies. Exact toolchain, ownership and build decisions are specified in §6.
 
+
+Static allowlist routes are `/console/`, `/console/history`, `/console/scans/{historyEntryID}` (canonical UUIDv4), `/console/about`; only declared hashed embedded assets are additionally served. `/console/` opens history. Unknown static paths return 404; API paths are dispatched separately and never receive SPA fallback.
+
+The project-owned expandable table is not selected; history is a paginated list. Existing proposal artifacts are synthetic, not API acceptance.
 ### Draft visual proposal (unapproved)
 
 PNG previews and editable SVG sources:
@@ -31,11 +56,11 @@ PNG previews and editable SVG sources:
 - Scan detail outcome/report variants: [`scan-detail-statuses.png`](design/ux/scan-detail-statuses.png) ([SVG](design/ux/scan-detail-statuses.svg)).
 - About / local-data help: [`about-local-data.png`](design/ux/about-local-data.png) ([SVG](design/ux/about-local-data.svg)).
 
-These are proposal artifacts, not accepted schemas or implementation authorization. All names, IDs, counts, timestamps, and finding examples are synthetic. Routes, exact response fields, ordering, page size, pagination behavior, finding-detail depth, and component dependencies remain open for the API/UX review.
+These proposal artifacts contain synthetic names, IDs, counts, timestamps and finding examples, not implementation evidence. The current proposed route/field/order/paging/component contract is defined below and in API-DESIGN; older rendered mockups do not override it.
 
-- Proposed client navigation: `/history` and `/history/{historyEntryID}`; both routes are directly addressable. This does not define an API route.
+- Selected client navigation: `/console/history` and `/console/scans/{historyEntryID}`; both routes are directly addressable within the static allowlist. This does not add an API route.
 - From a history row/card, open its detail route as an in-app history entry; browser Back returns to the originating history list, and Forward restores detail if the entry is still available.
-- When `/history/{historyEntryID}` is opened directly or in a new tab, browser Back retains normal browser behavior and may leave the console. The visible `Back to scan history` link is always available as the in-app fallback. A missing or stale entry shows the not-found state with that link; do not invent an in-app history entry for direct navigation.
+- When `/console/scans/{historyEntryID}` is opened directly or in a new tab, browser Back retains normal browser behavior and may leave the console. The visible `Back to scan history` link is always available as the in-app fallback. A missing or stale entry shows the not-found state with that link; do not invent an in-app history entry for direct navigation.
 - Restoring the list's exact page, cursor, or filter selection remains deferred until the API pagination and URL-state contracts are approved; these are client routes, not API routes.
 - A project-level expandable table was considered but deferred for v0.5. It could help users browse repeated scans per repository, but FR-502 and the proposed `GET /api/v1/scans` page scan entries; no stable project-group identity or bounded group/child-pagination contract is approved. Grouping risks splitting a project’s scans across pages and adds nested-table keyboard/screen-reader complexity. Revisit only with user evidence and an explicit data/API contract update.
 - The detail proposal places operation outcome before report completeness and keeps workspaces, findings, provenance, and diagnostics distinct. The existing desktop and new narrow examples show a cancelled operation with a complete returned report; the status board separately illustrates completed/partial, completed/failed, failed/no-report, and completed/complete/zero-findings. Only the last case may present zero findings as a complete result.
@@ -139,11 +164,15 @@ The visual direction is shadcn/ui-inspired, not a commitment to install shadcn/u
 | Primitives | Native links, buttons, headings, lists, semantic tables, status text, alerts, skeletons, and pagination; use links for history-to-detail navigation. Avoid dialogs for primary detail navigation. | Verify keyboard and assistive-technology behavior on the actual browser surface. |
 | Component ownership | Hand-authored components and styles belong to DepRail and are reviewed in the repository. | If shadcn/ui source or another library is later preferred, record copied-source ownership, package/version, license, maintenance, and bundle impact before adoption. |
 | Dependencies | No third-party component, icon, chart, or font dependency is selected by this UX proposal. | Any runtime package requires owner approval and dependency/license evidence; independent review is optional. |
-| Tokens | Project-owned CSS custom properties for background, foreground, border, muted, primary, destructive, warning, success, and focus states. | Exact palette, spacing, type scale, and contrast values remain owner design decisions. |
+| Tokens | Exact project-owned palette, spacing, typography and focus tokens in §2. | Verify actual rendered contrast and accessibility; owner acceptance remains pending. |
 | Icons and fonts | System font stack and local/inline SVG icons; no remote fonts, images, CDN, or analytics. | Keep assets local and review any future dependency or license change. |
-| Embedded build | React, TypeScript, and Vite static output embedded in the Go application, consistent with the architecture baseline. | `web/` is the source ownership boundary; package manager, pinned versions, embed path/tool, and bundle/startup budget remain execution-package decisions. |
+| Embedded build | React, TypeScript, Vite and npm lockfile under `web/`; `web/assets.go` embeds `dist`. | Exact candidate pins and policy budgets are recorded in architecture §10 and the compatibility matrix; locked build evidence follows implementation. |
 
 The proposal preserves the requested shadcn/ui visual characteristics without freezing a library or implementation. The owner must approve the actual design-system, dependency, and build decisions before runtime work.
+
+### Consolidated selected implementation choices (owner review)
+
+This section supersedes unresolved-choice wording in earlier visual proposals. Exact selections and evidence gates are in `ARCHITECTURE-v0.5.md` §10 and `requirements/COMPATIBILITY-MATRIX.md`: project-owned React/TypeScript/Vite, no component/font/icon runtime dependencies, exact versions and npm lock, Go-owned compile-time embed of `web/dist`, static route allowlist above, and policy budgets. The planned owner decision is not evidence of build, license review, accessibility review, browser/platform support, or measured budgets.
 
 ## 7. Accessibility and responsive acceptance
 

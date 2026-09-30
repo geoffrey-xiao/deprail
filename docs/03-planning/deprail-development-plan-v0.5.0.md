@@ -3,7 +3,7 @@
 | Attribute | Value |
 | --- | --- |
 | Release | v0.5.0 |
-| Plan revision | 1.1 |
+| Plan revision | 1.2 |
 | Status | Owner-directed revision; technical Definition of Ready remains open |
 | Target mode | Preview first; stable follow-up only after complete evidence |
 | Whole-project roadmap | [`deprail-roadmap-v1.md`](deprail-roadmap-v1.md) |
@@ -18,6 +18,8 @@
 | Review authority | `@geoffrey-xiao` is the sole required reviewer/approver; external review is optional under [`ADR-0005`](../adr/ADR-0005-solo-owner-review-policy.md). |
 
 Revision 1.1 (2026-09-24) applies ADR-0005. Revision 1.0's independent-review and dual-approval gates are superseded; technical design, evidence, owner decisions, CI, and release requirements remain. This plan authorizes no runtime work until the technical Definition of Ready is complete and accepted by the owner.
+
+Revision 1.2 adds the detailed contract reconciliation in §14 without changing the release outcome or erasing revisions 1.0–1.1. Earlier “undecided” language records those planning stages; the current proposed selections are the linked contracts in §14. Exact owner technical/security acceptance remains outstanding. Runtime acceptance evidence is required after implementation, not a fictitious prerequisite test pass before runtime exists.
 
 ## 1. Reconciliation and release decision
 
@@ -198,3 +200,36 @@ Runtime implementation remains blocked until all items below are linked with evi
 ## 13. Release evidence and follow-up
 
 Use [`../RELEASE-CHECKLIST.md`](../RELEASE-CHECKLIST.md) and a version-specific evidence record. Record owner-reviewed commit and version identity; exact verification commands/results; API/OpenAPI/schema and migration evidence; Linux/macOS/Windows build and smoke results; browser accessibility and UX evidence; artifact names/checksums/SBOM/signature/provenance status; the owner’s security/architecture assessment and release decision; remaining risks and rollback procedure. After publication, create and link `docs/retrospectives/RETROSPECTIVE-v0.5.0-preview.N.md` or the applicable final release version and assign follow-up owners.
+
+## 14. Detailed contract reconciliation for current owner review
+
+This additive revision incorporates the owner-delegated engineering selections from [PR #417](https://github.com/geoffrey-xiao/deprail/pull/417). It preserves the product/architecture/roadmap outcome: explicit local scan history and a read-only embedded console. It introduces no team services, browser-triggered scan, remediation, publishing, new scanner or automatic cleanup. Dependencies and compatibility changes below are proposed contracts for owner acceptance, not runtime authorization.
+
+### Current contract set
+
+| Area | Current contract | Included outcome and compatibility boundary |
+| --- | --- | --- |
+| Safe storage and diagnostics | [Failure/data](../04-execution/deprail-v0.5.0-execution-package/requirements/FAILURE-AND-DATA-CONTRACT.md), [error model](../04-execution/deprail-v0.5.0-execution-package/requirements/ERROR-MODEL.md), [ADR-0004](../adr/ADR-0004-local-scan-history.md#detailed-engineering-selections-for-owner-review) | Separately versioned allowlisted history projection with same-operation context; source CLI JSON unchanged; no host root/raw errors or invented provenance. |
+| Admission and failure | ADR-0004 and failure/data | 16 MiB entry, count limits, 1,000-entry/256 MiB logical payload admission; reject a new save without eviction. 2-second lock wait, atomic entry/reference commit and explicit failures. Logical quota does not bound filesystem/WAL/backup/artifact bytes. |
+| CLI and serving | [API design](../04-execution/deprail-v0.5.0-execution-package/API-DESIGN.md), failure/data and compatibility matrix | Opt-in history capture, additive save-failure exit `6` only when scan otherwise succeeds; independent foreground console with no scan side effect. Startup/launch and credential handling follow the exact API/CLI design, not inferred defaults. |
+| Read-only API and browser boundary | [OpenAPI](../../schemas/openapi/v1/openapi.yaml), [security](../04-execution/deprail-v0.5.0-execution-package/requirements/SECURITY-REQUIREMENTS.md) | Five authenticated read-only operations; loopback, same-origin and bounded work; byte-aware whole-record pages. Fragment bootstrap's transient browser/OS exposure remains an explicit owner security risk decision. |
+| UX, toolchains, platforms and recovery | [UX](../04-execution/deprail-v0.5.0-execution-package/UX-DESIGN.md), [compatibility matrix](../04-execution/deprail-v0.5.0-execution-package/requirements/COMPATIBILITY-MATRIX.md), [architecture](../04-execution/deprail-v0.5.0-execution-package/ARCHITECTURE-v0.5.md) | Project-owned semantic React UI and embedded local assets; pinned/reviewed dependency candidates, declared browser/AT policy and packaging budgets; recover by preserving data, never automatic downgrade/reset. |
+| Acceptance and tracking | [Test strategy](../04-execution/deprail-v0.5.0-execution-package/requirements/TEST-STRATEGY.md), [readiness map](../04-execution/deprail-v0.5.0-execution-package/issues/V05-005-readiness-map.md), [general release checklist](../RELEASE-CHECKLIST.md) | Contract validation and owner design/risk decisions before issue publication; actual storage/API/browser/platform evidence after implementation. No runtime pass inferred from document CI. |
+
+### Predecessor dispositions and target gates
+
+These carry-forward directions were [recorded by the owner in #356](https://github.com/geoffrey-xiao/deprail/issues/356#issuecomment-5814381153). The rows do not close #356 or rewrite its accepted historical retrospective.
+
+| #356 follow-up | Owner | v0.5 disposition and target | Evidence still required |
+| --- | --- | --- | --- |
+| Rollback ownership/recovery | `@geoffrey-xiao` | Include the current runbook in v0.5 planning; exercise it against the reviewed binary/data before stable v0.5. Preview may carry a specifically approved rehearsal gap. | Database/WAL/SHM/artifact preservation, backup verification and immutable-tag binary rollback record. |
+| Full Python/Java remediation | `@geoffrey-xiao` | Deferred outside v0.5 to the next owner-approved remediation coverage plan. Do not silently add remediation to this read-only release. | A future scoped issue/plan and genuine vulnerable fixtures with legitimate plan/approval/apply evidence; v0.5 still covers representative JS/Python/Java scan-history semantics. |
+| Representative cross-platform smoke | `@geoffrey-xiao` | Required on Linux/macOS/Windows before stable v0.5; identify any preview gaps per platform, with explicit owner disposition. | Real history capture, local API/UI workflow, binary identity and unchanged repository-tree evidence, not CI compilation alone. |
+| SBOM/signature/provenance | `@geoffrey-xiao` | Record supplied/unavailable/deferred separately for each preview; stable requires release-checklist evidence or an explicit versioned owner disposition. | Reviewed immutable source/tag, independently verified checksums, available SBOM/signature/provenance and an honest record of absent assets. |
+| Former independent-review follow-up | `@geoffrey-xiao` | Superseded by accepted ADR-0005; historical only, not a current blocker. | Owner security assessment remains a distinct decision from technical acceptance and release go/no-go. |
+
+### Readiness boundary and non-circular issue sequencing
+
+Planning may prepare an unpublished delivery map with proposed issue boundaries, dependencies and acceptance scenarios for owner review. Such a map is not an implementation issue or authorization. First accept the reconciled design contracts and the planning DoR; then derive/finalize and publish implementation issues, with each issue's own Definition of Ready checked before code starts. Do not require GitHub implementation issues to already exist as a prerequisite for permission to create them.
+
+Before publication, the owner reviews the exact contract set and separately records security/risk disposition. Before implementation, every published issue has one primary outcome, release/requirements links, owner reviewer, dependencies, failure behavior, observable acceptance and evidence. Before release, execute the linked runtime matrix and general release checklist. Any failed check or unresolved material contract conflict remains explicit and blocks only its dependent work; external review is optional.

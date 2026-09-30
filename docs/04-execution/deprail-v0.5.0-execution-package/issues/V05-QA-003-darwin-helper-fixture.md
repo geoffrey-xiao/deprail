@@ -50,11 +50,11 @@ Existing TestRunExecutesSelectedCommandsInWorkspace, stop-after-failure, timeout
 
 ## Acceptance Criteria
 
-- [ ] Existing actual command execution and partial-result tests pass without modifying their deadlines or assertions.
-- [ ] Intentional 20ms timeout, cancellation and workspace containment behavior remain effective; output capture regressions from #430 pass.
-- [ ] Corrected-baseline make verify passes, or any new failure is reported accurately with no success-by-retry substitution.
-- [ ] Actual helper/cwd/deadline smoke and Linux/macOS/Windows CI are linked; darwin-only change does not alter Linux/Windows fixture behavior.
-- [ ] Owner reviews the correction and explicitly records the remaining runtime-start decision; historical cold-start/OS uncertainty and original failures remain preserved.
+- [x] Existing actual command execution and partial-result tests pass without modifying their deadlines or assertions.
+- [x] Intentional 20ms timeout, cancellation and workspace containment behavior remain effective; output capture regressions from #430 pass.
+- [x] Corrected-baseline make verify passes, or any new failure is reported accurately with no success-by-retry substitution.
+- [x] Actual helper/cwd/deadline smoke and Linux/macOS/Windows CI are linked; darwin-only change does not alter Linux/Windows fixture behavior.
+- [x] Owner reviews the correction and explicitly records the remaining runtime-start decision; historical cold-start/OS uncertainty and original failures remain preserved.
 
 ## Owner Review
 
@@ -70,10 +70,10 @@ Revert the test-only correction through a reviewed change; production/user data 
 
 ## Final Acceptance
 
-- [ ] Owner reviewed all acceptance criteria and local/CI evidence.
-- [ ] Technical acceptance and separate security/architecture assessment are recorded.
-- [ ] Owner-reviewed merge and remaining runtime-start decision are linked.
-- [ ] Historical failed runs remain accurate; no release approval or H05 implementation is inferred.
+- [x] Owner reviewed all acceptance criteria and local/CI evidence.
+- [x] Technical acceptance and separate security/architecture assessment are recorded.
+- [x] Owner-reviewed merge and remaining runtime-start decision are linked.
+- [x] Historical failed runs remain accurate; no release approval or H05 implementation is inferred.
 
 ## Contract links
 
@@ -81,4 +81,12 @@ Revert the test-only correction through a reviewed change; production/user data 
 
 ## Actual correction evidence
 
-[Helper/targeted/full evidence](../tracking/V05-QA-003-EVIDENCE.md) records the real corrected fixture's success, exit7, 20ms timeout, cancellation and canonical workspace behavior; uncached verification/process suites and single-run full `make verify` passed. The throwaway workspace probe's initial argument-separator error is disclosed and corrected; no permanent assertion/deadline changed. Three-OS CI, owner technical and security/architecture review, merge and explicit runtime-start decision remain pending. Historical failed runs and OS-cause uncertainty are unchanged.
+[Helper/targeted/full evidence](../tracking/V05-QA-003-EVIDENCE.md) records the real corrected fixture's success, exit7, 20ms timeout, cancellation and canonical workspace behavior; uncached verification/process suites and single-run full `make verify` passed. The throwaway workspace probe's initial argument-separator error is disclosed and corrected; no permanent assertion/deadline changed. At review submission, three-OS CI, owner decisions and merge were pending; the additive completion record below resolves those gates without changing historical failed runs or OS-cause uncertainty.
+
+## Owner acceptance and completion
+
+Owner-merged [PR #433](https://github.com/geoffrey-xiao/deprail/pull/433) at `6c74cf9861981928c29f7a8cb09799e63f3fd6dd` contains the reviewed correction. [CI run 36725991235](https://github.com/geoffrey-xiao/deprail/actions/runs/36725991235) passed on tested head `b6a96ee34b1053b1c860fa9bf22dad17d19c741b`: Ubuntu 26s, macOS 1m5s, Windows 1m40s.
+
+The owner selected “确认验收并完成关联”, confirming every criterion, technical acceptance and the separate test-fixture security/architecture assessment; residual macOS cold-start root-cause uncertainty was accepted. [Durable owner record](https://github.com/geoffrey-xiao/deprail/issues/432#issuecomment-5913275072) records that conversation decision without fabricating a native APPROVED review. Issue #432 is closed, Project Done, with native Linked pull requests referencing #433.
+
+This completed QA gate does not itself start another issue or approve a release. The subsequent “可以 继续吧” separately authorizes H05-001 / #420 under its own DoR and synchronized-main gate; see [kickoff decision](https://github.com/geoffrey-xiao/deprail/issues/420#issuecomment-5913450360). Original failed runs remain failed.

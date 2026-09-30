@@ -70,3 +70,11 @@ At capture review submission, V05-QA-002 / #430 was a native child of #418, not 
 ## Darwin fixture follow-up
 
 The owner's “请继续” following the #431 merge authorizes bounded V05-QA-003 / #432, not H05 kickoff. Exact-key/capability searches found only the closed diagnostic/capture issues and unrelated existing work, so #432 is a distinct correction, native child of #418, milestone `v0.5.0`, Sprint 4, R2/P0 with sole required owner reviewer `@geoffrey-xiao`. The branch starts from synchronized `4f9fe3d`, containing the owner-merged capture fix. Production verification/process/scanner/CLI code is unchanged; original assertions and one-second/20ms deadlines remain. H05 issues stay Todo until correction review/merge, runtime-start decision and issue-specific DoR pass.
+
+## H05-001 authorized runtime kickoff
+
+The preceding publication/correction stages remain historical. Owner-merged [#433](https://github.com/geoffrey-xiao/deprail/pull/433), successful exact-head three-platform CI, and [explicit #432 acceptance](https://github.com/geoffrey-xiao/deprail/issues/432#issuecomment-5913275072) resolve the QA correction gate; #432 is closed/Project Done with native Linked pull requests containing #433. Technical acceptance and test-fixture security/architecture assessment are distinct entries; residual macOS cold-start uncertainty and original failed runs remain preserved.
+
+The owner's later “可以 继续吧” authorizes only [H05-001 / #420](../issues/H05-001-safe-history-projection.md), after its plan and issue-specific DoR, on synchronized reviewed-main `6c74cf9861981928c29f7a8cb09799e63f3fd6dd`. [Live kickoff record](https://github.com/geoffrey-xiao/deprail/issues/420#issuecomment-5913450360) records branch `feat/420-safe-history-projection`, milestone `v0.5.0`, Sprint 4, R3/P0, owner reviewer and Project In Progress. No second R3 issue, storage/API/UI integration, new dependency or release begins.
+
+The nine Todo entries (#418 and #420–#427 before kickoff) had repeated artificial Evidence Link values cleared at owner request; the existing Linked pull requests field is unchanged. PRs must use native issue associations, not custom card URLs as substitutes. A closing association still follows explicit owner acceptance; do not claim unreviewed criteria passed merely to populate the field.

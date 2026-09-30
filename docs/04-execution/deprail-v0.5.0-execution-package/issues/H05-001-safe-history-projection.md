@@ -1,6 +1,6 @@
 # H05-001 Safe History Projection
 - GitHub Issue: [#420](https://github.com/geoffrey-xiao/deprail/issues/420).
-- GitHub parent: [#418](https://github.com/geoffrey-xiao/deprail/issues/418). Published dependencies: #419.
+- GitHub parent: [#418](https://github.com/geoffrey-xiao/deprail/issues/418). Completed global QA prerequisites: #419 investigation, #430 capture correction and #432 fixture correction.
 
 ## Planning metadata
 
@@ -10,11 +10,11 @@
 - Risk: `R3`
 - Target version: `v0.5.0`
 - Milestone: [`v0.5.0`](https://github.com/geoffrey-xiao/deprail/milestone/11)
-- Sprint: Unassigned
+- Sprint: Sprint 4.
 - Owner: `@geoffrey-xiao`
 - Reviewer: `@geoffrey-xiao`
-- Dependencies: Accepted PR #417 design baseline and [V05-QA-001](V05-QA-001-verification-timeout-disposition.md) resolution or explicit owner pre-start disposition.
-- Blocked reason: None unless Project Status is Blocked; runtime remains gated on acceptance below.
+- Dependencies: Accepted PR #417 design baseline; accepted #419 investigation, owner-merged capture fix #431 / #430 and owner-accepted fixture fix #433 / #432; reviewed main `6c74cf9861981928c29f7a8cb09799e63f3fd6dd`.
+- Blocked reason: None for this bounded issue after the linked owner kickoff decision and issue-specific DoR; other H05 issues remain Todo.
 - Epic: [V05-EPIC-002](../epics/EPIC-002-local-history-delivery.md).
 - Contract mapping: release plan §14 safe storage/diagnostics, [product baseline](../../../01-product/deprail-product-design-v1-ai.md), [architecture baseline](../../../02-architecture/deprail-architecture-and-tech-stack-v1.md), FR-501/503/504 and SEC-07.
 
@@ -88,7 +88,16 @@ Input is typed validated operation context, not arbitrary JSON. Output is one sc
 
 ## Dependencies and pre-start gate
 
-The accepted design baseline and [V05-QA-001](V05-QA-001-verification-timeout-disposition.md) resolution/disposition gate runtime starts. Dependents are [H05-002](H05-002-private-history-store.md) and [H05-003](H05-003-history-application-services.md). No runtime implementation is authorized by publication alone.
+The accepted design baseline and [V05-QA-001](V05-QA-001-verification-timeout-disposition.md) resolution/disposition gate runtime starts. [#432 completion](V05-QA-003-darwin-helper-fixture.md#owner-acceptance-and-completion) supplies the accepted correction and exact local/CI evidence; original failed runs remain historical. Owner “可以 继续吧” separately authorized this issue after the displayed implementation plan. [Kickoff record](https://github.com/geoffrey-xiao/deprail/issues/420#issuecomment-5913450360) links checked DoR, Sprint 4, Project In Progress and branch `feat/420-safe-history-projection` from synchronized reviewed-main `6c74cf9`. Dependents are [H05-002](H05-002-private-history-store.md) and [H05-003](H05-003-history-application-services.md); neither starts through this authorization. Publication or Sprint assignment alone is not runtime permission.
+
+## Implementation evidence (PR pending)
+
+- `ProjectHistory` and `ValidateProjection` implement a pure typed projection; the source `ScanReport` and its JSON remain unchanged. Workspaces/report distinguish unavailable (`null`) from known empty arrays; operation outcome remains independent of report completeness.
+- Projection validates IDs, source schema, repository digest, PURLs, repository-relative paths, provenance, diagnostic registry/scope, finding identities, exact allowlisted history fields, sorted/deduplicated aliases/digests/diagnostics, and encoded-byte/count limits. Unsupported future schema markers are distinguished from corrupt stored values. No truncation or parsing of raw report errors.
+- Scanner severity enums are canonicalized case-insensitively to the history labels. CVSS vectors are not converted to a guessed label; severity projects as `null`. Unknown values reject projection.
+- Targeted projection/schema tests passed. `make verify` passed (`go generate ./...`, `go vet ./...`, `go test ./...`, `go build ./...`).
+- Actual local OSV-Scanner 2.6.0 scan of `testdata/fixtures/npm-basic` produced 5 findings and 1 retained artifact. The exact `history-v1` schema validated both complete and missing-scanner failed projections. Round-trip equality, source report immutability, unchanged fixture inputs, unavailable workspace preservation, repeated source scan ID with distinct operation IDs, diagnostic `SCANNER_NOT_FOUND`, and exclusion of root/raw error/credential sentinel all passed. Output SHA-256: `56e0eddd076b34b3f951fce1f440439063ac6f7058788502a1c56116fa260ccc` (temporary artifact `/tmp/deprail-h05-001-d181a2eced014d4c822797fb62aaeb30.json`; harness removed).
+- Owner review, CI on the PR head, and merge remain pending; acceptance checkboxes remain unchecked until review.
 
 ## Rollback
 

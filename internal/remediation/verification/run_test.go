@@ -19,6 +19,17 @@ func testTool(t *testing.T) string {
 		name = "npm.exe"
 	}
 	path := filepath.Join(dir, name)
+	if runtime.GOOS == "darwin" {
+		// Reuse the active image so cold-copy startup does not consume the command deadline.
+		executable, err := os.Executable()
+		if err != nil {
+			t.Fatal(err)
+		}
+		if err := os.Symlink(executable, path); err != nil {
+			t.Fatal(err)
+		}
+		return path
+	}
 	data, err := os.ReadFile(os.Args[0])
 	if err != nil {
 		t.Fatal(err)

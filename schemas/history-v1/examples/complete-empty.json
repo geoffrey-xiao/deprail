@@ -1,0 +1,6 @@
+{
+  "schema_version":"history-v1","history_entry_id":"2d931510-d99f-494a-8c67-87feb05e1595","recorded_at_us":1780000000123457,
+  "operation_outcome":"completed","repository_label":"empty-project","workspaces":[],
+  "report":{"source_schema_version":"v1alpha","source_scan_id":"scan-e3b0c442","status":"complete","repository_state":"e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855","provenance":{"deprail_version":null,"scanner_name":null,"scanner_version":null,"scanner_database_version":null},"findings":[],"artifact_digests":[]},
+  "diagnostics":[]
+}

@@ -8,12 +8,12 @@
 | Scan report schema | Preserve existing CLI `ScanReport` JSON bytes/meaning, stable keys where defined, ordering, provenance, and completeness enum (`complete`, `partial`, `failed`). Do not claim current CLI JSON validates as the proposed v1alpha scan document or rewrite it for history. Cancellation is not added to `ScanReport.Status` in v0.5. | Compare actual nonempty/failed CLI JSON before/after; explicitly reconcile the known app-report/v1alpha-schema discrepancy before any CLI/schema change. Verify cancellation remains separate from report status. |
 | Persisted history schema | Owner-selected candidate: DB `PRAGMA user_version=1`, distinct allowlisted `history-v1` projection and source-report version metadata; `/api/v1` is another separately versioned contract. UUIDv4 `historyEntryID` differs from repeatable source `ScanReport.ScanID`; no raw report/project JSON or automatic legacy import. None of these versions is yet accepted for implementation. | Owner accepts projection fields, stable-key mapping, safe diagnostics, privacy/unknown handling and row/JSON validation; then verifies uniqueness/retry semantics, refs, migrations, backup/recovery, retention and downgrade refusal. Numeric limits need payload evidence. |
 | Local API | Candidate contract: OpenAPI 3.1 `info.version: 1.0.0` at `/api/v1`; route, response, error, pagination, and security profile remain proposals. No client compatibility promise until the exact API/projection contract is owner-accepted. | Candidate OpenAPI references/examples and status-specific error constraints were validated offline; the 1 MiB serialized-byte cap remains a runtime gate and is not inferred from schema `maxLength`. Owner accepts the exact projection, version behavior, and UI/API mismatch handling. |
-| Embedded web client | Shipped with matching binary; exact supported browsers TBD. | Package smoke on selected browsers/OS, UI/API version skew test, no external CDN/font/analytics. |
-| Web frontend toolchain | React/TypeScript/Vite per architecture; exact pinned versions and shadcn/ui component/primitives strategy TBD. | Lockfile, license and dependency review, clean build, bundle/startup budget. |
-| SQLite engine/driver | SQLite local store per roadmap/architecture; engine/driver/version and build strategy TBD. | Cross-platform availability, CGO/static binary implications, migration and locking tests. |
+| Embedded web client | Matching binary/assets and current-stable browser/AT support policy in §Selected engineering contract. | Actual package smoke, UI/API skew and browser/AT evidence after implementation; no CDN/font/analytics. |
+| Web frontend toolchain | Exact proposed pins, project-owned semantic primitives, lockfile and embed ownership below. | Owner contract review now; locked build, complete license/SBOM review and measured budgets after implementation. |
+| SQLite engine/driver | CGo-free `modernc.org/sqlite v1.59.0` review candidate; linked SQLite engine version recorded from the resolved module, not inferred. | Driver/engine licenses and provenance; actual four-target build, migrations, locks and recovery before release. |
 | Local listener | Candidate `127.0.0.1` ephemeral port with process-scoped bearer, strict Host/Origin, no CORS, bounded requests, and explicit foreground lifecycle; none is runtime-approved. | Owner security decision plus Linux/macOS/Windows bind, hostile-origin, lifecycle, and shutdown evidence. |
 | Filesystem paths/permissions | Canonical containment, `/` serialized relative paths, platform-equivalent meaning. | Unicode, long path, symlink, permission, interrupted write, data-root tests per OS. |
-| Data retention/deletion | Draft proposal retains explicitly selected history without automatic eviction, per-entry deletion/export, or raw-artifact cleanup. Unbounded growth risk is unresolved pending a measured cap or explicit owner acceptance. | Capacity, disk-full, artifact-reference behavior, user guidance, and cross-platform recovery evidence before DoR. |
+| Data retention/deletion | No eviction/delete/export; atomic admission refuses >1,000 entries or >256 MiB logical projection bytes. Per-entry max16 MiB; physical SQLite/WAL/index/backup and external artifacts are not capped. | Owner accepts remaining physical-growth risk; actual quota/disk-full/ref-integrity/recovery evidence after implementation. |
 | v0.4 remediation/scan use | No remediation contract changes. Existing CLI scanning should not depend on web or history absent an approved decision. | Regression/manual comparison; explicit disposition of #356 follow-ups. |
 
 ## Compatibility decision gates
@@ -24,9 +24,9 @@
 - New history failure behavior must not silently alter CLI status/outputs. Candidate `--save-history`/exit code `6` behavior is unapproved; any accepted change requires an explicit compatibility decision and updated CLI contracts.
 - Confirm binaries and data handling on Linux, macOS, Windows. Platform-specific storage limitations must be explicit, not hidden by fallback behavior.
 
-## Component and platform decision inputs (unselected)
+## Component and platform decision rationale
 
-These are review criteria, not selected versions or dependencies. Record selected versions, owners, and evidence in the approved execution package before implementation.
+The inputs below explain the selected engineering proposal later in this document; they are not unresolved alternatives. Owner acceptance and implementation evidence remain distinct.
 
 | Component | Decision inputs | Required evidence |
 | --- | --- | --- |
@@ -49,3 +49,25 @@ These are review criteria, not selected versions or dependencies. Record selecte
 | Toolchain, SQLite driver, frontend, or browser support changes | No dependency/version is selected by this draft; existing CLI meaning stays stable and separately versioned `history-v1` changes require their own migration review. | Restore the previous reviewed lockfile/toolchain/package set; any persisted-schema change follows the migration/backup rule above. | Reproducible build, license/SBOM review, package checksums, cross-platform/browser results; `SEC-13`. |
 
 The v0.5.0 release-evidence record must link these artifacts to the owner-reviewed commit/binary, exact command, result, OS/architecture, database/fixture digest, and owner decision. These rows define future evidence; no runtime or platform pass is claimed here.
+
+## Selected engineering frontend/platform contract (owner review; evidence not executed)
+
+Exact selected review candidates: Node `22.23.3`, npm `10.9.9`, React/React DOM `19.1.1`, TypeScript `5.9.2`, Vite `7.3.6`, `@vitejs/plugin-react` `5.0.2`, `@types/react` `19.1.10`, `@types/react-dom` `19.1.7`, `@types/node` `22.18.1`. No frontend pins exist in the repository. Sources: [Node metadata](https://registry.npmjs.org/node/22.23.3), [npm metadata](https://registry.npmjs.org/npm/10.9.9), [Vite metadata](https://registry.npmjs.org/vite/7.3.6); other package/version metadata uses the same registry path. Isolated script-free lock resolution/audit rejected Vite `7.1.4` with known high-severity advisories and reported zero vulnerabilities for the amended set. Audit used host Node `26.7.0`/npm `11.19.0`, not proposed build pins. Complete license/SPDX/SBOM, provenance, tarball-integrity and reproducible pinned build remains a later gate; audit is not security approval.
+
+Project-owned semantic React UI; no third-party component/font/icon runtime dependencies. Source/lockfile `web/`, generated `web/dist`, embedded at compile time by Go-owned `embed.FS`; no filesystem fallback. Static allowlist: `/console/`, `/console/history`, `/console/scans/{historyEntryID}` (canonical UUIDv4), `/console/about`, declared hashed assets; unknown paths 404; API dispatch separate. HTTP UI is query-only; capture remains explicit CLI/application use case.
+
+Policy budgets (not benchmarks): gzip JS ≤250 KiB, CSS ≤50 KiB, embedded UI ≤1 MiB, build ≤60s, asset-attributable binary growth ≤1 MiB against same Go/toolchain build without frontend assets, startup listener-ready ≤2s on recorded reference machine. Report total binary growth including SQLite separately.
+
+| Surface | Supported policy | Evidence recorded per run |
+| --- | --- | --- |
+| Windows browser/AT | Current stable Chrome with NVDA | Exact OS/build, Chrome/NVDA versions, hardware, commit, scenario/result |
+| macOS browser/AT | Current stable Safari with VoiceOver | Exact OS/build, Safari/VoiceOver versions, hardware, commit, scenario/result |
+| Linux browser/AT | Current stable Firefox with Orca | Exact distribution/kernel, Firefox/Orca versions, hardware, commit, scenario/result |
+| Binary targets | Existing release workflow: linux/amd64, darwin/amd64, darwin/arm64, windows/amd64 | Exact OS version, target, checksum and smoke result |
+
+No installed versions or passing platform/browser evidence are asserted. Record actual versions exercised, never guessed.
+
+
+Offline recovery: stop binary; preserve DB, matching WAL/SHM, artifact directory together. Copy byte-for-byte while stopped to separate recovery location; record hashes and retain originals. Never reset, delete, repair-in-place or downgrade. On a copy only, use SQLite read-only mode to inspect `PRAGMA user_version` and `PRAGMA quick_check`; retain output. Future schema is refused without writes. Restore only validated backup to separate new location by explicit operator action; test quick_check/schema/artifact digests before deliberate switch. No validated backup: retain all files and escalate. Artifact unavailable/unverified remains explicit; never serialize absolute root, raw errors or unknown fields.
+
+Release/test recommendations for parent: locked build + license/SBOM review; budgets and embed integrity; static route/API distinction, skew and asset-integrity checks; four-target package smoke; schema future-version refusal and offline WAL/SHM recovery rehearsal; artifact absence without absolute-root leakage; actual browser/AT keyboard, focus, contrast, 320px/200% zoom and hostile-text checks. All future gates, not executed evidence.

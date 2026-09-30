@@ -34,10 +34,49 @@ x-deprail-runtime-profile:
   maximumPageSize: 50
   maximumCursorBytes: 512
   paginationByteBudget: whole-records-including-envelope-and-cursor
+  launchCommand: deprail web
+  launchMode: foreground
+  opensBrowserByDefault: false
+  optionalOpenFlag: --open
+  optionalArtifactRootFlag: --artifact-root
+  consoleEntryPath: /console/
+  staticAssetPolicy: explicitly-embedded-allowlist-no-filesystem-fallback-no-catch-all
+  credentialBootstrap: initial-url-fragment-cleared-before-render-or-request-memory-only
+  cursorEncoding: canonical-unpadded-base64url-v1-big-endian
+  admission: parser-bounds-host-body-method-route-origin-auth-then-eight-slots-no-queue
   notes:
-    - These are candidate bounds, not accepted limits; payload and platform evidence remains required before implementation.
-    - No handler may truncate a response into an apparent success.
-    - The server must not fall back to a wildcard, LAN, or public bind.
+    - The terminal prints only the bare non-secret console URL; neither token nor fragment-bearing URL is printed or logged.
+    - --open and TTY Enter invoke the platform launcher with argv; reload recovery uses Enter in the active terminal without redisplaying the token.
+    - Initial navigation may have Sec-Fetch-Site none; enforce Fetch Metadata on API routes only.
+    - Workspace cursors use ordinal plus SHA-256 identity check against immutable validated workspace ordering; no workspace string is encoded.
+    - Optional artifact root is CLI-only, read-only, and omitted roots yield unavailable artifact references.
+    - Limits are engineering admission policy, not runtime measurements; owner acceptance remains required.
+    - No handler may truncate a response into an apparent success or fall back to wildcard/LAN/public binding.
+  console:
+    usageExitCode: 2
+    listenerFailureExitCode: 3
+    normalSignalExitCode: 0
+    terminalOutput: bare-loopback-url-only
+    reopen: active-tty-enter-launches-current-fragment-url-without-printing
+    nonTTY: requires-open-otherwise-usage-exit-two
+    nonTTYLaunchFailure: stop-listener-and-exit-three
+    nonTTYRecovery: restart-command-with-open-revoking-old-token
+    artifactRoot: optional-cli-only-canonical-existing-read-only-digest-store
+  cursor:
+    versionByte: 1
+    resourceBytes: {history: 1, workspaces: 2, findings: 3}
+    integerEncoding: signed-or-unsigned-big-endian
+    decodedLengths: {history: 26, workspaces: 54, findings: 50}
+    historyTuple: signed-int64-utc-unix-microseconds-plus-uuid16
+    workspaceTuple: ordinal-uint32-plus-sha256-workspace-id-utf8
+    findingTuple: stable-finding-key-raw32
+    workspaceProjection: immutable-validated-sorted
+  staticConsoleRoutes:
+    - /console/
+    - /console/history
+    - /console/scans/{canonicalHistoryEntryUUID}
+    - /console/about
+  consoleCSP: "default-src 'none'; script-src 'self'; style-src 'self'; img-src 'self' data:; font-src 'self'; connect-src 'self'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'; object-src 'none'"
 paths:
   /api/v1/health:
     get:
@@ -176,6 +215,11 @@ paths:
                     report:
                       sourceSchemaVersion: v1alpha
                       repositoryState: aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+                      provenance:
+                        deprailVersion: null
+                        scannerName: null
+                        scannerVersion: null
+                        scannerDatabaseVersion: null
                     diagnostics: []
                     artifactReferences:
                       - digest: bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb
@@ -381,7 +425,7 @@ components:
       name: cursor
       in: query
       required: false
-      description: Opaque, versioned keyset cursor returned by the previous page; never an offset or credential.
+      description: Opaque unpadded-base64url cursor bound to API version, collection resource and exact parent for child collections. Encodes a format version, resource discriminator and last total-order tuple; never an offset, credential, or repository path. Strictly continues after the prior tuple without skipping unreturned records.
       schema:
         type: string
         minLength: 1
@@ -845,7 +889,7 @@ components:
     HistoryReportMetadata:
       type: object
       additionalProperties: false
-      required: [sourceSchemaVersion, repositoryState]
+      required: [sourceSchemaVersion, repositoryState, provenance]
       properties:
         sourceSchemaVersion:
           type: string
@@ -855,6 +899,30 @@ components:
           type: string
           pattern: '^[a-f0-9]{64}$'
           description: Opaque source repository-state digest; not a path or host identity.
+        provenance:
+          $ref: '#/components/schemas/HistoryProvenance'
+    HistoryProvenance:
+      type: object
+      additionalProperties: false
+      required: [deprailVersion, scannerName, scannerVersion, scannerDatabaseVersion]
+      description: Safe typed same-operation provenance; null means not recorded, never an inferred tool/database version.
+      properties:
+        deprailVersion:
+          type: [string, 'null']
+          minLength: 1
+          maxLength: 128
+        scannerName:
+          type: [string, 'null']
+          minLength: 1
+          maxLength: 128
+        scannerVersion:
+          type: [string, 'null']
+          minLength: 1
+          maxLength: 128
+        scannerDatabaseVersion:
+          type: [string, 'null']
+          minLength: 1
+          maxLength: 128
     HistoryDiagnostic:
       type: object
       additionalProperties: false
@@ -958,7 +1026,7 @@ components:
           type: string
           minLength: 1
           maxLength: 4096
-          pattern: '^(?!/)(?![A-Za-z]:)(?!.*(?:^|/)\.\.(?:/|$))(?!.*\\)[^/\x00-\x1F]+(?:/[^/\x00-\x1F]+)*$'
+          pattern: '^(?![\s\S]*[\x00-\x1F])(?:\.|(?!/)(?![A-Za-z]:)(?!.*(?:^|/)\.\.(?:/|$))(?!.*(?:^|/)\.(?:/|$))(?!.*\\)[^/]+(?:/[^/]+)*)$'
           description: Repository-relative path using slash separators; never absolute or resolved outside the repository.
         ecosystem:
           type: string
@@ -1056,7 +1124,7 @@ components:
         relativePath:
           type: string
           minLength: 1
-          pattern: '^(?!/)(?![A-Za-z]:)(?!.*(?:^|/)\.\.(?:/|$))(?!.*\\)[^/\x00-\x1F]+(?:/[^/\x00-\x1F]+)*$'
+          pattern: '^(?![\s\S]*[\x00-\x1F])(?:\.|(?!/)(?![A-Za-z]:)(?!.*(?:^|/)\.\.(?:/|$))(?!.*(?:^|/)\.(?:/|$))(?!.*\\)[^/]+(?:/[^/]+)*)$'
           maxLength: 4096
           description: Repository-relative path using slash separators.
         ecosystem:

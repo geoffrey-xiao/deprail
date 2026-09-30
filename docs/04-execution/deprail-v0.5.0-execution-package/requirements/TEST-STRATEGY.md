@@ -1,6 +1,6 @@
 # v0.5 Test Strategy
 
-**Status:** Draft; exact commands/tool versions are assigned in the implementation execution package after design approval.
+**Status:** Current proposed acceptance matrix for owner review. Planning/schema validation precedes implementation; actual runtime and packaged-surface evidence follows implementation. Commands/toolchain candidates and support policy are specified in the compatibility matrix; no runtime pass is claimed.
 
 ## 1. Principles
 
@@ -49,7 +49,7 @@ Run unit/contract/integration and packaging checks on Linux, macOS, and Windows.
 - Compare repository tree before/after browser/API workflows; browser must not mutate source repository or package files.
 - Exercise no-data startup and storage failure without installing scanners or fetching network resources.
 
-The exact method for creating history fixtures and whether CLI scan automatically records history is a design decision; do not invent a behavior in tests before it is approved.
+History capture is explicitly selected through `deprail scan --save-history`; ordinary scans do not initialize/write history. Use the failure/data schema examples for offline contract scenarios and real representative JS/Python/Java repositories for packaged release smoke. Browser/API calls never trigger scans or writes.
 
 ## 8. Release manual evidence
 
@@ -57,7 +57,7 @@ Record reviewed binary/version/commit, OS/architecture/browser/version, exact co
 
 ## 9. Requirement and threat evidence matrix
 
-The IDs below are planned verification scenarios, not implemented tests or completed evidence. The v0.5.0 release-evidence record must attach exact command/result, commit and binary identity, fixture/database digests, exit/status, OS/architecture, and relevant tool versions. Browser scenarios also record browser and assistive-technology versions. No supported browser list or SQLite driver is selected by this matrix.
+The IDs below are planned verification scenarios, not implemented tests or completed evidence. The v0.5.0 release-evidence record must attach exact command/result, commit and binary identity, fixture/database digests, exit/status, OS/architecture, and relevant tool versions. Browser scenarios also record browser and assistive-technology versions. Use the concrete dependency candidates and supported platform/browser policy in the compatibility matrix; selection is not a platform pass.
 
 | ID | Consumer-observable scenario | Required future evidence | Required matrix |
 | --- | --- | --- | --- |
@@ -77,7 +77,7 @@ The IDs below are planned verification scenarios, not implemented tests or compl
 | SEC-02 | Verify per-user data-root ownership/modes or ACL; unauthorized local user cannot read history; no unsafe fallback. | POSIX mode/Windows ACL evidence and data-root path record. | Linux, macOS, Windows. |
 | SEC-03 | Traversal, encoded separators, symlink/reparse escape, and arbitrary asset path requests fail without outside-root access. | Hostile path corpus/result and filesystem before-after record. | Linux, macOS, Windows. |
 | SEC-04 | SQL metacharacters and unknown sort/filter input cannot change query meaning or trigger unbounded work. | Adversarial query results and unchanged DB digest. | Linux, macOS, Windows. |
-| SEC-05 | Oversized bodies (only if a body route is approved), oversized responses, concurrent requests, and slow requests hit explicit bounds without truncation or resource exhaustion. | Fully serialize JSON as UTF-8 and enforce the 1 MiB byte cap including escaping; OpenAPI `maxLength` does not prove a byte bound. Exercise maximum Unicode/escaped fields and exact cap-boundary cases. An oversized response returns bounded `500 API_RESPONSE_TOO_LARGE` before any partial body; never truncate or return empty success. | Linux, macOS, Windows; browser cases on every approved browser. |
+| SEC-05 | Prohibited request bodies, request-target/header limits, whole-record byte-limited pages, oversized indivisible records/details, concurrent and slow requests hit explicit bounds without truncation or resource exhaustion. | Fully serialize JSON as UTF-8 and enforce the 1 MiB cap including escaping/envelope/cursor. Exercise maximum Unicode, exact cap/one-byte-over, short pages with every record returned once, empty terminal page, eight-request saturation and the 10-second deadline. A record/detail that cannot fit returns bounded `500 API_RESPONSE_TOO_LARGE` before any success body; never emit a zero-item nonterminal page. | Linux, macOS, Windows; browser cases on every supported browser. |
 | SEC-06 | Hostile repository labels/findings render as text; scripts, unsafe URLs, and markup do not execute. | Actual-browser hostile-content capture and console/error record. | Every approved browser/OS combination. |
 | SEC-07 | Use actual nonempty and failed `ScanReport` values plus hostile project diagnostics/path/credential fixtures; persisted `history-v1`, API responses, and logs must not leak raw root/errors, tokens, credential URLs, full environments, raw source, SQL/stack traces, or sensitive absolute host paths. Unknown fields must be classified or rejected, never silently promoted to safe detail. | Source/projection/response field comparison, redaction corpus and sanitized response/log evidence. | Linux, macOS, Windows; every approved browser for rendered output. |
 | SEC-08 | Corrupt pages/rows, unsupported future DB/projection schema, and row/projection mismatch produce explicit errors; bytes are preserved and no automatic repair/replacement occurs. | Corruption/future-version/mismatch matrix and pre/post DB digests. | Linux, macOS, Windows. |
@@ -87,4 +87,35 @@ The IDs below are planned verification scenarios, not implemented tests or compl
 | SEC-12 | Encoded/static asset routes serve only the embedded allowlist and disclose no host files. | Route corpus, response inventory, filesystem canary result. | Linux, macOS, Windows; every approved browser. |
 | SEC-13 | Pinned toolchain/dependencies build reproducibly; review licenses, lockfile, and software bill of materials before selecting packages. | Lockfile/build identity, license review, SBOM, and CI results. | Linux, macOS, Windows build jobs. |
 
-All matrix rows are release gates, not current pass claims. Freeze exact supported browser/assistive-technology versions and evidence storage location in the approved execution package before implementation; do not infer them from CI runners or local browser availability.
+All matrix rows are delivery/release gates, not current pass claims. Apply the supported browser/assistive-technology version policy in the compatibility matrix and record the exact versions used per evidence run; never infer runtime support from CI runner availability. Public release assets exclude raw reports/logs and credentials. Retain sanitized evidence in the version-specific release-evidence record with links to controlled artifacts.
+
+## 10. Detailed boundary and recovery scenarios
+
+These acceptance cases make the engineering admission limits observable; they do not require adding runtime code during planning.
+
+- Entry budget: exact 16 MiB serialized projection versus one byte over; exact and one-over 10,000 findings/1,000 workspaces/128 diagnostics/4,096 digests. All-or-nothing refusal, no silently dropped aliases, diagnostics or digests.
+- Store admission: exact/one-over 1,000 entries and 256 MiB summed projection bytes; race two captures near the limit. The writer transaction admits only permitted totals. Indexes/WAL/backups/artifacts are not falsely included in this logical quota; forced disk-full rolls back independently.
+- Identity and repeated save: retry a known same-operation ID with identical content versus conflicting content; verify no duplicate or replacement. A later scan with the same source scan ID gets another history occurrence.
+- Safe partial/failed/cancelled capture: exercise typed errors before they become CLI strings, early failure without graph/report, graph-only context, partial source report and cancellation with unchanged pre-cancellation report status. Unknown diagnostic code, unsupported source version, ambiguous finding identity and an unsafe required value refuse capture rather than fabricate safe detail.
+- Cancellation: stop scanner work when canceled; selected capture uses only the independently bounded terminal-save context specified by failure/data, preserves the original cancellation exit and never resumes scanning. A second termination or save deadline stops capture without partial rows.
+- Browser bootstrap: initial top-level navigation remains possible under the static-route Fetch Metadata rules; API requires bearer plus strict origin/host checks. Clear fragment before rendering/request; reload is an authentication-recovery state, not empty history. No token in printed URL, diagnostics, logs, requests targets, storage or referrer. Browser/OS launch exposure remains a reviewed residual risk, not a guarantee of same-user isolation.
+- Artifact provenance: without a trusted current artifact resolver, return `unavailable`, not `verified` or `missing`. Exercise trusted present/missing/mismatched bytes separately; no absolute repository root or artifact path is persisted/reconstructed from labels.
+- Recovery rehearsal: stop console/writers, preserve the original DB/WAL/SHM plus external artifacts and candidate backups, validate a separate backup copy, open a separately restored copy with the matching binary, and perform only explicitly owner-controlled replacement. Unsupported schema, failed backup validation or permissions leaves the only copy untouched.
+- Delivery identity: package known UI routes and embedded assets with the matching API/schema contract. Record clean-lockfile build, license/SBOM review and candidate vulnerability results; budget failures are explicit release blockers or owner-dispositioned preview gaps, never unsupported success claims.
+
+## 11. Planning contract smoke evidence (PR #417)
+
+Executed on macOS/darwin arm64 with Go `1.27.1`, host Node `26.7.0`/npm `11.19.0`; proposed frontend build pins were not installed. Python validation used the isolated environment `/tmp/deprail-392-contract-review` with PyYAML `6.0.3`, jsonschema `4.26.0` and openapi-spec-validator `0.9.0`.
+
+- Unique-key YAML parsing and OpenAPI 3.1 validation passed; all **62 operation-response examples** validated against their schemas. There remain exactly five authenticated GET API operations; static routes are separately declared.
+- Draft 2020-12 schema validation and **three history-v1 examples** passed. Throwaway projection smoke validated **eight API resources**, including null report/context versus trustworthy empty report and nonempty findings. Provenance is explicit nullable typed metadata, not fabricated scanner/database versions.
+- **29 hostile/boundary mutations** plus three extra trailing-control/dot-segment path cases were rejected; **17 diagnostic code/message pairs** accepted and mismatched messages rejected. Root `.`, dotfiles and Unicode remain valid. A regex-alternative anchoring defect exposed by `../x` and trailing newline cases was corrected before publication.
+- The nonempty fixture key was corrected after exercising actual `normalize.StableFindingKey` with `go run ./.deprail-contract-review`; it returned `629c2d635fcf2c1b477bf527cde2fb15d587aa86abab81146c6aded0e2d37feb`. The throwaway program was removed. This verifies the existing function, not implemented history capture.
+- Maximum legal Unicode finding fields in a 25-record API envelope measured **1,540,420 UTF-8 bytes** or **4,598,820 ASCII-escaped bytes**, including a conservative 512-byte cursor. Whole-record simulation returned 17/8 records at 1,047,676/492,829 bytes for UTF-8, or five pages of five records at 920,240 bytes (last 919,730) for escaped JSON. All simulated envelopes validated, remained ≤1 MiB and retained every record in order. This is serialization evidence, not HTTP runtime/paging performance.
+- Proposed cursor packing roundtrips produced history/workspace/finding decoded lengths **26/54/50 bytes**, unpadded base64url lengths **35/72/67 ASCII bytes**. No workspace label/path is encoded. Production cursor rejection/authentication remains a future acceptance scenario.
+- WCAG luminance calculations for the six text/accent tokens against white and card surfaces yielded minimum ratios **6.18–15.55:1**; control border `#64748B` gives **4.55:1**. Decorative `#CBD5E1` is only **1.48:1** against white and is explicitly forbidden as the sole meaningful control boundary. Actual rendered states/browser accessibility remain untested.
+- Script-free temporary dependency review: `npm install --package-lock-only --ignore-scripts --no-fund --no-audit && npm audit --json`. Candidate Vite `7.1.4` failed (one vulnerable direct dependency, high severity); amended `7.3.6` set returned audit exit **0**, **zero reported vulnerabilities**, **121 resolved dependency entries**. Lockfile SHA-256: `71a3114f95631e20a348c00216546797559f9f84fc8ca97389dcfac535a2304c`. No package scripts ran or project dependencies were installed. License metadata includes MIT/Apache-2.0/ISC/BSD-3-Clause and CC-BY-4.0; complete license/provenance/SBOM and pinned-toolchain build review remains required.
+- **186 local document file/heading targets** passed. Reviewed artifact SHA-256: history schema `52bca367f8e91f9947bf05bcd567b977fc4c47fc16dce85e493d9c186f6fdaae`; OpenAPI `3cf30ba33ba382e7ec62bbc0a8fcbd0f09b54cb09e01ff189d5912479ac4df9f`.
+- `make verify` exited **2**: generation and vet passed, but existing `internal/remediation/verification.TestRunExecutesSelectedCommandsInWorkspace` failed with `SCANNER_TIMEOUT: process exceeded configured deadline`. No assertion/deadline was changed and no passing rerun is substituted for that result. Separate `make build` exited **0**. CI for the final reviewed commit must be linked independently; no local/full verification pass is claimed.
+
+No SQLite/history/HTTP/React runtime was implemented. Transactions, permission enforcement, request security, actual frontend build, browser/AT, platform smoke and recovery remain planned future checks. Owner technical acceptance and owner security/architecture disposition of this exact proposal are still pending.

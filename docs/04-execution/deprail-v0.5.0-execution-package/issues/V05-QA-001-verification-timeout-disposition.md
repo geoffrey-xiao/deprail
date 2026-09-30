@@ -1,4 +1,6 @@
 # V05-QA-001 Resolve the Local Verification Timeout Readiness Gate
+- GitHub Issue: [#419](https://github.com/geoffrey-xiao/deprail/issues/419).
+- GitHub parent: [#418](https://github.com/geoffrey-xiao/deprail/issues/418). Dependencies: accepted PR #417 / owner decision.
 
 ## Planning metadata
 

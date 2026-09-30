@@ -1,4 +1,6 @@
 # H05-003 History Application Services
+- GitHub Issue: [#422](https://github.com/geoffrey-xiao/deprail/issues/422).
+- GitHub parent: [#418](https://github.com/geoffrey-xiao/deprail/issues/418). Published dependencies: #420, #421; global pre-start gate #419.
 
 ## Planning metadata
 

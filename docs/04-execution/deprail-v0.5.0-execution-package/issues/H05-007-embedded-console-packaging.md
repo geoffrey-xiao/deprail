@@ -1,4 +1,6 @@
 # H05-007: Package Reproducible Embedded Console Binaries
+- GitHub Issue: [#426](https://github.com/geoffrey-xiao/deprail/issues/426).
+- GitHub parent: [#418](https://github.com/geoffrey-xiao/deprail/issues/418). Published dependencies: #424, #425; global pre-start gate #419.
 
 ## Planning metadata
 

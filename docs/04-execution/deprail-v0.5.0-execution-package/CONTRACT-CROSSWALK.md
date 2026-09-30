@@ -1,6 +1,6 @@
 # v0.5 Contract Crosswalk
 
-**Status:** Draft traceability; final issue mapping follows owner acceptance of remaining technical decisions.
+**Status:** Exact planning contracts accepted by the owner at PR #417 head `b064954`, with separate security/architecture and pre-start quality dispositions [recorded here](https://github.com/geoffrey-xiao/deprail/pull/417#issuecomment-5907670878). [Published implementation mapping](tracking/IMPLEMENTATION-BACKLOG.md) links #418–#427. Runtime and release evidence remain future gates; historical draft sections below are preserved.
 
 | Source contract | v0.5 interpretation | Execution-package artifact | Owner decision/evidence gate |
 | --- | --- | --- | --- |
@@ -56,3 +56,7 @@ An unpublished planning decomposition may be reviewed now; implementation issue 
 ## Conditional delivery trace
 
 The [current eight-slice decomposition](issues/V05-005-readiness-map.md#current-review-decomposition) maps FR-501–FR-511 and SEC/STORE evidence to proposed interfaces, dependencies, owners, actual label vocabulary, acceptance scenarios and rollback. It is not a published implementation backlog: #396/#393 remain in Review, ADR-0004 remains Proposed, and exact-contract owner acceptance is pending. Release plan §14 records #356 carry-forward dispositions; publication follows owner planning DoR acceptance.
+
+## Accepted delivery mapping — 2026-09-30
+
+The [delivery epic](epics/EPIC-002-local-history-delivery.md) and [published backlog](tracking/IMPLEMENTATION-BACKLOG.md) supersede the unpublished-map status above. FR-501/503/504 and SEC-07 map to #420; STORE-01 and schema/recovery to #421; FR-502/503/510 to #422–#423; FR-506–508 and SEC-01–06 to #424; FR-505/507/508 and accessible UX to #425; FR-509 and SEC-10/12/13 to #426; FR-501–511 plus release/STORE/security evidence to #427. Cross-cutting requirements remain inherited by every affected slice, not exclusive to the listed owner. #419 is a global runtime pre-start gate. ADR-0004 is accepted; actual runtime evidence and owner review of delivery remain required.

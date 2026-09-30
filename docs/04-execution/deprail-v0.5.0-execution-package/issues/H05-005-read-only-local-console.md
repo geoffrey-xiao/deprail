@@ -1,4 +1,6 @@
 # H05-005: Implement Read-Only Local Console Transport
+- GitHub Issue: [#424](https://github.com/geoffrey-xiao/deprail/issues/424).
+- GitHub parent: [#418](https://github.com/geoffrey-xiao/deprail/issues/418). Published dependencies: #422; global pre-start gate #419.
 
 ## Planning metadata
 

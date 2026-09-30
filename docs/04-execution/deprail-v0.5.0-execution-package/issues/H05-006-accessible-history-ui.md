@@ -1,4 +1,6 @@
 # H05-006: Implement Accessible Local History UI
+- GitHub Issue: [#425](https://github.com/geoffrey-xiao/deprail/issues/425).
+- GitHub parent: [#418](https://github.com/geoffrey-xiao/deprail/issues/418). Published dependencies: #424; global pre-start gate #419.
 
 ## Planning metadata
 

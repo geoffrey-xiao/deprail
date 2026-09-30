@@ -1,4 +1,6 @@
 # H05-004 Opt-in History CLI
+- GitHub Issue: [#423](https://github.com/geoffrey-xiao/deprail/issues/423).
+- GitHub parent: [#418](https://github.com/geoffrey-xiao/deprail/issues/418). Published dependencies: #422; global pre-start gate #419.
 
 ## Planning metadata
 

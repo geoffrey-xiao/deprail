@@ -1,4 +1,6 @@
 # H05-002 Private History Store
+- GitHub Issue: [#421](https://github.com/geoffrey-xiao/deprail/issues/421).
+- GitHub parent: [#418](https://github.com/geoffrey-xiao/deprail/issues/418). Published dependencies: #420; global pre-start gate #419.
 
 ## Planning metadata
 

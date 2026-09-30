@@ -1,4 +1,6 @@
 # V05-EPIC-002 Deliver Local Scan History and the Read-Only Console
+- GitHub Issue: [#418](https://github.com/geoffrey-xiao/deprail/issues/418).
+- Published children: quality preflight #419; H05-001–H05-008 #420–#427. See [durable backlog](../tracking/IMPLEMENTATION-BACKLOG.md).
 
 ## Planning metadata
 

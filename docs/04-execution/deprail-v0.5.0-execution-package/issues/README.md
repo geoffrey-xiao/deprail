@@ -1,6 +1,6 @@
 # v0.5 Issue Contracts
 
-These local planning contracts map to GitHub issues. All new issues belong beneath EPIC-001 as GitHub subissues; existing #387 is added as the V05-000 child. None is a runtime implementation issue.
+The readiness contracts below belong beneath EPIC-001 / #390. Following [exact owner approval](https://github.com/geoffrey-xiao/deprail/pull/417#issuecomment-5907670878), delivery contracts are published beneath V05-EPIC-002 / #418; see [implementation backlog](../tracking/IMPLEMENTATION-BACKLOG.md) for eight ordered slices, quality preflight, dependencies and evidence. Todo publication does not start runtime work.
 
 | Local issue | GitHub issue | Parent epic | Dependencies | Outcome |
 |---|---|---|---|---|

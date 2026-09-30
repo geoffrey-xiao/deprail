@@ -1,4 +1,6 @@
 # H05-001 Safe History Projection
+- GitHub Issue: [#420](https://github.com/geoffrey-xiao/deprail/issues/420).
+- GitHub parent: [#418](https://github.com/geoffrey-xiao/deprail/issues/418). Published dependencies: #419.
 
 ## Planning metadata
 

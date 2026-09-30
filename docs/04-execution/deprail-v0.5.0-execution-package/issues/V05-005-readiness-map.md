@@ -3,7 +3,7 @@
 
 - Epic: [EPIC-001 / #390](https://github.com/geoffrey-xiao/deprail/issues/390)
 - Target: `v0.5.0`
-- Status: Open in Project Review; [PR #417](https://github.com/geoffrey-xiao/deprail/pull/417) reconciles the exact engineering proposal, schema/examples, boundary evidence and eight-slice unpublished map. The owner must accept the current contract and separately disposition security/architecture risk before implementation issues are published. Earlier PR #409/#412/#414 approvals remain historical; external review is optional under ADR-0005.
+- Status: Open in Project Review. Exact PR #417 head `b064954` technical and separate security/architecture acceptance is [recorded from the owner's “approve，请继续” instruction](https://github.com/geoffrey-xiao/deprail/pull/417#issuecomment-5907670878); merged baseline `40e43a8`. Authorized delivery contracts are published in [backlog #418–#427](../tracking/IMPLEMENTATION-BACKLOG.md). Current handoff still requires owner PR review; runtime starts remain gated on #419 resolution or explicit disposition and issue-specific DoR. Earlier decision history below is preserved.
 - Type: decision
 - Area: docs
 - Priority: P0
@@ -82,3 +82,7 @@ All rows have owner and required reviewer `@geoffrey-xiao`, target/milestone `v0
 The references to temporary contract smoke assets in H05-005 define a throwaway verification aid, not a shipped placeholder UI or substitute acceptance. H05-006 and H05-007 together deliver the complete production console; no intermediate scaffold is release-ready.
 
 At publication, convert each row into the repository issue template with exact owned symbols/files, inputs/outputs, scope/exclusions, failure behavior, commands/scenarios, acceptance/evidence, reviewer, rollback, dependencies and live GitHub links. Search existing issues first; publish nothing until owner contract/DoR acceptance. Keep at most two implementation issues/two review PRs active and never parallelize two R3 implementation items.
+
+## Approved publication handoff — 2026-09-30
+
+Owner acceptance supersedes the earlier prohibition on issue publication, not the runtime/release prohibition. Eight complete repository-template contracts plus bounded quality preflight are native children of #418 with verified labels/milestone, Project Todo, owner/reviewer, version and dependencies. [Durable tracking](../tracking/IMPLEMENTATION-BACKLOG.md) records sources and evidence. No runtime acceptance or Master Checklist item is marked complete; #419 preserves the reported local `make verify` timeout. #356 technical follow-ups remain separate. No runtime, new-PR merge, or release is authorized.

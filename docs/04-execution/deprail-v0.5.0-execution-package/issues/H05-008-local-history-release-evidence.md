@@ -1,4 +1,6 @@
 # H05-008: Verify Local History Release Evidence
+- GitHub Issue: [#427](https://github.com/geoffrey-xiao/deprail/issues/427).
+- GitHub parent: [#418](https://github.com/geoffrey-xiao/deprail/issues/418). Published dependencies: #420–#426; global pre-start gate #419.
 
 ## Planning metadata
 

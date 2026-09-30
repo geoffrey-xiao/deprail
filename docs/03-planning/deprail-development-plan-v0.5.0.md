@@ -3,8 +3,8 @@
 | Attribute | Value |
 | --- | --- |
 | Release | v0.5.0 |
-| Plan revision | 1.2 |
-| Status | Owner-directed revision; technical Definition of Ready remains open |
+| Plan revision | 1.3 (additive owner-acceptance/publication record) |
+| Status | Owner-accepted detailed planning baseline; issue publication authorized, runtime kickoff gated |
 | Target mode | Preview first; stable follow-up only after complete evidence |
 | Whole-project roadmap | [`deprail-roadmap-v1.md`](deprail-roadmap-v1.md) |
 | Product baseline | [`../01-product/deprail-product-design-v1-ai.md`](../01-product/deprail-product-design-v1-ai.md) |
@@ -233,3 +233,17 @@ These carry-forward directions were [recorded by the owner in #356](https://gith
 Planning may prepare an unpublished delivery map with proposed issue boundaries, dependencies and acceptance scenarios for owner review. Such a map is not an implementation issue or authorization. First accept the reconciled design contracts and the planning DoR; then derive/finalize and publish implementation issues, with each issue's own Definition of Ready checked before code starts. Do not require GitHub implementation issues to already exist as a prerequisite for permission to create them.
 
 Before publication, the owner reviews the exact contract set and separately records security/risk disposition. Before implementation, every published issue has one primary outcome, release/requirements links, owner reviewer, dependencies, failure behavior, observable acceptance and evidence. Before release, execute the linked runtime matrix and general release checklist. Any failed check or unresolved material contract conflict remains explicit and blocks only its dependent work; external review is optional.
+
+## 15. Owner acceptance and implementation-backlog publication
+
+On 2026-09-30 the owner replied “approve，请继续” to the exact-contract review instructions for head `b0649547d1e0f033f10f3f28920b74eab9b16e1b`; PR #417 was already owner-merged at `40e43a83eaac1b84dd038ee1ea4dccbd3e7234f6`. The assistant recorded the conversation decision [on PR #417](https://github.com/geoffrey-xiao/deprail/pull/417#issuecomment-5907670878), explicitly distinguishing owner technical acceptance from owner security/architecture acceptance. No native GitHub APPROVED review is fabricated.
+
+Revision 1.3 records acceptance of §14's exact contract set, eight delivery slices and predecessor dispositions; it changes no capability or exclusion. The owner accepts transient browser/OS fragment exposure and logical-versus-physical storage-growth risk under the specified private/read-only/no-delete/no-repair/no-downgrade boundaries. Supply-chain review before introducing candidate dependencies and actual runtime/browser/platform/recovery evidence remain required.
+
+The accepted planning DoR permits finalizing and publishing [V05-EPIC-002](../04-execution/deprail-v0.5.0-execution-package/epics/EPIC-002-local-history-delivery.md) and its contracts, not starting runtime implementation or merging another PR. [V05-QA-001](../04-execution/deprail-v0.5.0-execution-package/issues/V05-QA-001-verification-timeout-disposition.md) tracks the known local verification timeout; resolution or explicit owner disposition precedes every runtime kickoff. Each new issue remains Todo until its own DoR, dependencies, owner review and synchronized reviewed-main gate pass. The predecessor evidence gaps are not closed by publication.
+
+### Release baseline at publication
+
+`git fetch origin main --tags` synchronized main at `40e43a8`. All published tags inspected are previews; no stable `vMAJOR.MINOR.PATCH` or RC tag exists. Latest published preview is `v0.4.0-preview.2`. `origin/main:.release-please-manifest.json` does not exist; no manifest/version is invented or created during planning. The approved intended line is `0.5.0`, preview first, explicitly selected by this plan—not inferred from the preview tag as a stable baseline. Release identity/configuration must be established in H05-007/H05-008 before any tag/publication.
+
+The durable backlog/Project verification record is maintained with the execution package. Earlier pending/proposed wording in revisions 1.0–1.2 preserves history; this additive acceptance record controls current planning readiness.

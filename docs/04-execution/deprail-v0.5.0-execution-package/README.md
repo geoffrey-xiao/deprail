@@ -3,7 +3,7 @@
 | Attribute | Value |
 | --- | --- |
 | Release | v0.5.0; preview first |
-| Status | Exact engineering proposal prepared for owner technical/security review; implementation not authorized |
+| Status | Owner-accepted planning baseline; authorized issue publication, runtime starts separately gated |
 | Preparation issue | [#387](https://github.com/geoffrey-xiao/deprail/issues/387) |
 | Release plan | [`../../03-planning/deprail-development-plan-v0.5.0.md`](../../03-planning/deprail-development-plan-v0.5.0.md) |
 | Product baseline | [`../../01-product/deprail-product-design-v1-ai.md`](../../01-product/deprail-product-design-v1-ai.md) |
@@ -73,16 +73,16 @@ The owner created the v0.5 planning epic and design/readiness subissues before t
 
 ## Definition of Ready
 
-- [ ] Owner approves the v0.5 outcome, inclusions, exclusions, compatibility boundary, failure model, and preview acceptance gate.
-- [ ] Every open #356 follow-up is explicitly assigned, carried forward, or deferred with owner and target; no predecessor gate is inferred complete.
-- [ ] UX design is approved and browser interaction/accessibility criteria are observable.
-- [ ] OpenAPI/API security design is reviewed; endpoint and data schemas are versioned and validated.
-- [ ] SQLite schema, transaction, migration, retention/deletion, corruption, backup/recovery, and permissions decision is accepted.
-- [ ] Security and failure contracts include local-origin, path, process, privacy, and sensitive-data boundaries.
-- [ ] Compatibility matrix, cross-platform test strategy, packaging constraints, and rollback/recovery evidence are accepted.
-- [ ] Owner reviews and records a decision on the exact current contract version; an independent reviewer is optional.
-- [ ] Unpublished ordered planning map defines one-outcome interfaces/dependencies, failures, acceptance, owner reviewer and rollback. After planning DoR acceptance, each implementation issue is finalized with its own DoR and published; publication is not a circular planning prerequisite.
-- [ ] Project/milestone/view metadata and evidence links are verified.
+- [x] Owner approves the v0.5 outcome, inclusions, exclusions, compatibility boundary, failure model, and preview acceptance gate — [exact owner decision](https://github.com/geoffrey-xiao/deprail/pull/417#issuecomment-5907670878).
+- [x] Every #356 follow-up is assigned/carried/deferred with owner and target — approved release plan §14; technical evidence gaps remain open.
+- [x] UX design and observable browser/accessibility criteria accepted — same owner decision, UX and compatibility matrix; no browser pass inferred.
+- [x] Versioned API/security/data schemas reviewed and validated — owner decision and TEST-STRATEGY §11.
+- [x] SQLite schema/transactions/migration/retention/corruption/backup/recovery/permissions design accepted — ADR-0004 current accepted addendum; actual runtime checks still required.
+- [x] Security/failure contracts cover local-origin/path/process/privacy/sensitive-data boundaries — owner security acceptance and linked contracts.
+- [x] Compatibility/platform test strategy, packaging constraints and recovery evidence requirements accepted — owner decision; evidence requirements are not completed runtime evidence.
+- [x] Owner accepted exact reviewed head `b064954` — separate technical and security/architecture entries in the linked decision; external review optional.
+- [x] Approved ordered planning map defines one-outcome interfaces/dependencies/failures/acceptance/owner/rollback — derive complete contracts under EPIC-002 after this gate.
+- [x] Existing v0.5 milestone/Project metadata and evidence links verified — PR #417 and linked tracking records; new issue metadata verified separately at publication.
 
 ### Readiness evidence and blockers
 
@@ -142,4 +142,17 @@ Contract smoke evidence is recorded in TEST-STRATEGY. No remaining engineering a
 
 ## Runtime work remains gated by technical readiness
 
-The owner authorized planning-task creation in [#392](https://github.com/geoffrey-xiao/deprail/issues/392#issuecomment-5807906998), and the independent reviewer approved the earlier package in PR #412; both are historical facts, not current contract acceptance. PR #414 was merged by the owner without an independent APPROVED review; that review is optional under ADR-0005. Do not begin runtime work until the remaining technical decisions, linked evidence, and owner acceptance of the complete DoR are recorded.
+The owner accepted the exact planning baseline in [this recorded conversation decision](https://github.com/geoffrey-xiao/deprail/pull/417#issuecomment-5907670878), after PR #417 merged. This authorizes finalizing/publishing the ordered backlog, not runtime code or a new PR merge. Each issue's exact contract/DoR and synchronized reviewed main must be checked before kickoff. [V05-QA-001](issues/V05-QA-001-verification-timeout-disposition.md) requires resolution or explicit owner disposition of the known local verification timeout before any runtime issue starts.
+
+## Owner-accepted planning baseline (2026-09-30)
+
+Reviewed head: `b0649547d1e0f033f10f3f28920b74eab9b16e1b`; owner-merged PR #417: `40e43a83eaac1b84dd038ee1ea4dccbd3e7234f6`. The owner replied “approve，请继续” to the explicit review instructions; the assistant recorded that conversation decision at the link above. This is not a fabricated GitHub `APPROVED` review.
+
+| Decision record | Accepted scope | Remaining gate |
+| --- | --- | --- |
+| Owner technical acceptance | Exact history/source/SQL/API/diagnostic/provenance, CLI/launch/cursor, UI/platform/recovery, release-plan §14 and eight-slice contracts | Dependency candidates require complete review before introduction; derived issues require pre-start owner/DoR checks |
+| Owner security/architecture acceptance | Transient browser/OS fragment exposure and logical-versus-physical storage-growth residual risks, retaining private storage/bounded read-only/no-delete/no-repair/no-downgrade | Actual permissions, HTTP/browser/security/recovery checks after implementation |
+| Verification disposition | Contract smoke and final-head three-OS CI accepted; local `make verify` failure retained as unresolved | V05-QA-001 resolution or explicit owner readiness disposition before runtime starts |
+| Authorization boundary | Complete planning DoR and publish issue contracts/tracking | No runtime code, release or new merge authorized |
+
+This additive record supersedes earlier current-stage “proposal/not accepted/pending owner” wording across the linked package for the exact accepted design, without erasing historical proposals. Actual runtime acceptance remains incomplete. See [delivery epic](epics/EPIC-002-local-history-delivery.md) and [issue contracts](issues/README.md); publication evidence is recorded in the delivery tracking record.

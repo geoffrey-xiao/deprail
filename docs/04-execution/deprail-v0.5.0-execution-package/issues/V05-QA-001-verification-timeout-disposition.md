@@ -83,3 +83,7 @@ Withdraw an unproven correction; retain the original bounded process semantics a
 - [ ] Owner decision and remaining risk are recorded.
 - [ ] Evidence links are attached and runtime gate updated.
 - [ ] Any implementation PR and owner-reviewed merge are linked; investigation-only disposition states that no runtime code changed.
+
+## Investigation evidence — 2026-09-30
+
+The owner's `go` instruction authorizes this bounded investigation after owner-merged PR #428. [Actual lifecycle evidence](../tracking/V05-QA-001-INVESTIGATION.md) records cold helper launches over three seconds, warm/symlink observations, unchanged production-runner workspace/timeout/cancellation smoke and an unresolved output-capture boundary finding (155 bytes captured with a 32-byte cap). The original local full-verification failure remains failed. Exact OS cause is not established; no production or test correction was applied. A darwin-only symlink-fixture correction is proposed for owner authorization, not declared verified. Technical acceptance, separate security/architecture review and runtime pre-start disposition remain pending; no H05 issue starts or acceptance checkbox is completed.

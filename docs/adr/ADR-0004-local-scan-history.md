@@ -1,6 +1,6 @@
 # ADR-0004: Local Scan-History Storage and Lifecycle
 
-- Status: Proposed; owner accepted the high-level v0.5 direction on 2026-09-24; exact projection/API schema, token bootstrap, numeric bounds, driver/lifecycle evidence, and runtime authorization remain pending
+- Status: Accepted as the reconciled history-v1/current detailed contract; [owner technical and separate security/architecture decision](https://github.com/geoffrey-xiao/deprail/pull/417#issuecomment-5907670878), 2026-09-30. Runtime kickoff and implementation acceptance remain separately gated.
 - Date: 2026-09-23
 - Owners: `@geoffrey-xiao`
 - Related issues: [#391 V05-003](https://github.com/geoffrey-xiao/deprail/issues/391); [#396 V05-002](https://github.com/geoffrey-xiao/deprail/issues/396)
@@ -147,3 +147,11 @@ Before implementation issue publication: reconcile these selections into the exa
 After implementation and before acceptance/release: exercise actual saves/queries, quota boundaries, lock/disk-full/cancellation rollback, backup/restore, hostile requests, browser credential removal, accessibility and Linux/macOS/Windows workflows against the reviewed binary. These checks cannot pass before the relevant runtime exists and must not be misclassified as missing pre-implementation test passes.
 
 The exact projection/source/SQL/API contract and examples, CLI/browser launch and fixed cursor encodings, CSP, frontend pins/ownership/budgets, platform/recovery policy and unpublished delivery map are reconciled in [the current review package](../04-execution/deprail-v0.5.0-execution-package/README.md#current-exact-contract-review-package). Earlier root-as-dot/unbounded-growth wording is historical; the current projection excludes the absolute root and logical admission quotas refuse new saves. Owner technical and security/architecture acceptance remains required.
+
+## Exact-contract acceptance (2026-09-30)
+
+The owner approved reviewed head `b064954` in the current conversation after PR #417 merged at `40e43a8`. [The recorded decision](https://github.com/geoffrey-xiao/deprail/pull/417#issuecomment-5907670878) accepts the reconciled history-v1/source/SQL/API, typed diagnostics/provenance, CLI compatibility, launch/token and admission/lifecycle details. The separate security/architecture entry accepts documented transient OS/browser fragment exposure and logical-versus-physical growth risk without weakening private permissions, bounded read-only operations or no-delete/no-repair/no-downgrade controls.
+
+This is acceptance of the current detailed reconciled contract, not the superseded root-as-dot/raw-snapshot/unbounded-logical-retention proposals. Historical sections remain preserved. Candidate driver/frontend dependencies still require complete supply-chain review before introduction; the runtime still must prove locking/cancellation/quotas/permissions/backup/recovery/browser/platform behavior.
+
+Planning issue publication is authorized under the [accepted package DoR](../04-execution/deprail-v0.5.0-execution-package/README.md#definition-of-ready). [The recorded local verification timeout](../04-execution/deprail-v0.5.0-execution-package/issues/V05-QA-001-verification-timeout-disposition.md) requires resolution or explicit owner disposition before runtime kickoff; no code/release/new merge is authorized merely by this acceptance.

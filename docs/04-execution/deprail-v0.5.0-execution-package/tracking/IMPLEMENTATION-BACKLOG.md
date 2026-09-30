@@ -10,6 +10,8 @@ Authorization covers complete planning contracts and GitHub publication only. No
 
 All rows are assigned to `@geoffrey-xiao`, owner reviewer `@geoffrey-xiao`, milestone `v0.5.0`, Target Version `0.5.0`, Project Todo, Sprint unassigned. Exact `area`, `risk`, `priority` and `type` labels were read back after creation. Every child is a native GitHub subissue of #418, not a child of readiness epic #390. #418 depends on the accepted readiness baseline.
 
+[CSV backlog](issue-backlog.csv) preserves the existing fourteen-column import convention and appends live GitHub number/URL and local contract path. Evidence cells name required future proof, not passed checks.
+
 | Key / durable contract | GitHub | Dependencies / pre-start | Area / risk / priority / type |
 |---|---|---|---|
 | [V05-EPIC-002](../epics/EPIC-002-local-history-delivery.md) | [#418](https://github.com/geoffrey-xiao/deprail/issues/418) | Readiness #392; quality #419 | foundation / R3 / P0 / feature |

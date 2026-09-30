@@ -125,12 +125,13 @@ func approvedEnv(extra map[string]string) []string {
 }
 
 type limitedBuffer struct {
-	*bytes.Buffer
-	Limit int64
+	// Do not embed: promoted ReadFrom lets io.Copy bypass the bounded Write.
+	Buffer *bytes.Buffer
+	Limit  int64
 }
 
 func (b *limitedBuffer) Write(p []byte) (int, error) {
-	remaining := b.Limit - int64(b.Len())
+	remaining := b.Limit - int64(b.Buffer.Len())
 	if remaining <= 0 {
 		return 0, io.ErrShortBuffer
 	}

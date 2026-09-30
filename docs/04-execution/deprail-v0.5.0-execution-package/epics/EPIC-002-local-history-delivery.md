@@ -1,6 +1,6 @@
 # V05-EPIC-002 Deliver Local Scan History and the Read-Only Console
 - GitHub Issue: [#418](https://github.com/geoffrey-xiao/deprail/issues/418).
-- Published children: quality preflight #419; H05-001–H05-008 #420–#427. See [durable backlog](../tracking/IMPLEMENTATION-BACKLOG.md).
+- Published children: quality investigation #419; bounded-capture correction #430; H05-001–H05-008 #420–#427. See [durable backlog](../tracking/IMPLEMENTATION-BACKLOG.md).
 
 ## Planning metadata
 
@@ -10,7 +10,7 @@
 - Risk: `R3`
 - Target version: `0.5.0`; preview first, no release authorized here.
 - Milestone: `v0.5.0`
-- Sprint: Unassigned until an explicit issue/Sprint kickoff.
+- Sprint: Sprint 4 in the live Project following the owner's tracking assignment; this does not authorize H05 runtime work.
 - Owner: `@geoffrey-xiao`
 - Reviewer: `@geoffrey-xiao`; independent review optional under ADR-0005.
 - Dependencies: [EPIC-001 / #390 design baseline](https://github.com/geoffrey-xiao/deprail/issues/390), [owner exact-contract acceptance](https://github.com/geoffrey-xiao/deprail/pull/417#issuecomment-5907670878), merged [PR #417](https://github.com/geoffrey-xiao/deprail/pull/417).
@@ -99,3 +99,7 @@ Stop/withdraw the optional console/capture paths without altering default scanni
 - [ ] Owner security/architecture and release decisions are separately recorded.
 - [ ] All child/PR/evidence links and remaining risks are reconciled in tracking.
 - [ ] Approved release mode has a complete checklist or explicit allowed preview dispositions; this epic's creation does not authorize publication.
+
+## Bounded process capture prerequisite
+
+[V05-QA-002 / #430](../issues/V05-QA-002-bounded-output-capture.md) restores the existing process capture limit after the #419 investigation found a real output-boundary bypass. This is a security correction, not a new history capability. Closed #419 and its Project Done status record accepted investigation only: the original copied-helper timeout and explicit owner runtime-start decision remain separately pending. Require reviewed capture correction and the existing readiness gates before H05 kickoff; do not infer readiness from issue closure or Sprint assignment.

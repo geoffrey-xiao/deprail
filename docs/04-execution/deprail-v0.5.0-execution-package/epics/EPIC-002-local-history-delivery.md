@@ -1,6 +1,6 @@
 # V05-EPIC-002 Deliver Local Scan History and the Read-Only Console
 - GitHub Issue: [#418](https://github.com/geoffrey-xiao/deprail/issues/418).
-- Published children: quality investigation #419; bounded-capture correction #430; H05-001–H05-008 #420–#427. See [durable backlog](../tracking/IMPLEMENTATION-BACKLOG.md).
+- Published children: quality investigation #419; bounded-capture correction #430; darwin fixture correction #432; H05-001–H05-008 #420–#427. See [durable backlog](../tracking/IMPLEMENTATION-BACKLOG.md).
 
 ## Planning metadata
 
@@ -103,3 +103,7 @@ Stop/withdraw the optional console/capture paths without altering default scanni
 ## Bounded process capture prerequisite
 
 [V05-QA-002 / #430](../issues/V05-QA-002-bounded-output-capture.md) restores the existing process capture limit after the #419 investigation found a real output-boundary bypass. This is a security correction, not a new history capability. Closed #419 and its Project Done status record accepted investigation only: the original copied-helper timeout and explicit owner runtime-start decision remain separately pending. Require reviewed capture correction and the existing readiness gates before H05 kickoff; do not infer readiness from issue closure or Sprint assignment.
+
+## Darwin fixture readiness follow-up
+
+Owner-merged capture fix PR #431 is included in the baseline for [V05-QA-003 / #432](../issues/V05-QA-003-darwin-helper-fixture.md). This follow-up changes only the darwin test helper to reference the already active test image; all production behavior, Linux/Windows copying, deadlines and assertions remain. Corrected-baseline targeted/full checks are recorded in its evidence; owner review/merge and the explicit runtime-start decision still precede H05 kickoff. Closed #419/#430 and Sprint assignment do not alone authorize feature code.

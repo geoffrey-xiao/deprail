@@ -146,7 +146,21 @@ func verifyPrivateACL(path string, directory bool) error {
 		return errors.New("history path DACL is unavailable")
 	}
 	if acl.AceCount != 1 {
-		return fmt.Errorf("history path DACL has %d entries", acl.AceCount)
+		entries := make([]string, 0, acl.AceCount)
+		for index := uint32(0); index < uint32(acl.AceCount); index++ {
+			var entry *windows.ACCESS_ALLOWED_ACE
+			if err := windows.GetAce(acl, index, &entry); err != nil || entry == nil {
+				entries = append(entries, fmt.Sprintf("index=%d unreadable", index))
+				continue
+			}
+			currentUser := false
+			if entry.Header.AceType == windows.ACCESS_ALLOWED_ACE_TYPE {
+				entrySID := (*windows.SID)(unsafe.Pointer(&entry.SidStart))
+				currentUser = entrySID.Equals(currentSID)
+			}
+			entries = append(entries, fmt.Sprintf("type=%d mask=%#x flags=%#x currentUser=%t", entry.Header.AceType, entry.Mask, entry.Header.AceFlags, currentUser))
+		}
+		return fmt.Errorf("history path DACL has %d entries %v", acl.AceCount, entries)
 	}
 	var ace *windows.ACCESS_ALLOWED_ACE
 	if err := windows.GetAce(acl, 0, &ace); err != nil || ace == nil || ace.Header.AceType != windows.ACCESS_ALLOWED_ACE_TYPE {

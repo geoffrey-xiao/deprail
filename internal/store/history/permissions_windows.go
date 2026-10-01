@@ -141,44 +141,55 @@ func verifyPrivateACL(path string, directory bool) error {
 	if err != nil || owner == nil || !owner.Equals(currentSID) {
 		return errors.New("history path is not owned by the current user")
 	}
+	control, _, err := security.Control()
+	if err != nil || control&windows.SE_DACL_PROTECTED == 0 {
+		return errors.New("history path DACL is not protected from inheritance")
+	}
 	acl, _, err := security.DACL()
 	if err != nil || acl == nil {
 		return errors.New("history path DACL is unavailable")
 	}
-	if acl.AceCount != 1 {
-		entries := make([]string, 0, acl.AceCount)
-		for index := uint32(0); index < uint32(acl.AceCount); index++ {
-			var entry *windows.ACCESS_ALLOWED_ACE
-			if err := windows.GetAce(acl, index, &entry); err != nil || entry == nil {
-				entries = append(entries, fmt.Sprintf("index=%d unreadable", index))
-				continue
-			}
-			currentUser := false
-			if entry.Header.AceType == windows.ACCESS_ALLOWED_ACE_TYPE {
-				entrySID := (*windows.SID)(unsafe.Pointer(&entry.SidStart))
-				currentUser = entrySID.Equals(currentSID)
-			}
-			entries = append(entries, fmt.Sprintf("type=%d mask=%#x flags=%#x currentUser=%t", entry.Header.AceType, entry.Mask, entry.Header.AceFlags, currentUser))
-		}
-		return fmt.Errorf("history path DACL has %d entries %v", acl.AceCount, entries)
-	}
-	var ace *windows.ACCESS_ALLOWED_ACE
-	if err := windows.GetAce(acl, 0, &ace); err != nil || ace == nil || ace.Header.AceType != windows.ACCESS_ALLOWED_ACE_TYPE {
-		return errors.New("history path DACL does not have a simple allow entry")
-	}
-	wantFlags := byte(0)
+	expectedEntries := 1
+	inheritedFlags := byte(0)
 	if directory {
-		wantFlags = windows.OBJECT_INHERIT_ACE | windows.CONTAINER_INHERIT_ACE
+		expectedEntries = 2
+		inheritedFlags = windows.OBJECT_INHERIT_ACE | windows.CONTAINER_INHERIT_ACE | windows.INHERIT_ONLY_ACE
 	}
-	if ace.Mask != windows.GENERIC_ALL {
-		return errors.New("history path DACL access mask differs")
+	if int(acl.AceCount) != expectedEntries {
+		return fmt.Errorf("history path DACL has %d entries", acl.AceCount)
 	}
-	if ace.Header.AceFlags != wantFlags {
-		return errors.New("history path DACL inheritance flags differ")
+	seenCurrent, seenInherited := false, false
+	for index := uint32(0); index < uint32(acl.AceCount); index++ {
+		var ace *windows.ACCESS_ALLOWED_ACE
+		if err := windows.GetAce(acl, index, &ace); err != nil || ace == nil || ace.Header.AceType != windows.ACCESS_ALLOWED_ACE_TYPE {
+			return errors.New("history path DACL does not have a simple allow entry")
+		}
+		if ace.Mask != windows.GENERIC_ALL && ace.Mask != windows.ACCESS_MASK(windowsFileAllAccess) {
+			return errors.New("history path DACL access mask differs")
+		}
+		flags := ace.Header.AceFlags
+		if flags == 0 {
+			if seenCurrent {
+				return errors.New("history path DACL has duplicate current-object entries")
+			}
+			seenCurrent = true
+		} else if directory && flags == inheritedFlags {
+			if seenInherited {
+				return errors.New("history path DACL has duplicate inherited entries")
+			}
+			seenInherited = true
+		} else {
+			return errors.New("history path DACL inheritance flags differ")
+		}
+		aceSID := (*windows.SID)(unsafe.Pointer(&ace.SidStart))
+		if !aceSID.Equals(currentSID) {
+			return errors.New("history path DACL principal differs")
+		}
 	}
-	aceSID := (*windows.SID)(unsafe.Pointer(&ace.SidStart))
-	if !aceSID.Equals(currentSID) {
-		return errors.New("history path DACL principal differs")
+	if !seenCurrent || directory && !seenInherited {
+		return errors.New("history path DACL does not cover its storage path")
 	}
 	return nil
 }
+
+const windowsFileAllAccess uint32 = 0x001f01ff

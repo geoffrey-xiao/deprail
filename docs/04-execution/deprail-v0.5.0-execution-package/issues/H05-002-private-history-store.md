@@ -81,7 +81,7 @@ Input: schema-valid projection, same-operation occurrence ID, digest references 
 
 ## Implementation evidence (acceptance pending)
 
-The living implementation and verification record is [`H05-002-STORE-EVIDENCE.md`](../tracking/H05-002-STORE-EVIDENCE.md), with the reviewed dependency SBOM at [`H05-002-dependencies.cdx.json`](../tracking/H05-002-dependencies.cdx.json). Draft [PR #436](https://github.com/geoffrey-xiao/deprail/pull/436) is open and Project Status is `Review`. Four exact-head CI runs passed Ubuntu/macOS but failed Windows ACL verification; the latest identified Windows' two same-user directory ACEs (current-object and inherit-only child access). The verifier now checks that expected protected-DACL shape, and another exact-head CI run is pending. Windows runtime evidence and owner technical/security review remain pending. Acceptance boxes remain unchecked.
+The living implementation and verification record is [`H05-002-STORE-EVIDENCE.md`](../tracking/H05-002-STORE-EVIDENCE.md), with the reviewed dependency SBOM at [`H05-002-dependencies.cdx.json`](../tracking/H05-002-dependencies.cdx.json). Draft [PR #436](https://github.com/geoffrey-xiao/deprail/pull/436) is open and Project Status is `Review`. The current exact-head CI run [36805570531](https://github.com/geoffrey-xiao/deprail/actions/runs/36805570531) passed Ubuntu/macOS/Windows after the first four runs exposed Windows path ownership and DACL-shape assumptions. Owner technical/security review remains pending; acceptance boxes remain unchecked.
 
 ## Final Acceptance
 

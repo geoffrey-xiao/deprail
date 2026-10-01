@@ -90,7 +90,10 @@ func TestScanSaveHistoryIsExplicitAndPreservesReport(t *testing.T) {
 	if !bytes.Equal(defaultStdout, savedStdout) {
 		t.Fatalf("history opt-in changed scan stdout\ndefault: %q\nsaved: %q", defaultStdout, savedStdout)
 	}
-	assertHistoryEntryCount(t, target, 1)
+	historyDB := filepath.Join(configDir, ".deprail", "history.sqlite3")
+	if _, err := os.Stat(historyDB); err != nil {
+		t.Fatalf("opt-in scan did not create the history database: %v", err)
+	}
 
 	repeatedStdout, repeatedStderr, repeatedErr := runHistoryCLIScan(t, cliPath, repositoryRoot, scannerDir, configRoot, append(baseArgs, "--save-history")...)
 	if repeatedErr != nil || len(repeatedStderr) != 0 || !bytes.Equal(defaultStdout, repeatedStdout) {

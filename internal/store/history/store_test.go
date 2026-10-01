@@ -451,7 +451,7 @@ func TestOnlineBackupIncludesCommittedWALState(t *testing.T) {
 	if err := copyDB.Close(); err != nil {
 		t.Fatal(err)
 	}
-	if err := secureFile(backup, false); err != nil {
+	if err := secureFile(backup, false, false); err != nil {
 		t.Fatalf("backup permissions are not private: %v", err)
 	}
 }
@@ -495,7 +495,7 @@ func TestUnversionedDatabaseWithObjectsIsRefusedWithoutModification(t *testing.T
 	if err := db.Close(); err != nil {
 		t.Fatal(err)
 	}
-	if err := secureFile(path, true); err != nil {
+	if err := secureFile(path, true, true); err != nil {
 		t.Fatal(err)
 	}
 	before, err := fileSHA256(path)

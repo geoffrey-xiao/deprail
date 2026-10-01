@@ -150,7 +150,7 @@ func openAt(ctx context.Context, configDir, repositoryRoot string, writable bool
 		return store, nil
 	}
 	if writable {
-		if err := secureFile(paths.database, true); err != nil {
+		if err := secureFile(paths.database, true, false); err != nil {
 			if !errors.Is(err, os.ErrNotExist) {
 				return nil, storeError(ErrWriteFailed, err)
 			}
@@ -158,25 +158,31 @@ func openAt(ctx context.Context, configDir, repositoryRoot string, writable bool
 				return nil, storeError(ErrCorrupt, err)
 			}
 			file, createErr := os.OpenFile(paths.database, os.O_CREATE|os.O_EXCL|os.O_RDWR, 0o600)
+			created := createErr == nil
 			if createErr != nil && !errors.Is(createErr, os.ErrExist) {
 				return nil, storeError(ErrWriteFailed, createErr)
 			}
-			if createErr == nil {
+			if created {
 				if closeErr := file.Close(); closeErr != nil {
 					return nil, storeError(ErrWriteFailed, closeErr)
 				}
 			}
-			if err := secureFile(paths.database, true); err != nil {
+			if err := secureFile(paths.database, true, created); err != nil {
 				return nil, storeError(ErrWriteFailed, err)
 			}
 		}
-	} else if err := secureFile(paths.database, false); err != nil {
+	} else if err := secureFile(paths.database, false, false); err != nil {
 		if errors.Is(err, os.ErrNotExist) {
 			return store, nil
 		}
 		return nil, storeError(ErrUnavailable, err)
 	}
 
+	if writable {
+		if err := secureSQLiteSidecars(paths.database, false); err != nil {
+			return nil, storeError(ErrWriteFailed, err)
+		}
+	}
 	db, err := sql.Open("sqlite", dataSourceName(paths.database, writable))
 	if err != nil {
 		return nil, storeError(code, err)
@@ -198,11 +204,11 @@ func openAt(ctx context.Context, configDir, repositoryRoot string, writable bool
 		return nil, err
 	}
 	if writable {
-		if err := secureSQLiteSidecars(paths.database); err != nil {
+		if err := secureSQLiteSidecars(paths.database, true); err != nil {
 			db.Close()
 			return nil, storeError(ErrWriteFailed, err)
 		}
-		if err := secureFile(paths.database, true); err != nil {
+		if err := secureFile(paths.database, true, false); err != nil {
 			db.Close()
 			return nil, storeError(ErrWriteFailed, err)
 		}
@@ -254,7 +260,7 @@ func (s *Store) Append(ctx context.Context, entry Entry) error {
 			if err := tx.Commit(); err != nil {
 				return storeError(ErrWriteFailed, err)
 			}
-			if err := secureSQLiteSidecars(s.path); err != nil {
+			if err := secureSQLiteSidecars(s.path, false); err != nil {
 				return storeError(ErrWriteFailed, err)
 			}
 			return nil
@@ -273,7 +279,7 @@ func (s *Store) Append(ctx context.Context, entry Entry) error {
 	if err := tx.Commit(); err != nil {
 		return storeError(ErrWriteFailed, err)
 	}
-	if err := secureSQLiteSidecars(s.path); err != nil {
+	if err := secureSQLiteSidecars(s.path, false); err != nil {
 		return storeError(ErrWriteFailed, err)
 	}
 	return nil

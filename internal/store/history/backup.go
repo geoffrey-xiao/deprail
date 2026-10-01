@@ -41,7 +41,10 @@ func (s *Store) backupForMigration(ctx context.Context) (string, error) {
 			os.Remove(temporary)
 		}
 	}()
-	if err := secureFile(temporary, true); err != nil {
+	if err := secureFile(temporary, true, true); err != nil {
+		return "", storeError(ErrMigrationFailed, err)
+	}
+	if err := secureSQLiteSidecars(temporary, false); err != nil {
 		return "", storeError(ErrMigrationFailed, err)
 	}
 	source, err := s.db.Conn(ctx)
@@ -88,10 +91,10 @@ func (s *Store) backupForMigration(ctx context.Context) (string, error) {
 	if err != nil {
 		return "", storeError(ErrMigrationFailed, err)
 	}
-	if err := secureFile(temporary, true); err != nil {
+	if err := secureFile(temporary, true, false); err != nil {
 		return "", storeError(ErrMigrationFailed, err)
 	}
-	if err := secureSQLiteSidecars(temporary); err != nil {
+	if err := secureSQLiteSidecars(temporary, true); err != nil {
 		return "", storeError(ErrMigrationFailed, err)
 	}
 	if err := validateBackup(ctx, temporary); err != nil {
@@ -100,7 +103,7 @@ func (s *Store) backupForMigration(ctx context.Context) (string, error) {
 	if err := os.Link(temporary, final); err != nil {
 		return "", storeError(ErrMigrationFailed, err)
 	}
-	if err := secureFile(final, false); err != nil {
+	if err := secureFile(final, false, false); err != nil {
 		os.Remove(final)
 		return "", storeError(ErrMigrationFailed, err)
 	}

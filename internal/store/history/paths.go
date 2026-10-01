@@ -51,7 +51,7 @@ func preparePaths(configDir, repositoryRoot string, create bool) (resolvedPaths,
 		if missing {
 			return resolvedPaths{database: filepath.Join(dataDir, "history.sqlite3")}, true, nil
 		}
-		if err := secureDirectory(dataDir, false); err != nil {
+		if err := secureDirectory(dataDir, false, false); err != nil {
 			return resolvedPaths{}, false, err
 		}
 	}
@@ -149,6 +149,11 @@ func checkDirectoryChain(path string, create bool) (bool, error) {
 }
 
 func ensurePrivateDirectory(path string) error {
+	_, statErr := os.Lstat(path)
+	created := errors.Is(statErr, os.ErrNotExist)
+	if statErr != nil && !created {
+		return statErr
+	}
 	missing, err := checkDirectoryChain(path, true)
 	if err != nil || missing {
 		if err == nil {
@@ -156,7 +161,7 @@ func ensurePrivateDirectory(path string) error {
 		}
 		return err
 	}
-	return secureDirectory(path, true)
+	return secureDirectory(path, true, created)
 }
 
 func pathInside(root, candidate string) bool {

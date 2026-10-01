@@ -81,7 +81,7 @@ Input: schema-valid projection, same-operation occurrence ID, digest references 
 
 ## Implementation evidence (acceptance pending)
 
-The living implementation and verification record is [`H05-002-STORE-EVIDENCE.md`](../tracking/H05-002-STORE-EVIDENCE.md), with the reviewed dependency SBOM at [`H05-002-dependencies.cdx.json`](../tracking/H05-002-dependencies.cdx.json). It records actual API smoke, transaction/process-failure, quota, permission, path-boundary and online-backup evidence. Exact-head cross-platform CI, owner technical/security review and remaining migration/disk-growth risk disposition are still required; the acceptance boxes below remain unchecked.
+The living implementation and verification record is [`H05-002-STORE-EVIDENCE.md`](../tracking/H05-002-STORE-EVIDENCE.md), with the reviewed dependency SBOM at [`H05-002-dependencies.cdx.json`](../tracking/H05-002-dependencies.cdx.json). Draft [PR #436](https://github.com/geoffrey-xiao/deprail/pull/436) is open and Project Status is `Review`. The first exact-head CI passed Ubuntu/macOS but failed Windows owner verification for a newly created history directory; the follow-up now assigns owner only during creation, and rerun CI plus owner technical/security review remain pending. Acceptance boxes below remain unchecked.
 
 ## Final Acceptance
 

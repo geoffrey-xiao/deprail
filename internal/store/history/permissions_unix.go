@@ -12,7 +12,7 @@ func isUnsafePathLink(_ string, info os.FileInfo) (bool, error) {
 	return info.Mode()&os.ModeSymlink != 0, nil
 }
 
-func secureDirectory(path string, writable bool) error {
+func secureDirectory(path string, writable, _ bool) error {
 	info, err := os.Lstat(path)
 	if err != nil {
 		return err
@@ -38,7 +38,7 @@ func secureDirectory(path string, writable bool) error {
 	return nil
 }
 
-func secureFile(path string, writable bool) error {
+func secureFile(path string, writable, _ bool) error {
 	info, err := os.Lstat(path)
 	if err != nil {
 		return err
@@ -64,10 +64,10 @@ func secureFile(path string, writable bool) error {
 	return nil
 }
 
-func secureSQLiteSidecars(database string) error {
+func secureSQLiteSidecars(database string, _ bool) error {
 	for _, suffix := range []string{"-wal", "-shm"} {
 		path := database + suffix
-		if err := secureFile(path, true); err != nil && !errors.Is(err, os.ErrNotExist) {
+		if err := secureFile(path, true, false); err != nil && !errors.Is(err, os.ErrNotExist) {
 			return err
 		}
 	}

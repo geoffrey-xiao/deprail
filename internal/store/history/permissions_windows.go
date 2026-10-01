@@ -26,7 +26,7 @@ func isUnsafePathLink(path string, info os.FileInfo) (bool, error) {
 	return attributes&windows.FILE_ATTRIBUTE_REPARSE_POINT != 0, nil
 }
 
-func secureDirectory(path string, writable bool) error {
+func secureDirectory(path string, writable, newlyCreated bool) error {
 	info, err := os.Lstat(path)
 	if err != nil {
 		return err
@@ -35,14 +35,14 @@ func secureDirectory(path string, writable bool) error {
 		return errors.New("history directory is not a real directory")
 	}
 	if writable {
-		if err := setPrivateACL(path, true); err != nil {
+		if err := setPrivateACL(path, true, newlyCreated); err != nil {
 			return err
 		}
 	}
 	return verifyPrivateACL(path, true)
 }
 
-func secureFile(path string, writable bool) error {
+func secureFile(path string, writable, newlyCreated bool) error {
 	info, err := os.Lstat(path)
 	if err != nil {
 		return err
@@ -51,17 +51,17 @@ func secureFile(path string, writable bool) error {
 		return errors.New("history database is not a regular file")
 	}
 	if writable {
-		if err := setPrivateACL(path, false); err != nil {
+		if err := setPrivateACL(path, false, newlyCreated); err != nil {
 			return err
 		}
 	}
 	return verifyPrivateACL(path, false)
 }
 
-func secureSQLiteSidecars(database string) error {
+func secureSQLiteSidecars(database string, allowNewOwner bool) error {
 	for _, suffix := range []string{"-wal", "-shm"} {
 		path := database + suffix
-		if err := secureFile(path, true); err != nil && !errors.Is(err, os.ErrNotExist) {
+		if err := secureFile(path, true, allowNewOwner); err != nil && !errors.Is(err, os.ErrNotExist) {
 			return err
 		}
 	}
@@ -76,7 +76,7 @@ func currentUserSID() (*windows.SID, error) {
 	return user.User.Sid, nil
 }
 
-func setPrivateACL(path string, directory bool) error {
+func setPrivateACL(path string, directory, allowOwnerChange bool) error {
 	currentSID, err := currentUserSID()
 	if err != nil {
 		return err
@@ -86,8 +86,17 @@ func setPrivateACL(path string, directory bool) error {
 		return err
 	}
 	owner, _, err := security.Owner()
-	if err != nil || owner == nil || !owner.Equals(currentSID) {
-		return errors.New("history path is not owned by the current user")
+	if err != nil || owner == nil {
+		return errors.New("history path owner could not be verified")
+	}
+	ownerToSet := (*windows.SID)(nil)
+	securityInfo := windows.SECURITY_INFORMATION(windows.DACL_SECURITY_INFORMATION | windows.PROTECTED_DACL_SECURITY_INFORMATION)
+	if !owner.Equals(currentSID) {
+		if !allowOwnerChange {
+			return errors.New("history path is not owned by the current user")
+		}
+		ownerToSet = currentSID
+		securityInfo |= windows.OWNER_SECURITY_INFORMATION
 	}
 	var pinner runtime.Pinner
 	pinner.Pin(currentSID)
@@ -110,9 +119,8 @@ func setPrivateACL(path string, directory bool) error {
 	if err != nil {
 		return err
 	}
-	if err := windows.SetNamedSecurityInfo(path, windows.SE_FILE_OBJECT,
-		windows.DACL_SECURITY_INFORMATION|windows.PROTECTED_DACL_SECURITY_INFORMATION,
-		nil, nil, acl, nil); err != nil {
+	if err := windows.SetNamedSecurityInfo(path, windows.SE_FILE_OBJECT, securityInfo,
+		ownerToSet, nil, acl, nil); err != nil {
 		return err
 	}
 	return verifyPrivateACL(path, directory)

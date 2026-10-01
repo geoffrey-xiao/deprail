@@ -2,7 +2,7 @@
 
 **GitHub issue:** [#421](https://github.com/geoffrey-xiao/deprail/issues/421)
 
-**Status:** Implementation evidence in progress; owner technical/security review, exact-head CI and acceptance remain pending.
+**Status:** Draft [PR #436](https://github.com/geoffrey-xiao/deprail/pull/436) open; Project Status `Review`; the first Windows CI run failed on owner verification for a newly created history directory. The safe ownership correction is in the PR follow-up; exact-head CI rerun and owner acceptance remain pending.
 **Branch:** `feat/h05-002-private-history-store` from reviewed main `da59b10`.
 
 ## Delivered behavior
@@ -27,12 +27,12 @@ Dependency review proves candidate provenance and a clean SQLite closure; it doe
 | --- | --- |
 | `go test ./internal/store/history ./schemas/history-v1` | Passed. Covers empty read without creation; current-v1 initialization/reopen; row/projection and future-version refusal; deterministic keyset order; identical/conflicting retries; repeated source scan IDs; atomic row+ref rollback; child-process exit before commit; cancellation; external SQLite lock bounded near 2 seconds; SQLite `max_page_count` failure; exact/over byte and entry quotas; POSIX modes and refusal of broad read-only DB permissions; symlink/repository-boundary rejection; WAL/foreign-key/FULL settings; unique online backups and validation. |
 | `go run ./internal/store/history/smoke` (throwaway harness, then removed) | Printed `{"missing_read_only_created_no_paths":true,"entry_reopened":true,"list_returned_one":true,"artifact_reference_round_trip":true}` on the local Darwin/arm64 host. It called the public store API, opened a missing store read-only, explicitly wrote one validated occurrence/ref, closed/reopened, then fetched and listed it. |
-| `GOOS=windows GOARCH=amd64 go test -c -o /tmp/deprail-history-windows.test.exe ./internal/store/history` | Passed cross-compilation; this is not Windows runtime evidence. The Windows owner-only ACL and reparse tests require the exact-head CI run. |
+| `GOOS=windows GOARCH=amd64 go test -c -o /tmp/deprail-history-windows.test.exe ./internal/store/history`; PR #436 CI run [36802315026](https://github.com/geoffrey-xiao/deprail/actions/runs/36802315026) | Cross-compilation passed. Ubuntu/macOS runtime jobs passed; Windows runtime failed because newly created path ownership did not match the token user. Follow-up only assigns current-user ownership to paths created by this process; existing mismatched ownership remains a refusal. New exact-head CI run pending. |
 | `go mod tidy` | Passed; SQLite is direct and existing `golang.org/x/sys` is pinned at the compatible `v0.47.0`. |
 | SBOM/checksum/source-diff validation | `jq` validated CycloneDX 1.6 structure, 12 dependency components and allowed license IDs; `go mod verify` reported all modules verified; `git diff --check` passed. |
 | `make verify` | Passed: `go generate ./...`, `go vet ./...`, `go test ./...`, and `go build ./...` all completed successfully on the local Darwin/arm64 host. |
 
-Local `make verify` passed. Exact-head multi-OS CI and owner review are still required before issue acceptance. Local POSIX mode tests ran on Darwin; Windows ACL behavior has only been cross-compiled so far.
+Local `make verify` passed. Exact-head multi-OS rerun and owner review are still required before issue acceptance. Local POSIX mode tests ran on Darwin; Windows ACL runtime evidence remains pending.
 
 ## Limits and unresolved acceptance evidence
 
@@ -40,4 +40,4 @@ Local `make verify` passed. Exact-head multi-OS CI and owner review are still re
 - No older DepRail schema exists to migrate. Current v1 opens without migration; this branch tests creation, unique online snapshots, snapshot integrity, no-overwrite naming and cancellation preservation. It does not invent a fake migration or claim migration-failure/restore rehearsal evidence. Manual restore remains a future release gate; no restore action is implemented.
 - The store commits digest references only. Missing/digest-mismatch artifact integrity states and artifact retrieval remain the dependent H05-003 responsibility; this package never reads, deletes or garbage-collects raw artifacts.
 - The 256 MiB bound covers summed projection JSON only. SQLite pages/indexes, WAL/SHM, backups and external artifacts can use more disk; no hard filesystem quota is claimed.
-- Owner review must separately accept schema/permission/dependency impact, the disclosed `x/text` advisory and logical-versus-physical growth risk. Issue #421 remains In Progress until evidence, review and CI are recorded.
+- Owner review must separately accept schema/permission/dependency impact, the disclosed `x/text` advisory and logical-versus-physical growth risk. Issue #421 remains open at Project Status `Review` until evidence, owner review and CI are recorded.

@@ -1,10 +1,12 @@
 package artifact
 
 import (
+	"context"
 	"crypto/sha256"
 	"encoding/hex"
 	"errors"
 	"fmt"
+	"io"
 	"os"
 	"path/filepath"
 )
@@ -100,6 +102,83 @@ func (s Store) Get(digest string) ([]byte, error) {
 	return data, nil
 }
 
+// Verify streams a content-addressed artifact and never returns its bytes.
+func (s Store) Verify(ctx context.Context, digest string) error {
+	if s.Root == "" || s.MaxBytes <= 0 || len(digest) != sha256.Size*2 || !isHex(digest) {
+		return &Error{Code: ErrInvalidInput, Message: "artifact verification input is invalid"}
+	}
+	if err := ctx.Err(); err != nil {
+		return &Error{Code: ErrWriteFailed, Message: "artifact verification was interrupted"}
+	}
+	rootInfo, err := os.Lstat(s.Root)
+	if errors.Is(err, os.ErrNotExist) {
+		return &Error{Code: ErrNotFound, Message: "artifact is not available"}
+	}
+	if err != nil {
+		return &Error{Code: ErrWriteFailed, Message: "unable to inspect artifact store"}
+	}
+	if !rootInfo.IsDir() || rootInfo.Mode()&os.ModeSymlink != 0 {
+		return &Error{Code: ErrIntegrity, Message: "artifact store boundary is invalid"}
+	}
+	directory := filepath.Join(s.Root, digest[:2])
+	directoryInfo, err := os.Lstat(directory)
+	if errors.Is(err, os.ErrNotExist) {
+		return &Error{Code: ErrNotFound, Message: "artifact is not available"}
+	}
+	if err != nil {
+		return &Error{Code: ErrWriteFailed, Message: "unable to inspect artifact"}
+	}
+	if !directoryInfo.IsDir() || directoryInfo.Mode()&os.ModeSymlink != 0 {
+		return &Error{Code: ErrIntegrity, Message: "artifact path is invalid"}
+	}
+	path := filepath.Join(directory, digest)
+	pathInfo, err := os.Lstat(path)
+	if errors.Is(err, os.ErrNotExist) {
+		return &Error{Code: ErrNotFound, Message: "artifact is not available"}
+	}
+	if err != nil {
+		return &Error{Code: ErrWriteFailed, Message: "unable to inspect artifact"}
+	}
+	if !pathInfo.Mode().IsRegular() || pathInfo.Size() < 0 || pathInfo.Size() > s.MaxBytes {
+		return &Error{Code: ErrIntegrity, Message: "artifact file is invalid"}
+	}
+	file, err := os.Open(path)
+	if errors.Is(err, os.ErrNotExist) {
+		return &Error{Code: ErrNotFound, Message: "artifact is not available"}
+	}
+	if err != nil {
+		return &Error{Code: ErrWriteFailed, Message: "unable to read artifact"}
+	}
+	defer file.Close()
+	openedInfo, err := file.Stat()
+	if err != nil || !openedInfo.Mode().IsRegular() || !os.SameFile(pathInfo, openedInfo) {
+		return &Error{Code: ErrIntegrity, Message: "artifact file changed during verification"}
+	}
+	hasher := sha256.New()
+	var total int64
+	buffer := make([]byte, 32<<10)
+	for {
+		if err := ctx.Err(); err != nil {
+			return &Error{Code: ErrWriteFailed, Message: "artifact verification was interrupted"}
+		}
+		n, readErr := file.Read(buffer)
+		total += int64(n)
+		if total > int64(s.MaxBytes) {
+			return &Error{Code: ErrIntegrity, Message: "artifact file exceeds the configured limit"}
+		}
+		_, _ = hasher.Write(buffer[:n])
+		if errors.Is(readErr, io.EOF) {
+			break
+		}
+		if readErr != nil {
+			return &Error{Code: ErrWriteFailed, Message: "unable to verify artifact"}
+		}
+	}
+	if hex.EncodeToString(hasher.Sum(nil)) != digest {
+		return &Error{Code: ErrIntegrity, Message: "artifact digest verification failed"}
+	}
+	return nil
+}
 func equalDigest(data []byte, expected string) bool {
 	sum := sha256.Sum256(data)
 	return hex.EncodeToString(sum[:]) == expected

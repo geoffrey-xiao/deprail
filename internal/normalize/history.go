@@ -407,6 +407,14 @@ func safeIdentifier(s string, max int) bool {
 func safeLabel(value *string, max int) bool {
 	return value == nil || safeScalar(*value, max) && !strings.ContainsAny(*value, "/\\")
 }
+
+// HistoryRepositoryLabel returns a copy only for labels safe to persist.
+func HistoryRepositoryLabel(value string) *string {
+	if !safeLabel(&value, 256) {
+		return nil
+	}
+	return new(value)
+}
 func safeProvenance(value *string, max int) bool {
 	return value == nil || safeScalar(*value, max) && !strings.ContainsAny(*value, "\\/")
 }

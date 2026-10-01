@@ -4,6 +4,7 @@ package history
 
 import (
 	"errors"
+	"fmt"
 	"os"
 	"runtime"
 	"unsafe"
@@ -141,8 +142,11 @@ func verifyPrivateACL(path string, directory bool) error {
 		return errors.New("history path is not owned by the current user")
 	}
 	acl, _, err := security.DACL()
-	if err != nil || acl == nil || acl.AceCount != 1 {
-		return errors.New("history path DACL is missing or has additional entries")
+	if err != nil || acl == nil {
+		return errors.New("history path DACL is unavailable")
+	}
+	if acl.AceCount != 1 {
+		return fmt.Errorf("history path DACL has %d entries", acl.AceCount)
 	}
 	var ace *windows.ACCESS_ALLOWED_ACE
 	if err := windows.GetAce(acl, 0, &ace); err != nil || ace == nil || ace.Header.AceType != windows.ACCESS_ALLOWED_ACE_TYPE {

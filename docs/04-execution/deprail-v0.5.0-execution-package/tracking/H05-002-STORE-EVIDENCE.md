@@ -2,7 +2,7 @@
 
 **GitHub issue:** [#421](https://github.com/geoffrey-xiao/deprail/issues/421)
 
-**Status:** Draft [PR #436](https://github.com/geoffrey-xiao/deprail/pull/436) open; Project Status `Review`; the first Windows CI run failed on owner verification for a newly created history directory. The safe ownership correction is in the PR follow-up; exact-head CI rerun and owner acceptance remain pending.
+**Status:** Draft [PR #436](https://github.com/geoffrey-xiao/deprail/pull/436) open; Project Status `Review`; CI runs [36802315026](https://github.com/geoffrey-xiao/deprail/actions/runs/36802315026), [36803450757](https://github.com/geoffrey-xiao/deprail/actions/runs/36803450757) and [36804048792](https://github.com/geoffrey-xiao/deprail/actions/runs/36804048792) each failed Windows ACL tests. The latest report showed an unexpected ACL entry count; the next run adds exact-count diagnostics. Owner acceptance and Windows runtime evidence remain pending.
 **Branch:** `feat/h05-002-private-history-store` from reviewed main `da59b10`.
 
 ## Delivered behavior
@@ -27,12 +27,12 @@ Dependency review proves candidate provenance and a clean SQLite closure; it doe
 | --- | --- |
 | `go test ./internal/store/history ./schemas/history-v1` | Passed. Covers empty read without creation; current-v1 initialization/reopen; row/projection and future-version refusal; deterministic keyset order; identical/conflicting retries; repeated source scan IDs; atomic row+ref rollback; child-process exit before commit; cancellation; external SQLite lock bounded near 2 seconds; SQLite `max_page_count` failure; exact/over byte and entry quotas; POSIX modes and refusal of broad read-only DB permissions; symlink/repository-boundary rejection; WAL/foreign-key/FULL settings; unique online backups and validation. |
 | `go run ./internal/store/history/smoke` (throwaway harness, then removed) | Printed `{"missing_read_only_created_no_paths":true,"entry_reopened":true,"list_returned_one":true,"artifact_reference_round_trip":true}` on the local Darwin/arm64 host. It called the public store API, opened a missing store read-only, explicitly wrote one validated occurrence/ref, closed/reopened, then fetched and listed it. |
-| `GOOS=windows GOARCH=amd64 go test -c -o /tmp/deprail-history-windows.test.exe ./internal/store/history`; PR #436 CI run [36802315026](https://github.com/geoffrey-xiao/deprail/actions/runs/36802315026) | Cross-compilation passed. Ubuntu/macOS runtime jobs passed; Windows runtime failed because newly created path ownership did not match the token user. Follow-up only assigns current-user ownership to paths created by this process; existing mismatched ownership remains a refusal. New exact-head CI run pending. |
+| `GOOS=windows GOARCH=amd64 go test -c -o /tmp/deprail-history-windows.test.exe ./internal/store/history`; PR #436 CI runs [36802315026](https://github.com/geoffrey-xiao/deprail/actions/runs/36802315026), [36803450757](https://github.com/geoffrey-xiao/deprail/actions/runs/36803450757), [36804048792](https://github.com/geoffrey-xiao/deprail/actions/runs/36804048792) | Cross-compilation passed. Ubuntu/macOS passed in each run. Windows first failed owner verification on newly created paths; the owner-only creation follow-up then failed DACL verification with extra entries. Current follow-up reports the exact ACL entry count; next exact-head run pending. |
 | `go mod tidy` | Passed; SQLite is direct and existing `golang.org/x/sys` is pinned at the compatible `v0.47.0`. |
 | SBOM/checksum/source-diff validation | `jq` validated CycloneDX 1.6 structure, 12 dependency components and allowed license IDs; `go mod verify` reported all modules verified; `git diff --check` passed. |
 | `make verify` | Passed: `go generate ./...`, `go vet ./...`, `go test ./...`, and `go build ./...` all completed successfully on the local Darwin/arm64 host. |
 
-Local `make verify` passed. Exact-head multi-OS rerun and owner review are still required before issue acceptance. Local POSIX mode tests ran on Darwin; Windows ACL runtime evidence remains pending.
+Local `make verify` passed. Windows exact-head CI is still failing; its root cause must be resolved and the new run must pass before owner review and issue acceptance. Local POSIX mode tests ran on Darwin; Windows ACL runtime evidence remains pending.
 
 ## Limits and unresolved acceptance evidence
 

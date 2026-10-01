@@ -234,6 +234,8 @@ func processToAdapterError(err error) error {
 		code = adapter.ErrScannerNotFound
 	case process.ErrTimeout:
 		code = adapter.ErrTimeout
+	case process.ErrCancelled:
+		return context.Canceled
 	case process.ErrOutputLimit:
 		code = adapter.ErrOutputLimit
 	}

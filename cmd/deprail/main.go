@@ -9,6 +9,7 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"os/signal"
 	"path/filepath"
 	"strings"
 
@@ -19,6 +20,7 @@ import (
 	"github.com/geoffrey-xiao/deprail/internal/policy"
 	"github.com/geoffrey-xiao/deprail/internal/presenter"
 	"github.com/geoffrey-xiao/deprail/internal/remediation"
+	"github.com/geoffrey-xiao/deprail/internal/store/history"
 )
 
 func main() {
@@ -211,10 +213,10 @@ func normalizeScanArgs(args []string) ([]string, error) {
 			}
 			flags = append(flags, arg, args[i+1])
 			i++
-		case "--verbose", "--quiet":
+		case "--verbose", "--quiet", "--save-history":
 			flags = append(flags, arg)
 		default:
-			if strings.HasPrefix(arg, "--format=") || strings.HasPrefix(arg, "--output=") {
+			if strings.HasPrefix(arg, "--format=") || strings.HasPrefix(arg, "--output=") || strings.HasPrefix(arg, "--save-history=") {
 				flags = append(flags, arg)
 				continue
 			}
@@ -245,6 +247,7 @@ func runScan(args []string, stdout, stderr io.Writer) int {
 	output := flags.String("output", "", "write output atomically to a file")
 	verbose := flags.Bool("verbose", false, "include diagnostics in terminal output")
 	quiet := flags.Bool("quiet", false, "suppress successful terminal summaries and progress")
+	saveHistory := flags.Bool("save-history", false, "save this scan to local history")
 	if err := flags.Parse(normalized); err != nil {
 		writeCLIError(stderr, "CONFIG_INVALID", err.Error(), "arguments")
 		return 2
@@ -266,6 +269,9 @@ func runScan(args []string, stdout, stderr io.Writer) int {
 		return 2
 	}
 	scanOptions := app.ScanOptions{}
+	if *saveHistory {
+		scanOptions.Capture = cliHistoryCapture{repositoryRoot: root}
+	}
 	capabilities := presenter.SelectCapabilities(presenter.CapabilityOptions{
 		Mode:   presenter.OutputMode(*format),
 		Stdout: stdout,
@@ -275,7 +281,15 @@ func runScan(args []string, stdout, stderr io.Writer) int {
 	if capabilities.Interactive && !*quiet {
 		scanOptions.Events = presenter.ProgressSink{Writer: stderr}
 	}
-	report, scanErr := app.Scan(context.Background(), root, scanOptions)
+	scanContext := context.Background()
+	if *saveHistory {
+		var stop func()
+		scanContext, stop = signal.NotifyContext(scanContext, os.Interrupt)
+		defer stop()
+	}
+	report, scanErr := app.Scan(scanContext, root, scanOptions)
+	var captureErr *app.ScanCaptureError
+	historySaveFailed := errors.As(scanErr, &captureErr) && captureErr.PersistenceErr != nil
 	var rendered bytes.Buffer
 	var renderErr error
 	if *format == "json" {
@@ -291,12 +305,38 @@ func runScan(args []string, stdout, stderr io.Writer) int {
 	}
 	if err != nil {
 		writeCLIError(stderr, "OUTPUT_WRITE_FAILED", err.Error(), "output")
+		if historySaveFailed {
+			writeCLIError(stderr, string(app.HistoryWriteFailed), "requested history could not be saved", "history")
+		}
 		return 3
+	}
+	if historySaveFailed {
+		writeCLIError(stderr, string(app.HistoryWriteFailed), "requested history could not be saved", "history")
+		if captureErr.OperationErr == nil && report.Status == discovery.Complete {
+			return 6
+		}
 	}
 	if scanErr != nil || report.Status != discovery.Complete {
 		return 3
 	}
 	return 0
+}
+
+type cliHistoryCapture struct {
+	repositoryRoot string
+}
+
+func (c cliHistoryCapture) Capture(ctx context.Context, input app.CaptureInput) (app.SaveResult, error) {
+	canonicalRoot, err := filepath.EvalSymlinks(c.repositoryRoot)
+	if err != nil {
+		return app.SaveResult{}, err
+	}
+	store, err := history.OpenWriter(ctx, history.Options{RepositoryRoot: canonicalRoot})
+	if err != nil {
+		return app.SaveResult{}, err
+	}
+	defer store.Close()
+	return (&app.HistoryService{Writer: store}).Capture(ctx, input)
 }
 
 func runFixPlan(args []string, stdout, stderr io.Writer) int {

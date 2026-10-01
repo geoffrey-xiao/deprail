@@ -2,6 +2,7 @@ package osv
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"os"
 	"strings"
@@ -38,12 +39,15 @@ func TestScannerFailureMatrix(t *testing.T) {
 	}
 }
 
-func TestScannerCancellationIsFailure(t *testing.T) {
+func TestScannerCancellationPreservesContext(t *testing.T) {
 	ctx, cancel := context.WithCancel(context.Background())
 	cancel()
 	_, err := (Scanner{Path: os.Args[0], Timeout: time.Second, OutputCap: 1024}).Execute(ctx, adapter.Plan{Targets: []adapter.Target{{WorkspaceID: "root", RelativePath: ".", Ecosystem: "npm"}}})
 	if err == nil {
 		t.Fatal("expected cancelled execution failure")
+	}
+	if !errors.Is(err, context.Canceled) {
+		t.Fatalf("cancellation error = %v, want context.Canceled", err)
 	}
 }
 

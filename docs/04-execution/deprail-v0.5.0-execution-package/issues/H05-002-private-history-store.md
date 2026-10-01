@@ -10,7 +10,7 @@
 - Risk: `R3`
 - Target version: `v0.5.0`
 - Milestone: [`v0.5.0`](https://github.com/geoffrey-xiao/deprail/milestone/11)
-- Sprint: Unassigned
+- Sprint: Sprint 4
 - Owner: `@geoffrey-xiao`
 - Reviewer: `@geoffrey-xiao`
 - Dependencies: [H05-001](H05-001-safe-history-projection.md); accepted planning/design contracts and parent-owned timeout follow-up disposition.
@@ -78,6 +78,10 @@ Input: schema-valid projection, same-operation occurrence ID, digest references 
 
 - Verification commands or scenarios: store unit/integration cases, SQLite fault injection, actual fresh/current DB smoke; Linux/macOS/Windows permission and WAL/backup scenarios before release.
 - Expected artifacts, logs, screenshots, or links: DB schema/version evidence, modes/ACL, before/after DB integrity, backup validation and failure-injection results; owner decisions.
+
+## Implementation evidence (acceptance pending)
+
+The living implementation and verification record is [`H05-002-STORE-EVIDENCE.md`](../tracking/H05-002-STORE-EVIDENCE.md), with the reviewed dependency SBOM at [`H05-002-dependencies.cdx.json`](../tracking/H05-002-dependencies.cdx.json). It records actual API smoke, transaction/process-failure, quota, permission, path-boundary and online-backup evidence. Exact-head cross-platform CI, owner technical/security review and remaining migration/disk-growth risk disposition are still required; the acceptance boxes below remain unchecked.
 
 ## Final Acceptance
 

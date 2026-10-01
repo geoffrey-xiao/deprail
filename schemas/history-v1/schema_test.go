@@ -1,22 +1,19 @@
-package historyv1_test
+package historyv1
 
 import (
 	"embed"
 	"encoding/json"
-	"regexp"
-	"strings"
 	"testing"
 
 	"github.com/geoffrey-xiao/deprail/internal/domain/history"
 	"github.com/geoffrey-xiao/deprail/internal/normalize"
-	"github.com/santhosh-tekuri/jsonschema/v6"
 )
 
-//go:embed history.schema.json examples/*.json
-var schemaFiles embed.FS
+//go:embed examples/*.json
+var exampleFiles embed.FS
 
 func TestHistoryExamplesValidateAgainstSchema(t *testing.T) {
-	schemaBytes, err := schemaFiles.ReadFile("history.schema.json")
+	schemaBytes, err := readHistorySchema()
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -35,7 +32,7 @@ func TestHistoryExamplesValidateAgainstSchema(t *testing.T) {
 	}
 	for _, name := range []string{"examples/cancelled-no-context.json", "examples/complete-empty.json", "examples/nonempty.json"} {
 		t.Run(name, func(t *testing.T) {
-			data, err := schemaFiles.ReadFile(name)
+			data, err := exampleFiles.ReadFile(name)
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -46,12 +43,15 @@ func TestHistoryExamplesValidateAgainstSchema(t *testing.T) {
 			if err := compiled.Validate(document); err != nil {
 				t.Fatalf("example violates history-v1 schema: %v", err)
 			}
+			if err := ValidateJSON(data); err != nil {
+				t.Fatalf("production validator rejected history example: %v", err)
+			}
 		})
 	}
 }
 
 func TestHistorySchemaRejectsUnknownFields(t *testing.T) {
-	schemaBytes, err := schemaFiles.ReadFile("history.schema.json")
+	schemaBytes, err := readHistorySchema()
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -68,7 +68,7 @@ func TestHistorySchemaRejectsUnknownFields(t *testing.T) {
 	if err != nil {
 		t.Fatalf("compile schema: %v", err)
 	}
-	data, err := schemaFiles.ReadFile("examples/complete-empty.json")
+	data, err := exampleFiles.ReadFile("examples/complete-empty.json")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -82,7 +82,7 @@ func TestHistorySchemaRejectsUnknownFields(t *testing.T) {
 	}
 }
 func TestHistorySchemaRejectsFutureProjectionMarker(t *testing.T) {
-	schemaBytes, err := schemaFiles.ReadFile("history.schema.json")
+	schemaBytes, err := readHistorySchema()
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -99,7 +99,7 @@ func TestHistorySchemaRejectsFutureProjectionMarker(t *testing.T) {
 	if err != nil {
 		t.Fatalf("compile schema: %v", err)
 	}
-	data, err := schemaFiles.ReadFile("examples/nonempty.json")
+	data, err := exampleFiles.ReadFile("examples/nonempty.json")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -113,7 +113,7 @@ func TestHistorySchemaRejectsFutureProjectionMarker(t *testing.T) {
 	}
 }
 func TestRuntimeProjectionStatesValidateAgainstHistorySchema(t *testing.T) {
-	schemaBytes, err := schemaFiles.ReadFile("history.schema.json")
+	schemaBytes, err := readHistorySchema()
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -190,63 +190,6 @@ func TestRuntimeProjectionStatesValidateAgainstHistorySchema(t *testing.T) {
 			}
 		})
 	}
-}
-
-// The history schema's reviewed path pattern uses negative lookaheads unsupported
-// by Go regexp. This test-only engine preserves those exact path constraints.
-const historyPathPattern = `^(?![\s\S]*[\u0000-\u001f])(?:\.|(?!/)(?![A-Za-z]:)(?!.*(?:^|/)\.\.(?:/|$))(?!.*(?:^|/)\.(?:/|$))(?!.*\\)[^/]+(?:/[^/]+)*)$`
-
-type historySchemaRegexp struct {
-	source string
-	re     *regexp.Regexp
-	path   bool
-}
-
-func (r historySchemaRegexp) String() string { return r.source }
-func (r historySchemaRegexp) MatchString(value string) bool {
-	if !r.re.MatchString(value) {
-		return false
-	}
-	if !r.path {
-		return true
-	}
-	if value == "." {
-		return true
-	}
-	if value == "" || strings.HasPrefix(value, "/") || strings.Contains(value, `\`) {
-		return false
-	}
-	if len(value) >= 2 && ((value[0] >= 'A' && value[0] <= 'Z') || (value[0] >= 'a' && value[0] <= 'z')) && value[1] == ':' {
-		return false
-	}
-	for _, char := range value {
-		if char < 0x20 {
-			return false
-		}
-	}
-	for _, part := range strings.Split(value, "/") {
-		if part == "" || part == "." || part == ".." {
-			return false
-		}
-	}
-	return true
-}
-
-func historyRegexpEngine(pattern string) (jsonschema.Regexp, error) {
-	if pattern == historyPathPattern {
-		return historySchemaRegexp{source: pattern, re: regexp.MustCompile(`^(?:\.|[^/]+(?:/[^/]+)*)$`), path: true}, nil
-	}
-	compiled, err := regexp.Compile(pattern)
-	if err != nil {
-		return nil, err
-	}
-	return historySchemaRegexp{source: pattern, re: compiled}, nil
-}
-
-func newHistorySchemaCompiler() *jsonschema.Compiler {
-	compiler := jsonschema.NewCompiler()
-	compiler.UseRegexpEngine(historyRegexpEngine)
-	return compiler
 }
 
 func TestHistorySchemaPathRegexpAdapter(t *testing.T) {

@@ -1,0 +1,206 @@
+{
+  "$schema": "http://cyclonedx.org/schema/bom-1.6.schema.json",
+  "bomFormat": "CycloneDX",
+  "specVersion": "1.6",
+  "version": 1,
+  "components": [
+    {
+      "bom-ref": "pkg:golang/github.com/dustin/go-humanize@1.0.1",
+      "type": "library",
+      "name": "github.com/dustin/go-humanize",
+      "version": "1.0.1",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ],
+      "purl": "pkg:golang/github.com/dustin/go-humanize@1.0.1"
+    },
+    {
+      "bom-ref": "pkg:golang/github.com/google/uuid@1.6.0",
+      "type": "library",
+      "name": "github.com/google/uuid",
+      "version": "1.6.0",
+      "licenses": [
+        {
+          "license": {
+            "id": "BSD-3-Clause"
+          }
+        }
+      ],
+      "purl": "pkg:golang/github.com/google/uuid@1.6.0"
+    },
+    {
+      "bom-ref": "pkg:golang/github.com/mattn/go-isatty@0.0.24",
+      "type": "library",
+      "name": "github.com/mattn/go-isatty",
+      "version": "0.0.24",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ],
+      "purl": "pkg:golang/github.com/mattn/go-isatty@0.0.24"
+    },
+    {
+      "bom-ref": "pkg:golang/github.com/ncruces/go-strftime@1.0.0",
+      "type": "library",
+      "name": "github.com/ncruces/go-strftime",
+      "version": "1.0.0",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ],
+      "purl": "pkg:golang/github.com/ncruces/go-strftime@1.0.0"
+    },
+    {
+      "bom-ref": "pkg:golang/github.com/remyoudompheng/bigfft@20230129092748-24d4a6f8daec",
+      "type": "library",
+      "name": "github.com/remyoudompheng/bigfft",
+      "version": "20230129092748-24d4a6f8daec",
+      "licenses": [
+        {
+          "license": {
+            "id": "BSD-3-Clause"
+          }
+        }
+      ],
+      "purl": "pkg:golang/github.com/remyoudompheng/bigfft@20230129092748-24d4a6f8daec"
+    },
+    {
+      "bom-ref": "pkg:golang/github.com/santhosh-tekuri/jsonschema/v6@6.0.1",
+      "type": "library",
+      "name": "github.com/santhosh-tekuri/jsonschema/v6",
+      "version": "6.0.1",
+      "licenses": [
+        {
+          "license": {
+            "id": "Apache-2.0"
+          }
+        }
+      ],
+      "purl": "pkg:golang/github.com/santhosh-tekuri/jsonschema/v6@6.0.1"
+    },
+    {
+      "bom-ref": "pkg:golang/golang.org/x/sys@0.47.0",
+      "type": "library",
+      "name": "golang.org/x/sys",
+      "version": "0.47.0",
+      "licenses": [
+        {
+          "license": {
+            "id": "BSD-3-Clause"
+          }
+        }
+      ],
+      "purl": "pkg:golang/golang.org/x/sys@0.47.0"
+    },
+    {
+      "bom-ref": "pkg:golang/golang.org/x/text@0.14.0",
+      "type": "library",
+      "name": "golang.org/x/text",
+      "version": "0.14.0",
+      "licenses": [
+        {
+          "license": {
+            "id": "BSD-3-Clause"
+          }
+        }
+      ],
+      "purl": "pkg:golang/golang.org/x/text@0.14.0"
+    },
+    {
+      "bom-ref": "pkg:golang/modernc.org/libc@1.75.7",
+      "type": "library",
+      "name": "modernc.org/libc",
+      "version": "1.75.7",
+      "licenses": [
+        {
+          "license": {
+            "id": "BSD-3-Clause"
+          }
+        }
+      ],
+      "purl": "pkg:golang/modernc.org/libc@1.75.7"
+    },
+    {
+      "bom-ref": "pkg:golang/modernc.org/mathutil@1.7.1",
+      "type": "library",
+      "name": "modernc.org/mathutil",
+      "version": "1.7.1",
+      "licenses": [
+        {
+          "license": {
+            "id": "BSD-3-Clause"
+          }
+        }
+      ],
+      "purl": "pkg:golang/modernc.org/mathutil@1.7.1"
+    },
+    {
+      "bom-ref": "pkg:golang/modernc.org/memory@1.12.1",
+      "type": "library",
+      "name": "modernc.org/memory",
+      "version": "1.12.1",
+      "licenses": [
+        {
+          "license": {
+            "id": "BSD-3-Clause"
+          }
+        }
+      ],
+      "purl": "pkg:golang/modernc.org/memory@1.12.1"
+    },
+    {
+      "bom-ref": "pkg:golang/modernc.org/sqlite@1.59.0",
+      "type": "library",
+      "name": "modernc.org/sqlite",
+      "version": "1.59.0",
+      "licenses": [
+        {
+          "license": {
+            "id": "BSD-3-Clause"
+          }
+        }
+      ],
+      "purl": "pkg:golang/modernc.org/sqlite@1.59.0"
+    }
+  ],
+  "vulnerabilities": [
+    {
+      "id": "GO-2026-5970",
+      "references": [
+        {
+          "id": "CVE-2026-56852",
+          "source": {}
+        }
+      ],
+      "ratings": [],
+      "description": "Infinite loop on invalid input in golang.org/x/text",
+      "detail": "A norm.Iter can enter an infinite loop when handling input containing invalid UTF-8 bytes.",
+      "advisories": [],
+      "published": "2026-07-14T17:29:56Z",
+      "updated": "2026-09-23T10:41:39Z",
+      "credits": {
+        "organizations": [
+          {
+            "name": "Viky Choi (\"vikychoi\" on GitHub)",
+            "url": null
+          }
+        ]
+      },
+      "affects": [
+        {
+          "ref": "pkg:golang/golang.org/x/text"
+        }
+      ]
+    }
+  ]
+}

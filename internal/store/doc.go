@@ -1,2 +1,2 @@
-// Package store contains future persistence implementations.
+// Package store groups DepRail's local persistence implementations.
 package store

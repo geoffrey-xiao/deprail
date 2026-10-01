@@ -120,6 +120,10 @@ func openTestWriter(t *testing.T, config, repository string, quota limits) *Stor
 	t.Helper()
 	store, err := openAt(context.Background(), config, repository, true, quota)
 	if err != nil {
+		var storageErr *Error
+		if errors.As(err, &storageErr) {
+			t.Fatalf("open history writer: %v (cause: %v)", err, storageErr.cause)
+		}
 		t.Fatalf("open history writer: %v", err)
 	}
 	t.Cleanup(func() { _ = store.Close() })

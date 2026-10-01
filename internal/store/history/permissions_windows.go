@@ -142,19 +142,25 @@ func verifyPrivateACL(path string, directory bool) error {
 	}
 	acl, _, err := security.DACL()
 	if err != nil || acl == nil || acl.AceCount != 1 {
-		return errors.New("history path does not have an owner-only ACL")
+		return errors.New("history path DACL is missing or has additional entries")
 	}
 	var ace *windows.ACCESS_ALLOWED_ACE
 	if err := windows.GetAce(acl, 0, &ace); err != nil || ace == nil || ace.Header.AceType != windows.ACCESS_ALLOWED_ACE_TYPE {
-		return errors.New("history path does not have an owner-only ACL")
+		return errors.New("history path DACL does not have a simple allow entry")
 	}
 	wantFlags := byte(0)
 	if directory {
 		wantFlags = windows.OBJECT_INHERIT_ACE | windows.CONTAINER_INHERIT_ACE
 	}
+	if ace.Mask != windows.GENERIC_ALL {
+		return errors.New("history path DACL access mask differs")
+	}
+	if ace.Header.AceFlags != wantFlags {
+		return errors.New("history path DACL inheritance flags differ")
+	}
 	aceSID := (*windows.SID)(unsafe.Pointer(&ace.SidStart))
-	if ace.Mask != windows.GENERIC_ALL || ace.Header.AceFlags != wantFlags || !aceSID.Equals(currentSID) {
-		return errors.New("history path does not have an owner-only ACL")
+	if !aceSID.Equals(currentSID) {
+		return errors.New("history path DACL principal differs")
 	}
 	return nil
 }

@@ -10,7 +10,7 @@
 - Risk: `R3`
 - Target version: `v0.5.0`
 - Milestone: [`v0.5.0`](https://github.com/geoffrey-xiao/deprail/milestone/11)
-- Sprint: Unassigned
+- Sprint: Sprint 4
 - Owner: `@geoffrey-xiao`
 - Reviewer: `@geoffrey-xiao`
 - Dependencies: [H05-001](H05-001-safe-history-projection.md); accepted planning/design contracts and parent-owned timeout follow-up disposition.
@@ -78,6 +78,10 @@ Input: schema-valid projection, same-operation occurrence ID, digest references 
 
 - Verification commands or scenarios: store unit/integration cases, SQLite fault injection, actual fresh/current DB smoke; Linux/macOS/Windows permission and WAL/backup scenarios before release.
 - Expected artifacts, logs, screenshots, or links: DB schema/version evidence, modes/ACL, before/after DB integrity, backup validation and failure-injection results; owner decisions.
+
+## Implementation evidence (acceptance pending)
+
+The living implementation and verification record is [`H05-002-STORE-EVIDENCE.md`](../tracking/H05-002-STORE-EVIDENCE.md), with the reviewed dependency SBOM at [`H05-002-dependencies.cdx.json`](../tracking/H05-002-dependencies.cdx.json). [PR #436](https://github.com/geoffrey-xiao/deprail/pull/436) is ready for owner review and Project Status is `Review`. The latest exact-head CI run [36806173168](https://github.com/geoffrey-xiao/deprail/actions/runs/36806173168) passed Ubuntu/macOS/Windows after the first four runs exposed Windows path ownership and DACL-shape assumptions. Owner technical/security review remains pending; acceptance boxes remain unchecked.
 
 ## Final Acceptance
 

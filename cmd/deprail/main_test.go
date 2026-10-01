@@ -2,6 +2,7 @@ package main
 
 import (
 	"bytes"
+	"context"
 	"crypto/sha256"
 	"encoding/hex"
 	"encoding/json"
@@ -12,6 +13,8 @@ import (
 	"strings"
 	"testing"
 	"time"
+
+	"github.com/geoffrey-xiao/deprail/internal/store/history"
 )
 
 func TestDiscoverJSONWritesDataToStdoutOnly(t *testing.T) {
@@ -36,6 +39,239 @@ func TestDiscoverJSONWritesDataToStdoutOnly(t *testing.T) {
 	}
 }
 
+func TestScanSaveHistoryIsExplicitAndPreservesReport(t *testing.T) {
+	repositoryRoot := filepath.Join(filepath.Dir(fixturePath(t, "npm-basic")), "..", "..")
+	cliPath := filepath.Join(t.TempDir(), "deprail")
+	if runtime.GOOS == "windows" {
+		cliPath += ".exe"
+	}
+	build := exec.Command("go", "build", "-o", cliPath, "./cmd/deprail")
+	build.Dir = repositoryRoot
+	if output, err := build.CombinedOutput(); err != nil {
+		t.Fatalf("build deprail: %v\n%s", err, output)
+	}
+
+	target := t.TempDir()
+	writeTestFile(t, filepath.Join(target, "package.json"), `{"name":"history-target"}`)
+	writeTestFile(t, filepath.Join(target, "package-lock.json"), `{"name":"history-target","lockfileVersion":3,"packages":{}}`)
+	writeTestFile(t, filepath.Join(target, "target.marker"), "")
+	scannerDir := t.TempDir()
+	scannerName := "osv-scanner"
+	if runtime.GOOS == "windows" {
+		scannerName += ".exe"
+	}
+	scanner, err := os.ReadFile(mustExecutable(t))
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(filepath.Join(scannerDir, scannerName), scanner, 0o755); err != nil {
+		t.Fatal(err)
+	}
+
+	configRoot := t.TempDir()
+	setTestUserConfigRoot(t, configRoot)
+	baseArgs := []string{"scan", target, "--format", "json"}
+	defaultStdout, defaultStderr, defaultErr := runHistoryCLIScan(t, cliPath, repositoryRoot, scannerDir, configRoot, baseArgs...)
+	if defaultErr != nil || len(defaultStderr) != 0 {
+		t.Fatalf("default scan err=%v stderr=%q", defaultErr, defaultStderr)
+	}
+	configDir, err := os.UserConfigDir()
+	if err != nil {
+		t.Fatal(err)
+	}
+	if _, err := os.Stat(filepath.Join(configDir, ".deprail")); !os.IsNotExist(err) {
+		t.Fatalf("default scan initialized history storage: %v", err)
+	}
+
+	savedStdout, savedStderr, savedErr := runHistoryCLIScan(t, cliPath, repositoryRoot, scannerDir, configRoot, append(baseArgs, "--save-history")...)
+	if savedErr != nil || len(savedStderr) != 0 {
+		t.Fatalf("saved scan err=%v stderr=%q", savedErr, savedStderr)
+	}
+	if !bytes.Equal(defaultStdout, savedStdout) {
+		t.Fatalf("history opt-in changed scan stdout\ndefault: %q\nsaved: %q", defaultStdout, savedStdout)
+	}
+	historyDB := filepath.Join(configDir, ".deprail", "history.sqlite3")
+	if _, err := os.Stat(historyDB); err != nil {
+		t.Fatalf("opt-in scan did not create the history database: %v", err)
+	}
+
+	repeatedStdout, repeatedStderr, repeatedErr := runHistoryCLIScan(t, cliPath, repositoryRoot, scannerDir, configRoot, append(baseArgs, "--save-history")...)
+	if repeatedErr != nil || len(repeatedStderr) != 0 || !bytes.Equal(defaultStdout, repeatedStdout) {
+		t.Fatalf("repeated save err=%v stderr=%q stdout_equal=%t", repeatedErr, repeatedStderr, bytes.Equal(defaultStdout, repeatedStdout))
+	}
+	assertHistoryEntryCount(t, target, 2)
+	if runtime.GOOS != "windows" {
+		writeTestFile(t, filepath.Join(configRoot, "scanner-block.marker"), "")
+		cancelledStdout, cancelledStderr, cancelledErr := runCancelledHistoryCLIScan(t, cliPath, repositoryRoot, scannerDir, configRoot, append(baseArgs, "--save-history")...)
+		exitCode(t, cancelledErr, 3)
+		if len(cancelledStderr) != 0 {
+			t.Fatalf("cancelled scan stderr=%q, want no persistence diagnostic", cancelledStderr)
+		}
+		var cancelledReport struct {
+			Status string `json:"status"`
+		}
+		if err := json.Unmarshal(cancelledStdout, &cancelledReport); err != nil || cancelledReport.Status == "" {
+			t.Fatalf("cancelled scan report=%q, err=%v", cancelledStdout, err)
+		}
+		assertCancelledHistoryOccurrence(t, target)
+		for _, marker := range []string{"scanner-block.marker", "scanner-block.started"} {
+			if err := os.Remove(filepath.Join(configRoot, marker)); err != nil {
+				t.Fatalf("remove cancellation marker %s: %v", marker, err)
+			}
+		}
+	}
+
+	badConfig := filepath.Join(t.TempDir(), "not-a-directory")
+	writeTestFile(t, badConfig, "cannot create history beneath this file")
+	setTestUserConfigRoot(t, badConfig)
+	failedSaveStdout, failedSaveStderr, failedSaveErr := runHistoryCLIScan(t, cliPath, repositoryRoot, scannerDir, badConfig, append(baseArgs, "--save-history")...)
+	exitCode(t, failedSaveErr, 6)
+	if !bytes.Equal(defaultStdout, failedSaveStdout) {
+		t.Fatalf("failed history save changed stdout\ndefault: %q\nfailed: %q", defaultStdout, failedSaveStdout)
+	}
+	if !strings.Contains(string(failedSaveStderr), "HISTORY_WRITE_FAILED") || !strings.Contains(string(failedSaveStderr), "requested history could not be saved") || strings.Contains(string(failedSaveStderr), badConfig) {
+		t.Fatalf("history failure diagnostic is not static and private: %q", failedSaveStderr)
+	}
+
+	outputFailureArgs := append(baseArgs, "--output", target, "--save-history")
+	outputFailureStdout, outputFailureStderr, outputFailureErr := runHistoryCLIScan(t, cliPath, repositoryRoot, scannerDir, badConfig, outputFailureArgs...)
+	exitCode(t, outputFailureErr, 3)
+	if len(outputFailureStdout) != 0 || !strings.Contains(string(outputFailureStderr), "OUTPUT_WRITE_FAILED") || !strings.Contains(string(outputFailureStderr), "HISTORY_WRITE_FAILED") {
+		t.Fatalf("output failure precedence: stdout=%q stderr=%q", outputFailureStdout, outputFailureStderr)
+	}
+
+	writeTestFile(t, filepath.Join(target, "malformed-scanner.marker"), "")
+	failedScanArgs := []string{"scan", target, "--format", "json"}
+	failedScanStdout, _, failedScanErr := runHistoryCLIScan(t, cliPath, repositoryRoot, scannerDir, badConfig, failedScanArgs...)
+	exitCode(t, failedScanErr, 3)
+	failedBothStdout, failedBothStderr, failedBothErr := runHistoryCLIScan(t, cliPath, repositoryRoot, scannerDir, badConfig, append(failedScanArgs, "--save-history")...)
+	exitCode(t, failedBothErr, 3)
+	if !bytes.Equal(failedScanStdout, failedBothStdout) || !strings.Contains(string(failedBothStderr), "HISTORY_WRITE_FAILED") {
+		t.Fatalf("scan failure precedence: stdout_equal=%t stderr=%q", bytes.Equal(failedScanStdout, failedBothStdout), failedBothStderr)
+	}
+}
+
+func setTestUserConfigRoot(t *testing.T, root string) {
+	t.Helper()
+	root = canonicalTestPath(t, root)
+	t.Setenv("HOME", root)
+	t.Setenv("XDG_CONFIG_HOME", root)
+	t.Setenv("APPDATA", root)
+}
+
+func canonicalTestPath(t *testing.T, path string) string {
+	t.Helper()
+	canonical, err := filepath.EvalSymlinks(path)
+	if err != nil {
+		t.Fatalf("resolve test path %q: %v", path, err)
+	}
+	return canonical
+}
+
+func runHistoryCLIScan(t *testing.T, cliPath, repositoryRoot, scannerDir, configRoot string, args ...string) ([]byte, []byte, error) {
+	configRoot = canonicalTestPath(t, configRoot)
+	command := exec.Command(cliPath, args...)
+	command.Dir = repositoryRoot
+	command.Env = append(os.Environ(),
+		"PATH="+scannerDir+string(os.PathListSeparator)+os.Getenv("PATH"),
+		"HOME="+configRoot,
+		"XDG_CONFIG_HOME="+configRoot,
+		"APPDATA="+configRoot,
+	)
+	return commandOutput(command)
+}
+
+func runCancelledHistoryCLIScan(t *testing.T, cliPath, repositoryRoot, scannerDir, configRoot string, args ...string) ([]byte, []byte, error) {
+	t.Helper()
+	configRoot = canonicalTestPath(t, configRoot)
+	gate := filepath.Join(configRoot, "scanner-block")
+	command := exec.Command(cliPath, args...)
+	command.Dir = repositoryRoot
+	command.Env = append(os.Environ(),
+		"PATH="+scannerDir+string(os.PathListSeparator)+os.Getenv("PATH"),
+		"HOME="+configRoot,
+		"XDG_CONFIG_HOME="+configRoot,
+		"APPDATA="+configRoot,
+	)
+	var stdout, stderr bytes.Buffer
+	command.Stdout = &stdout
+	command.Stderr = &stderr
+	if err := command.Start(); err != nil {
+		t.Fatalf("start deprail scan: %v", err)
+	}
+	waited := false
+	defer func() {
+		if !waited {
+			_ = command.Process.Kill()
+			_ = command.Wait()
+		}
+	}()
+	deadline := time.Now().Add(10 * time.Second)
+	for {
+		if _, err := os.Stat(gate + ".started"); err == nil {
+			break
+		}
+		if time.Now().After(deadline) {
+			t.Fatalf("scanner did not reach cancellation gate: stdout=%q stderr=%q", stdout.String(), stderr.String())
+		}
+		time.Sleep(10 * time.Millisecond)
+	}
+	if err := command.Process.Signal(os.Interrupt); err != nil {
+		t.Fatalf("interrupt deprail scan: %v", err)
+	}
+	err := command.Wait()
+	waited = true
+	return stdout.Bytes(), stderr.Bytes(), err
+}
+
+func assertCancelledHistoryOccurrence(t *testing.T, repositoryRoot string) {
+	t.Helper()
+	reader, err := history.OpenReadOnly(context.Background(), history.Options{RepositoryRoot: canonicalTestPath(t, repositoryRoot)})
+	if err != nil {
+		t.Fatalf("open history after cancellation: %v", err)
+	}
+	defer reader.Close()
+	page, err := reader.List(context.Background(), history.Page{})
+	if err != nil {
+		t.Fatalf("list history after cancellation: %v", err)
+	}
+	var outcomes []string
+	for _, entry := range page.Entries {
+		if entry.OperationOutcome == "cancelled" {
+			return
+		}
+		outcomes = append(outcomes, entry.OperationOutcome)
+	}
+	t.Fatalf("no cancelled history occurrence among %d entries; outcomes=%v", len(page.Entries), outcomes)
+}
+
+func assertHistoryEntryCount(t *testing.T, repositoryRoot string, count int) {
+	t.Helper()
+	reader, err := history.OpenReadOnly(context.Background(), history.Options{RepositoryRoot: canonicalTestPath(t, repositoryRoot)})
+	if err != nil {
+		t.Fatalf("open history read-only: %v", err)
+	}
+	defer reader.Close()
+	page, err := reader.List(context.Background(), history.Page{})
+	if err != nil {
+		t.Fatalf("list history: %v", err)
+	}
+	if len(page.Entries) != count {
+		t.Fatalf("history entries = %d, want %d", len(page.Entries), count)
+	}
+	if count == 2 && page.Entries[0].HistoryEntryID == page.Entries[1].HistoryEntryID {
+		t.Fatal("repeated scan occurrences have the same history entry ID")
+	}
+}
+
+func exitCode(t *testing.T, err error, want int) {
+	t.Helper()
+	exitErr, ok := err.(*exec.ExitError)
+	if !ok || exitErr.ExitCode() != want {
+		t.Fatalf("command error = %v, want exit code %d", err, want)
+	}
+}
+
 func TestNormalizeScanArgsPreservesOutputFlag(t *testing.T) {
 	got, err := normalizeScanArgs([]string{"testdata/fixtures/mixed-repository", "--format", "json", "--output", "scan_result.json"})
 	if err != nil {
@@ -54,6 +290,40 @@ func TestNormalizeScanArgsAcceptsQuietFlag(t *testing.T) {
 	want := []string{"--quiet", "--verbose"}
 	if strings.Join(got, "\x00") != strings.Join(want, "\x00") {
 		t.Fatalf("normalized args = %#v, want %#v", got, want)
+	}
+}
+
+func TestNormalizeScanArgsPreservesSaveHistoryBoolean(t *testing.T) {
+	tests := []struct {
+		input []string
+		want  []string
+	}{
+		{input: []string{"repository", "--save-history"}, want: []string{"--save-history", "repository"}},
+		{input: []string{"--save-history=false", "repository"}, want: []string{"--save-history=false", "repository"}},
+	}
+	for _, test := range tests {
+		got, err := normalizeScanArgs(test.input)
+		if err != nil {
+			t.Fatal(err)
+		}
+		if strings.Join(got, "\x00") != strings.Join(test.want, "\x00") {
+			t.Fatalf("normalized args = %#v, want %#v", got, test.want)
+		}
+	}
+}
+
+func TestScanHelpDocumentsHistoryRetentionBoundaries(t *testing.T) {
+	var stdout, stderr bytes.Buffer
+	if code := run([]string{"scan", "--help"}, &stdout, &stderr); code != 0 {
+		t.Fatalf("exit code = %d, stderr=%q", code, stderr.String())
+	}
+	for _, text := range []string{"--save-history", "without automatic deletion", "1,000 entries", "256 MiB", "additional disk space"} {
+		if !strings.Contains(stdout.String(), text) {
+			t.Fatalf("scan help missing %q: %q", text, stdout.String())
+		}
+	}
+	if stderr.Len() != 0 {
+		t.Fatalf("stderr=%q, want empty", stderr.String())
 	}
 }
 
@@ -316,6 +586,17 @@ func runScannerHelper() {
 	}
 	if !filepath.IsAbs(target) {
 		target = filepath.Join(cwd, target)
+	}
+	target = filepath.Clean(target)
+	if home := os.Getenv("HOME"); home != "" {
+		if _, err := os.Stat(filepath.Join(home, "scanner-block.marker")); err == nil {
+			if err := os.WriteFile(filepath.Join(home, "scanner-block.started"), []byte("ready"), 0o600); err != nil {
+				os.Exit(9)
+			}
+			for {
+				time.Sleep(10 * time.Millisecond)
+			}
+		}
 	}
 	if _, err := os.Stat(filepath.Join(cwd, "malformed-scanner.marker")); err == nil {
 		_, _ = os.Stdout.Write([]byte("{malformed"))

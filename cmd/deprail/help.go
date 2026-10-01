@@ -36,7 +36,7 @@ func writeCommandHelp(w io.Writer, command string) error {
 	case "discover":
 		text = "Usage: deprail discover [path] [--format terminal|json] [--verbose]\n\nDiscover dependency workspaces and completeness.\n\nTip: start with `deprail discover .`; use `--format json` for automation.\nExample: deprail discover . --format json\n"
 	case "scan":
-		text = "Usage: deprail scan [path] [--format terminal|json] [--output path] [--quiet] [--verbose]\n\nScan dependencies for known vulnerabilities.\n\nTip: use JSON for automation and --verbose for safe diagnostics. Quiet mode keeps required errors.\nExample: deprail scan . --format json --output scan.json\n"
+		text = "Usage: deprail scan [path] [--format terminal|json] [--output path] [--quiet] [--verbose] [--save-history]\n\nScan dependencies for known vulnerabilities. History is saved only when explicitly requested with --save-history; ordinary scans do not initialize the history store. History is stored in the current user's configuration directory under .deprail and retained without automatic deletion. Admission limits are 1,000 entries, 256 MiB of logical projection data, and 16 MiB per entry; SQLite, WAL, indexes and retained raw artifacts can use additional disk space.\n\nTip: use JSON for automation and --verbose for safe diagnostics. Quiet mode keeps required errors.\nExample: deprail scan . --format json --output scan.json --save-history\n"
 	case "diff":
 		text = "Usage: deprail diff --base path --head path [--format terminal|json]\n\nCompare two scan baselines.\n\nTip: use JSON when another tool will consume the comparison.\nExample: deprail diff --base base.json --head head.json --format json\n"
 	case "baseline create":

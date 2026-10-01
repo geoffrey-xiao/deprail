@@ -17,7 +17,7 @@ Options: `--format terminal|json`, `--config`, `--no-ignore`, and `--verbose`. I
 
 ### `deprail scan [path]`
 
-Options: `--format terminal|json`, `--output`, `--adapter`, `--timeout`, `--verbose`, and `--quiet`. It discovers, plans, executes, stores raw output, normalizes, and reports.
+Options: `--format terminal|json`, `--output`, `--adapter`, `--timeout`, `--verbose`, `--quiet`, and v0.5's explicit opt-in `--save-history`. It discovers, plans, executes, stores raw output, normalizes, and reports. Without `--save-history`, history is not initialized or written. A requested history write failure returns `6` only when the scan otherwise succeeds; scanner failure or incomplete results retain code `3`.
 
 ### `deprail doctor`
 
@@ -33,6 +33,7 @@ Reports DepRail, operating system, configuration, adapter availability, tool ver
 | 3 | Scanner failed or result is incomplete |
 | 4 | Remediation or verification failed; reserved in v0.1 |
 | 5 | Approval or permission required; reserved in v0.1 |
+| 6 | Requested history persistence failed after an otherwise successful scan |
 
 ## Output Safety
 

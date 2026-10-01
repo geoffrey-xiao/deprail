@@ -2,7 +2,7 @@
 
 **GitHub issue:** [#421](https://github.com/geoffrey-xiao/deprail/issues/421)
 
-**Status:** [PR #436](https://github.com/geoffrey-xiao/deprail/pull/436) is ready for owner review; Project Status `Review`; latest exact-head CI run [36806173168](https://github.com/geoffrey-xiao/deprail/actions/runs/36806173168) passed Ubuntu, macOS and Windows. The first four runs exposed and fixed Windows ownership and DACL-shape assumptions. Owner technical/security review and acceptance remain pending.
+**Status:** [PR #436](https://github.com/geoffrey-xiao/deprail/pull/436) was merged by `@geoffrey-xiao` on 2026-10-01; merge commit [`6326915`](https://github.com/geoffrey-xiao/deprail/commit/6326915ebd3c8ea7e2fd4cf5d1926f0652deba3f). Exact-head CI run [36806409408](https://github.com/geoffrey-xiao/deprail/actions/runs/36806409408) passed Ubuntu, macOS and Windows. GitHub records no human `APPROVED` review (only automated Codex); technical/security acceptance remains unrecorded. Issue #421 remains open and Project Status `Review`; acceptance boxes remain unchecked.
 **Branch:** `feat/h05-002-private-history-store` from reviewed main `da59b10`.
 
 ## Delivered behavior
@@ -27,12 +27,12 @@ Dependency review proves candidate provenance and a clean SQLite closure; it doe
 | --- | --- |
 | `go test ./internal/store/history ./schemas/history-v1` | Passed. Covers empty read without creation; current-v1 initialization/reopen; row/projection and future-version refusal; deterministic keyset order; identical/conflicting retries; repeated source scan IDs; atomic row+ref rollback; child-process exit before commit; cancellation; external SQLite lock bounded near 2 seconds; SQLite `max_page_count` failure; exact/over byte and entry quotas; POSIX modes and refusal of broad read-only DB permissions; symlink/repository-boundary rejection; WAL/foreign-key/FULL settings; unique online backups and validation. |
 | `go run ./internal/store/history/smoke` (throwaway harness, then removed) | Printed `{"missing_read_only_created_no_paths":true,"entry_reopened":true,"list_returned_one":true,"artifact_reference_round_trip":true}` on the local Darwin/arm64 host. It called the public store API, opened a missing store read-only, explicitly wrote one validated occurrence/ref, closed/reopened, then fetched and listed it. |
-| `GOOS=windows GOARCH=amd64 go test -c -o /tmp/deprail-history-windows.test.exe ./internal/store/history`; exact-head PR #436 CI [36806173168](https://github.com/geoffrey-xiao/deprail/actions/runs/36806173168) | Cross-compilation passed. The three OS jobs passed on the latest PR head. Earlier Windows failures exposed newly created ownership and the two same-user ACEs (current-object full access and inherit-only child access); the final run passed the strict protected-DACL checks. |
+| `GOOS=windows GOARCH=amd64 go test -c -o /tmp/deprail-history-windows.test.exe ./internal/store/history`; exact-head PR #436 CI [36806409408](https://github.com/geoffrey-xiao/deprail/actions/runs/36806409408) | Cross-compilation passed. All three OS jobs passed on the final PR head. Earlier Windows failures exposed newly created ownership and the two same-user ACEs (current-object full access and inherit-only child access); the final run passed the strict protected-DACL checks. |
 | `go mod tidy` | Passed; SQLite is direct and existing `golang.org/x/sys` is pinned at the compatible `v0.47.0`. |
 | SBOM/checksum/source-diff validation | `jq` validated CycloneDX 1.6 structure, 12 dependency components and allowed license IDs; `go mod verify` reported all modules verified; `git diff --check` passed. |
 | `make verify` | Passed: `go generate ./...`, `go vet ./...`, `go test ./...`, and `go build ./...` all completed successfully on the local Darwin/arm64 host. |
 
-Local `make verify` passed, and latest exact-head CI run [36806173168](https://github.com/geoffrey-xiao/deprail/actions/runs/36806173168) passed Ubuntu/macOS/Windows. Owner technical/security review and acceptance remain required. POSIX mode tests ran locally on Darwin; Windows ACL runtime tests passed in CI.
+Local `make verify` passed, and exact-head CI run [36806409408](https://github.com/geoffrey-xiao/deprail/actions/runs/36806409408) passed Ubuntu/macOS/Windows. Owner technical/security review and acceptance remain required. POSIX mode tests ran locally on Darwin; Windows ACL runtime tests passed in CI.
 
 ## Limits and unresolved acceptance evidence
 
@@ -40,4 +40,4 @@ Local `make verify` passed, and latest exact-head CI run [36806173168](https://g
 - No older DepRail schema exists to migrate. Current v1 opens without migration; this branch tests creation, unique online snapshots, snapshot integrity, no-overwrite naming and cancellation preservation. It does not invent a fake migration or claim migration-failure/restore rehearsal evidence. Manual restore remains a future release gate; no restore action is implemented.
 - The store commits digest references only. Missing/digest-mismatch artifact integrity states and artifact retrieval remain the dependent H05-003 responsibility; this package never reads, deletes or garbage-collects raw artifacts.
 - The 256 MiB bound covers summed projection JSON only. SQLite pages/indexes, WAL/SHM, backups and external artifacts can use more disk; no hard filesystem quota is claimed.
-- Owner review must separately accept schema/permission/dependency impact, the disclosed `x/text` advisory and logical-versus-physical growth risk. Issue #421 remains open at Project Status `Review` until evidence, owner review and CI are recorded.
+- Owner review must separately accept schema/permission/dependency impact, the disclosed `x/text` advisory and logical-versus-physical growth risk. Verification and implementation evidence are recorded above; issue #421 remains open at Project Status `Review` until owner review is recorded.

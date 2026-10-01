@@ -81,7 +81,7 @@ Input: schema-valid projection, same-operation occurrence ID, digest references 
 
 ## Implementation evidence (acceptance pending)
 
-The living implementation and verification record is [`H05-002-STORE-EVIDENCE.md`](../tracking/H05-002-STORE-EVIDENCE.md), with the reviewed dependency SBOM at [`H05-002-dependencies.cdx.json`](../tracking/H05-002-dependencies.cdx.json). [PR #436](https://github.com/geoffrey-xiao/deprail/pull/436) is ready for owner review and Project Status is `Review`. The latest exact-head CI run [36806173168](https://github.com/geoffrey-xiao/deprail/actions/runs/36806173168) passed Ubuntu/macOS/Windows after the first four runs exposed Windows path ownership and DACL-shape assumptions. Owner technical/security review remains pending; acceptance boxes remain unchecked.
+- [PR #436](https://github.com/geoffrey-xiao/deprail/pull/436) was merged by `@geoffrey-xiao` on 2026-10-01; merge commit [`6326915`](https://github.com/geoffrey-xiao/deprail/commit/6326915ebd3c8ea7e2fd4cf5d1926f0652deba3f). Exact-head CI run [36806409408](https://github.com/geoffrey-xiao/deprail/actions/runs/36806409408) passed Ubuntu/macOS/Windows. GitHub records no human `APPROVED` review (only automated Codex); owner technical/security acceptance remains unrecorded, so acceptance boxes remain unchecked and Project Status stays `Review`.
 
 ## Final Acceptance
 

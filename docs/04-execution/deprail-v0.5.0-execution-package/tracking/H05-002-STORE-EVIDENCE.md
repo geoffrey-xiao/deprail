@@ -2,7 +2,7 @@
 
 **GitHub issue:** [#421](https://github.com/geoffrey-xiao/deprail/issues/421)
 
-**Status:** Draft [PR #436](https://github.com/geoffrey-xiao/deprail/pull/436) open; Project Status `Review`; exact-head CI run [36805570531](https://github.com/geoffrey-xiao/deprail/actions/runs/36805570531) passed Ubuntu, macOS and Windows. The first four runs exposed and fixed Windows ownership and DACL-shape assumptions. Owner technical/security review and acceptance remain pending.
+**Status:** [PR #436](https://github.com/geoffrey-xiao/deprail/pull/436) is ready for owner review; Project Status `Review`; latest exact-head CI run [36805833391](https://github.com/geoffrey-xiao/deprail/actions/runs/36805833391) passed Ubuntu, macOS and Windows. The first four runs exposed and fixed Windows ownership and DACL-shape assumptions. Owner technical/security review and acceptance remain pending.
 **Branch:** `feat/h05-002-private-history-store` from reviewed main `da59b10`.
 
 ## Delivered behavior
@@ -27,12 +27,12 @@ Dependency review proves candidate provenance and a clean SQLite closure; it doe
 | --- | --- |
 | `go test ./internal/store/history ./schemas/history-v1` | Passed. Covers empty read without creation; current-v1 initialization/reopen; row/projection and future-version refusal; deterministic keyset order; identical/conflicting retries; repeated source scan IDs; atomic row+ref rollback; child-process exit before commit; cancellation; external SQLite lock bounded near 2 seconds; SQLite `max_page_count` failure; exact/over byte and entry quotas; POSIX modes and refusal of broad read-only DB permissions; symlink/repository-boundary rejection; WAL/foreign-key/FULL settings; unique online backups and validation. |
 | `go run ./internal/store/history/smoke` (throwaway harness, then removed) | Printed `{"missing_read_only_created_no_paths":true,"entry_reopened":true,"list_returned_one":true,"artifact_reference_round_trip":true}` on the local Darwin/arm64 host. It called the public store API, opened a missing store read-only, explicitly wrote one validated occurrence/ref, closed/reopened, then fetched and listed it. |
-| `GOOS=windows GOARCH=amd64 go test -c -o /tmp/deprail-history-windows.test.exe ./internal/store/history`; exact-head PR #436 CI [36805570531](https://github.com/geoffrey-xiao/deprail/actions/runs/36805570531) | Cross-compilation passed. The three OS jobs all passed on the current PR head. Earlier Windows failures exposed newly created ownership and the two same-user ACEs (current-object full access and inherit-only child access); the final run passed the strict protected-DACL checks. |
+| `GOOS=windows GOARCH=amd64 go test -c -o /tmp/deprail-history-windows.test.exe ./internal/store/history`; exact-head PR #436 CI [36805833391](https://github.com/geoffrey-xiao/deprail/actions/runs/36805833391) | Cross-compilation passed. The three OS jobs passed on the latest PR head. Earlier Windows failures exposed newly created ownership and the two same-user ACEs (current-object full access and inherit-only child access); the final run passed the strict protected-DACL checks. |
 | `go mod tidy` | Passed; SQLite is direct and existing `golang.org/x/sys` is pinned at the compatible `v0.47.0`. |
 | SBOM/checksum/source-diff validation | `jq` validated CycloneDX 1.6 structure, 12 dependency components and allowed license IDs; `go mod verify` reported all modules verified; `git diff --check` passed. |
 | `make verify` | Passed: `go generate ./...`, `go vet ./...`, `go test ./...`, and `go build ./...` all completed successfully on the local Darwin/arm64 host. |
 
-Local `make verify` passed, and exact-head CI run [36805570531](https://github.com/geoffrey-xiao/deprail/actions/runs/36805570531) passed Ubuntu/macOS/Windows. Owner technical/security review and acceptance remain required. POSIX mode tests ran locally on Darwin; Windows ACL runtime tests passed in CI.
+Local `make verify` passed, and latest exact-head CI run [36805833391](https://github.com/geoffrey-xiao/deprail/actions/runs/36805833391) passed Ubuntu/macOS/Windows. Owner technical/security review and acceptance remain required. POSIX mode tests ran locally on Darwin; Windows ACL runtime tests passed in CI.
 
 ## Limits and unresolved acceptance evidence
 

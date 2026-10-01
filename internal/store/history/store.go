@@ -49,8 +49,9 @@ type Error struct {
 	cause error
 }
 
-func (e *Error) Error() string { return string(e.Code) }
-func (e *Error) Unwrap() error { return e.cause }
+func (e *Error) HistoryErrorCode() string { return string(e.Code) }
+func (e *Error) Error() string            { return string(e.Code) }
+func (e *Error) Unwrap() error            { return e.cause }
 
 func IsCode(err error, code ErrorCode) bool {
 	var target *Error
@@ -65,41 +66,13 @@ type Options struct {
 	RepositoryRoot string
 }
 
-// Entry is one validated operation occurrence and the exact external artifact
-// references that must be committed with it.
-type Entry struct {
-	Projection   domain.Projection
-	ArtifactRefs []string
-}
-
-// Cursor is the stable keyset boundary for a descending history page.
-type Cursor struct {
-	RecordedAtUS   int64
-	HistoryEntryID string
-}
-
-// Page bounds a history list read. A zero limit uses the documented default.
-type Page struct {
-	Limit  int
-	Before *Cursor
-}
-
-// Summary contains only bounded index fields; full projections are returned by Get.
-type Summary struct {
-	HistoryEntryID   string
-	RecordedAtUS     int64
-	OperationOutcome string
-	RepositoryLabel  *string
-	WorkspaceCount   *int
-	ReportStatus     *string
-	FindingCount     *int
-}
-
-// PageResult includes one extra-row signal for keyset pagination.
-type PageResult struct {
-	Entries []Summary
-	HasMore bool
-}
+// Entry, Cursor, Page, Summary, and PageResult remain storage-facing names for
+// the dependency-neutral history models.
+type Entry = domain.Entry
+type Cursor = domain.Cursor
+type Page = domain.Page
+type Summary = domain.Summary
+type PageResult = domain.PageResult
 
 // Store owns one SQLite handle. Read-only stores never create missing paths.
 type Store struct {
@@ -407,8 +380,9 @@ func summary(p domain.Projection) Summary {
 	}
 	if p.Report != nil {
 		status, count := p.Report.Status, len(p.Report.Findings)
-		result.ReportStatus = &status
-		result.FindingCount = &count
+		sourceID, schema := p.Report.SourceScanID, p.Report.SourceSchemaVersion
+		result.ReportStatus, result.FindingCount = &status, &count
+		result.SourceScanID, result.SourceReportSchemaVersion = &sourceID, &schema
 	}
 	return result
 }

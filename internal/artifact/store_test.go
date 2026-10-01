@@ -1,6 +1,7 @@
 package artifact
 
 import (
+	"context"
 	"os"
 	"path/filepath"
 	"testing"
@@ -42,5 +43,52 @@ func TestStoreRejectsOversizeAndTamperedArtifacts(t *testing.T) {
 	}
 	if _, err := store.Get(artifact.Digest); !IsCode(err, ErrIntegrity) {
 		t.Fatalf("tamper error = %v", err)
+	}
+}
+
+func TestStoreVerifyStreamsTrustedArtifactAndReportsMissing(t *testing.T) {
+	store := Store{Root: t.TempDir(), MaxBytes: 1024}
+	artifact, err := store.Put([]byte("content-addressed output"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := store.Verify(context.Background(), artifact.Digest); err != nil {
+		t.Fatalf("verify: %v", err)
+	}
+	if err := store.Verify(context.Background(), "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"); !IsCode(err, ErrNotFound) {
+		t.Fatalf("missing artifact error = %v", err)
+	}
+	ctx, cancel := context.WithCancel(context.Background())
+	cancel()
+	if err := store.Verify(ctx, artifact.Digest); !IsCode(err, ErrWriteFailed) {
+		t.Fatalf("cancelled verification error = %v", err)
+	}
+}
+
+func TestStoreVerifyRejectsSymlinkedArtifactPathAndDigestMismatch(t *testing.T) {
+	store := Store{Root: t.TempDir(), MaxBytes: 1024}
+	artifact, err := store.Put([]byte("original"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	path := filepath.Join(store.Root, artifact.Digest[:2], artifact.Digest)
+	if err := os.WriteFile(path, []byte("changed"), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	if err := store.Verify(context.Background(), artifact.Digest); !IsCode(err, ErrIntegrity) {
+		t.Fatalf("digest mismatch error = %v", err)
+	}
+	if err := os.Remove(path); err != nil {
+		t.Fatal(err)
+	}
+	target := filepath.Join(t.TempDir(), "target")
+	if err := os.WriteFile(target, []byte("original"), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.Symlink(target, path); err != nil {
+		t.Skipf("symlink unavailable: %v", err)
+	}
+	if err := store.Verify(context.Background(), artifact.Digest); !IsCode(err, ErrIntegrity) {
+		t.Fatalf("symlink verification error = %v", err)
 	}
 }

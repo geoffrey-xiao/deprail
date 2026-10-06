@@ -15,7 +15,7 @@
 - Owner: `@geoffrey-xiao`
 - Reviewer: `@geoffrey-xiao` (owner); independent review is not a gate under ADR-0005.
 - Dependencies: H05-005 route, response, auth and recovery contract; accepted UX and security contract. Packaged acceptance belongs to H05-007; no H05-007 dependency is needed for source-level smoke.
-- Blocked reason: None for source implementation; in progress. Owner review and residual dependency risks are tracked in [dependency evidence](../tracking/H05-006-DEPENDENCY-EVIDENCE.md) and [source UI evidence](../tracking/H05-006-UI-EVIDENCE.md); packaged acceptance remains H05-007/H05-008.
+- Review status: [PR #443](https://github.com/geoffrey-xiao/deprail/pull/443) is open; Project Status `Review`. Source browser evidence is [H05-006-UI-EVIDENCE](../tracking/H05-006-UI-EVIDENCE.md); [dependency evidence](../tracking/H05-006-DEPENDENCY-EVIDENCE.md) records owner license/provenance disposition still needed. Owner acceptance and physical screen-reader/zoom review remain pending; exact-head CI is checked on the PR before acceptance. Packaged acceptance remains H05-007/H05-008.
 
 ## Definition of Ready
 

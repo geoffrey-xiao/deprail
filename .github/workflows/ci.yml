@@ -72,3 +72,4 @@ jobs:
             if [[ "$os" == 'windows' ]]; then suffix='.exe'; fi
             GOOS="$os" GOARCH="$arch" go build -trimpath -o "${RUNNER_TEMP}/deprail-${target}${suffix}" ./cmd/deprail
             test -s "${RUNNER_TEMP}/deprail-${target}${suffix}"
+          done

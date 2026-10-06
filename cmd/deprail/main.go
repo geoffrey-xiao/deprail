@@ -21,6 +21,7 @@ import (
 	"github.com/geoffrey-xiao/deprail/internal/presenter"
 	"github.com/geoffrey-xiao/deprail/internal/remediation"
 	"github.com/geoffrey-xiao/deprail/internal/store/history"
+	"github.com/geoffrey-xiao/deprail/internal/transport/localhttp"
 )
 
 func main() {
@@ -28,6 +29,10 @@ func main() {
 }
 
 func run(args []string, stdout, stderr io.Writer) int {
+	return runWithConsoleAssets(args, stdout, stderr, localhttp.Config{})
+}
+
+func runWithConsoleAssets(args []string, stdout, stderr io.Writer, assets localhttp.Config) int {
 	if len(args) == 1 && (args[0] == "--help" || args[0] == "-h") {
 		if err := writeRootHelp(stdout); err != nil {
 			return 3
@@ -46,7 +51,7 @@ func run(args []string, stdout, stderr io.Writer) int {
 	if hasHelp(args[1:]) {
 		command := args[0]
 		switch command {
-		case "discover", "scan", "doctor", "diff":
+		case "discover", "scan", "doctor", "diff", "web":
 		case "baseline":
 			if len(args) < 2 || args[1] != "create" {
 				writeCLIError(stderr, "CONFIG_INVALID", "baseline requires the create subcommand", "baseline")
@@ -107,6 +112,8 @@ func run(args []string, stdout, stderr io.Writer) int {
 		return runPolicyCheck(args[2:], stdout, stderr)
 	case "doctor":
 		return runDoctor(args[1:], stdout, stderr)
+	case "web":
+		return runWeb(args[1:], stdout, stderr, assets)
 	default:
 		writeCLIError(stderr, "CONFIG_INVALID", fmt.Sprintf("unknown command %q", args[0]), "command")
 		return 2

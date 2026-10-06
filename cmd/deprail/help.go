@@ -18,6 +18,7 @@ Commands:
   fix plan       produce a read-only remediation plan
   fix approve    create a time-limited approval record
   fix apply      validate or apply an approved plan
+  web            browse saved history in a read-only local console
 Output:
   Human output is plain terminal text.
   JSON result data is written to stdout; incidental diagnostics use stderr.
@@ -43,6 +44,8 @@ func writeCommandHelp(w io.Writer, command string) error {
 		text = "Usage: deprail baseline create --scan path --output path [--format terminal|json]\n\nCreate a trusted baseline from a complete scan result.\n\nTip: only complete, error-free scans are accepted; output is never overwritten.\nExample: deprail baseline create --scan scan.json --output baseline.json --format json\n"
 	case "doctor":
 		text = "Usage: deprail doctor [--format terminal|json]\n\nInspect local tool availability without scanning the repository.\n\nTip: run doctor first when scanner availability is uncertain.\nExample: deprail doctor --format json\n"
+	case "web":
+		text = "Usage: deprail web [--open] [--artifact-root path]\n\nStart a foreground-only read-only local console on an ephemeral loopback port. The command never creates or migrates history storage and does not open a browser unless --open is set. Non-TTY use requires --open; the active terminal can reopen the current session with Enter.\n\nExample: deprail web --open\n"
 	case "fix plan":
 		text = "Usage: deprail fix plan --report path --finding key [--verification path] [--format terminal|json] [--output path]\n\nProduce a read-only remediation plan; no files are mutated. Verification commands are accepted only from the explicit JSON input and are never inferred from package scripts.\n\nTip: obtain the finding key from a completed scan report.\nExample: deprail fix plan --report scan.json --finding FINDING_KEY --verification verification.json --format json --output plan.json\n"
 	case "fix approve":

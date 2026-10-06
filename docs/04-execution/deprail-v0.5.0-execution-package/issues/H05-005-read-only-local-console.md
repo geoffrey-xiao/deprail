@@ -15,7 +15,7 @@
 - Owner: `@geoffrey-xiao`
 - Reviewer: `@geoffrey-xiao` (owner); independent review is not a gate under ADR-0005.
 - Dependencies: H05-003 same-operation capture/query service; accepted API, launch and security contracts and prerequisite dispositions recorded in [EPIC-002](../epics/EPIC-002-local-history-delivery.md). H05-007 may provide reviewed production assets; H05-005 smoke may use temporary contract assets only.
-- Blocked reason: None (Todo, not started); global timeout disposition and issue-specific pre-start gates apply.
+- Blocked reason: None (PR #440 is open in Project Review; owner acceptance remains pending); production assets remain with H05-007, and this transport has no production asset fallback.
 
 ## Definition of Ready
 
@@ -69,8 +69,8 @@ Owner reviews each observable criterion, security boundary and residual fragment
 
 ## Evidence Required
 
-- Verification commands or scenarios: future targeted transport behavioral tests; launched CLI smoke with actual local API and browser; malicious Host/Origin/token/cursor probes; paging boundary and shutdown/recovery scenarios; existing CLI compatibility scenario.
-- Expected artifacts, logs, screenshots, or links: sanitized request/response assertions, browser recovery evidence, bounded byte measurements and platform launch results; redact tokens, roots and repository data.
+- Verification commands and runtime scenarios: see [H05-005 transport evidence](../tracking/H05-005-TRANSPORT-EVIDENCE.md), including `make verify`, `make test-integration`, cross-platform compile-only checks, actual-listener tests, and a test-only Chromium recovery smoke.
+- Expected artifacts: sanitized request/response assertions, bounded byte checks, CLI lifecycle outcomes, and browser smoke screenshot evidence are recorded in the linked evidence file. Tokens, roots, and repository data are excluded.
 
 ## Final Acceptance
 

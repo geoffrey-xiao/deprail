@@ -15,7 +15,7 @@
 - Owner: `@geoffrey-xiao`
 - Reviewer: `@geoffrey-xiao` (owner); independent review is not a gate under ADR-0005.
 - Dependencies: H05-005 transport/static-asset contract and H05-006 complete UI source/lockfile; accepted compatibility and security contracts. H05-008 consumes packaged outputs.
-- Blocked reason: None (Todo, not started); global timeout disposition and issue-specific pre-start gates apply.
+- Blocked reason: None for source implementation; Project In Progress. #419 timeout/OutputCap follow-up and #425 owner acceptance remain open; package release gates still apply.
 
 ## Definition of Ready
 
@@ -67,6 +67,8 @@ Owner reviews reproducibility, supply-chain dispositions, target outputs and com
 
 - Verification commands or scenarios: future clean locked build/rebuild comparison, four-target binary launch, missing/skew injection using throwaway harness, existing CLI regression, asset/API size measurement, dependency/license/SBOM review.
 - Expected artifacts, logs, screenshots, or links: binary hashes, toolchain and lock identity, asset-attributable size table, SBOM and explicit vulnerability/license disposition, sanitized startup/error results.
+
+Implementation evidence: [H05-007 packaging evidence](../tracking/H05-007-PACKAGING-EVIDENCE.md) records the pinned Darwin build, offline repeat, actual console browser/static smoke, throwaway failure binaries, size/hash table, four target cross-builds, and unresolved platform/supply-chain owner gates. Acceptance boxes remain unchecked until CI/native platform evidence and owner review are recorded.
 
 ## Final Acceptance
 

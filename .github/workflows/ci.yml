@@ -19,6 +19,19 @@ jobs:
       - name: Check out source
         uses: actions/checkout@v4
 
+      - name: Set up pinned Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22.23.3'
+          cache: npm
+          cache-dependency-path: web/package-lock.json
+
+      - name: Pin npm and build embedded console
+        shell: bash
+        run: |
+          npm install --global npm@10.9.9 --ignore-scripts --no-audit --no-fund
+          make frontend
+
       - name: Set up Go
         uses: actions/setup-go@v5
         with:
@@ -38,3 +51,24 @@ jobs:
 
       - name: Build packages
         run: go build ./...
+
+      - name: Smoke native packaged CLI
+        shell: bash
+        run: |
+          suffix=''
+          if [[ "$RUNNER_OS" == 'Windows' ]]; then suffix='.exe'; fi
+          go build -trimpath -o "deprail-smoke${suffix}" ./cmd/deprail
+          "./deprail-smoke${suffix}" --version
+          "./deprail-smoke${suffix}" discover testdata/fixtures/mixed-repository --format json > "${RUNNER_TEMP}/deprail-discover.json"
+          test -s "${RUNNER_TEMP}/deprail-discover.json"
+
+      - name: Cross-build declared release targets
+        if: runner.os == 'Linux'
+        shell: bash
+        run: |
+          for target in linux-amd64 darwin-amd64 darwin-arm64 windows-amd64; do
+            IFS=- read -r os arch <<< "$target"
+            suffix=''
+            if [[ "$os" == 'windows' ]]; then suffix='.exe'; fi
+            GOOS="$os" GOARCH="$arch" go build -trimpath -o "${RUNNER_TEMP}/deprail-${target}${suffix}" ./cmd/deprail
+            test -s "${RUNNER_TEMP}/deprail-${target}${suffix}"

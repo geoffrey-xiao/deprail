@@ -1,6 +1,6 @@
 # H05-007 Embedded Console Packaging Evidence
 
-Issue: [#426](https://github.com/geoffrey-xiao/deprail/issues/426). Source branch: `feat/h05-007-embedded-console` based on merged #443 (`0c2f715`). This is implementation evidence for owner review, **not** v0.5 release approval or a claim of native Linux/Windows package acceptance.
+Issue: [#426](https://github.com/geoffrey-xiao/deprail/issues/426). Implementation review: [PR #444](https://github.com/geoffrey-xiao/deprail/pull/444). Source branch: `feat/h05-007-embedded-console` based on merged #443 (`0c2f715`). This is implementation evidence for owner review, **not** v0.5 release approval or a claim of native Linux/Windows package acceptance.
 
 ## Build and behavior
 

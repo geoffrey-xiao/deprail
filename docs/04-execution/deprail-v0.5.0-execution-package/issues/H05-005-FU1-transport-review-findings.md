@@ -1,6 +1,7 @@
 # H05-005-FU1: Close Local-Console Transport Review Findings
 
 - GitHub issue: [#441](https://github.com/geoffrey-xiao/deprail/issues/441); parent H05-005 [#424](https://github.com/geoffrey-xiao/deprail/issues/424).
+- Review PR: [#442](https://github.com/geoffrey-xiao/deprail/pull/442); issue Project status `Review`, owner acceptance pending.
 - Owner and owner reviewer: `@geoffrey-xiao`; target release `v0.5.0`, Sprint 4; `area:cli`, `risk:R3`, `priority:P0`, `type:bug`.
 - Source: three contract defects identified in [PR #440 review](https://github.com/geoffrey-xiao/deprail/pull/440): rejected unread bodies can hold connections; invented history/finding cursor tuples can skip records; API 401 lacks the declared bearer challenge.
 - Existing contracts: [API design §§11–13](../API-DESIGN.md), [OpenAPI v1](../../../../schemas/openapi/v1/openapi.yaml), [SEC-01/05](../requirements/SECURITY-REQUIREMENTS.md), and [H05-005](H05-005-read-only-local-console.md). This fixes accepted behavior, with no new release capability or displaced work.

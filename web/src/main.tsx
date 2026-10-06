@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { createRoot } from 'react-dom/client';
 import { ApiFailure, get, hasToken, setToken, type Collection, type Diagnostic, type Finding, type HistoryDetail, type Page, type Summary, type Workspace } from './api';
 import './style.css';
@@ -21,6 +21,10 @@ function routeFromPath(path: string) {
 }
 function App() {
   const [route, setRoute] = useState(() => routeFromPath(location.pathname));
+  const currentPath = useRef(location.pathname);
+  const historyRun = useRef(0);
+  const detailRun = useRef(0);
+  const childRun = useRef({ workspaces: 0, findings: 0 });
   const [authEpoch, setAuthEpoch] = useState(0);
   const [history, setHistory] = useState<Page<Summary> | null>(null);
   const [historyError, setHistoryError] = useState<ApiFailure | null>(null);
@@ -37,25 +41,36 @@ function App() {
   const [findingCursor, setFindingCursor] = useState<string | undefined>();
   const [notice, setNotice] = useState('');
 
+  function clearDetail() {
+    setDetail(null); setDetailError(null); setWorkspaces(null); setFindings(null);
+    setChildErrors({}); setChildBusy({});
+    setWorkspaceCursor(undefined); setFindingCursor(undefined);
+  }
+
   useEffect(() => {
     const update = () => {
-      const fragment = new URLSearchParams(location.hash.slice(1)).get('token');
-
-      if (fragment) {
-        const current = new URL(window.location.href);
-        current.hash = '';
-        window.history.replaceState(window.history.state, '', current.pathname + current.search);
-        setToken(fragment);
-        setAuthEpoch(value => value + 1);
-        setNotice('Local session credentials updated.');
-      } else if (location.hash !== '#main') {
-        setToken(null);
-        setAuthEpoch(value => value + 1);
-        setNotice('Authentication was lost. Reopen the console from the active local DepRail session.');
-      }
+      const params = new URLSearchParams(location.hash.slice(1));
+      if (!params.has('token')) return;
+      const fragment = params.get('token');
+      const current = new URL(window.location.href);
+      current.hash = '';
+      window.history.replaceState(window.history.state, '', current.pathname + current.search);
+      historyRun.current++;
+      detailRun.current++;
+      setToken(fragment);
+      setAuthEpoch(value => value + 1);
+      setNotice(fragment ? 'Local session credentials updated.' : 'Authentication was lost. Reopen the console from the active local DepRail session.');
     };
     window.addEventListener('hashchange', update);
-    const pop = () => { setRoute(routeFromPath(location.pathname)); setNotice('Page changed.'); };
+    const pop = () => {
+      if (location.pathname === currentPath.current) return;
+      currentPath.current = location.pathname;
+      historyRun.current++;
+      detailRun.current++;
+      clearDetail();
+      setRoute(routeFromPath(location.pathname));
+      setNotice('Page changed.');
+    };
     window.addEventListener('popstate', pop);
     return () => { window.removeEventListener('hashchange', update); window.removeEventListener('popstate', pop); };
   }, []);
@@ -66,10 +81,16 @@ function App() {
   }, [route.page, route.id, detail, detailError, historyError, authEpoch]);
 
   async function loadHistory(cursor = cursorStack[cursorIndex]) {
+    const run = ++historyRun.current;
     setHistoryBusy(true); setHistoryError(null);
-    try { setHistory(await get<Page<Summary>>('/api/v1/scans', cursor)); }
-    catch (error) { setHistoryError(error instanceof ApiFailure ? error : new ApiFailure('API_INTERNAL_ERROR', 0, 'History could not be loaded.')); }
-    finally { setHistoryBusy(false); }
+    try {
+      const result = await get<Page<Summary>>('/api/v1/scans', cursor);
+      if (run === historyRun.current) setHistory(result);
+    } catch (error) {
+      if (run === historyRun.current) setHistoryError(error instanceof ApiFailure ? error : new ApiFailure('API_INTERNAL_ERROR', 0, 'History could not be loaded.'));
+    } finally {
+      if (run === historyRun.current) setHistoryBusy(false);
+    }
   }
   useEffect(() => {
     if (route.page === 'history' && hasToken()) void loadHistory();
@@ -77,30 +98,49 @@ function App() {
   }, [route.page, authEpoch, cursorIndex]);
 
   async function loadDetail() {
+    const run = ++detailRun.current;
     if (!hasToken()) return;
-    setDetail(null); setWorkspaces(null); setFindings(null); setDetailError(null); setChildErrors({});
+    const id = route.id;
+    clearDetail();
     try {
-      const result = await get<HistoryDetail>(`/api/v1/scans/${encodeURIComponent(route.id)}`);
+      const result = await get<HistoryDetail>(`/api/v1/scans/${encodeURIComponent(id)}`);
+      if (run !== detailRun.current) return;
       setDetail(result);
-      void loadChild('workspaces');
-      void loadChild('findings');
-    } catch (error) { setDetailError(error instanceof ApiFailure ? error : new ApiFailure('API_INTERNAL_ERROR', 0, 'The history entry could not be loaded.')); }
+      void loadChild('workspaces', undefined, run, id);
+      void loadChild('findings', undefined, run, id);
+    } catch (error) {
+      if (run === detailRun.current) setDetailError(error instanceof ApiFailure ? error : new ApiFailure('API_INTERNAL_ERROR', 0, 'The history entry could not be loaded.'));
+    }
   }
-  async function loadChild(kind: 'workspaces' | 'findings', cursor?: string) {
-    if (!hasToken()) return;
+  async function loadChild(kind: 'workspaces' | 'findings', cursor?: string, run = detailRun.current, id = route.id) {
+    if (!hasToken() || run !== detailRun.current) return;
+    const child = ++childRun.current[kind];
     setChildBusy(previous => ({ ...previous, [kind]: true }));
     setChildErrors(previous => { const remaining = { ...previous }; delete remaining[kind]; return remaining; });
     try {
-      if (kind === 'workspaces') setWorkspaces(await get<Collection<Workspace>>(`/api/v1/scans/${encodeURIComponent(route.id)}/workspaces`, cursor));
-      else setFindings(await get<Collection<Finding>>(`/api/v1/scans/${encodeURIComponent(route.id)}/findings`, cursor));
-    } catch (error) { setChildErrors(previous => ({ ...previous, [kind]: error instanceof ApiFailure ? error : new ApiFailure('API_INTERNAL_ERROR', 0, 'This collection could not be loaded.') })); }
-    finally { setChildBusy(previous => ({ ...previous, [kind]: false })); }
+      if (kind === 'workspaces') {
+        const result = await get<Collection<Workspace>>(`/api/v1/scans/${encodeURIComponent(id)}/workspaces`, cursor);
+        if (run === detailRun.current && child === childRun.current[kind]) setWorkspaces(result);
+      } else {
+        const result = await get<Collection<Finding>>(`/api/v1/scans/${encodeURIComponent(id)}/findings`, cursor);
+        if (run === detailRun.current && child === childRun.current[kind]) setFindings(result);
+      }
+    } catch (error) {
+      if (run === detailRun.current && child === childRun.current[kind]) setChildErrors(previous => ({ ...previous, [kind]: error instanceof ApiFailure ? error : new ApiFailure('API_INTERNAL_ERROR', 0, 'This collection could not be loaded.') }));
+    } finally {
+      if (run === detailRun.current && child === childRun.current[kind]) setChildBusy(previous => ({ ...previous, [kind]: false }));
+    }
   }
   useEffect(() => { if (route.page === 'detail') void loadDetail(); }, [route.page, route.id, authEpoch]);
 
   function navigate(event: React.MouseEvent<HTMLAnchorElement>, path: string) {
     if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey || event.button !== 0) return;
     event.preventDefault();
+    if (location.pathname === path) return;
+    currentPath.current = path;
+    historyRun.current++;
+    detailRun.current++;
+    clearDetail();
     window.history.pushState(null, '', path);
     setRoute(routeFromPath(path));
     setNotice('Page changed.');

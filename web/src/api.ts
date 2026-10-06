@@ -59,12 +59,15 @@ function nullableNumber(value: unknown): boolean { return value === null || type
 function status(value: unknown): boolean { return value === 'complete' || value === 'partial' || value === 'failed'; }
 function summary(value: unknown): boolean {
   if (!record(value)) return false;
-  return typeof value.historyEntryID === 'string' && typeof value.recordedAt === 'string' &&
-    ['completed', 'failed', 'cancelled'].includes(String(value.operationOutcome)) &&
-    (value.reportStatus === null || status(value.reportStatus)) &&
-    nullableString(value.repositoryLabel) && nullableString(value.sourceScanID) &&
-    nullableString(value.sourceReportSchemaVersion) &&
-    nullableNumber(value.workspaceCount) && nullableNumber(value.findingCount);
+  if (typeof value.historyEntryID !== 'string' || typeof value.recordedAt !== 'string' ||
+    !['completed', 'failed', 'cancelled'].includes(String(value.operationOutcome)) ||
+    !(value.reportStatus === null || status(value.reportStatus)) ||
+    !nullableString(value.repositoryLabel) || !nullableString(value.sourceScanID) ||
+    !nullableString(value.sourceReportSchemaVersion) ||
+    !nullableNumber(value.workspaceCount) || !nullableNumber(value.findingCount)) return false;
+  return value.sourceScanID === null
+    ? value.reportStatus === null && value.findingCount === null && value.sourceReportSchemaVersion === null
+    : value.reportStatus !== null && value.findingCount !== null && value.sourceReportSchemaVersion !== null;
 }
 function workspace(value: unknown): boolean {
   return record(value) && typeof value.workspaceID === 'string' && typeof value.relativePath === 'string' &&
@@ -89,10 +92,13 @@ function detail(value: unknown): boolean {
     typeof entry.message === 'string' && ['repository', 'workspace'].includes(String(entry.scope)))) return false;
   if (!value.artifactReferences.every((entry: unknown) => record(entry) && typeof entry.digest === 'string' &&
     ['verified', 'missing', 'digest_mismatch', 'unavailable'].includes(String(entry.integrity)))) return false;
-  if (value.report === null) return true;
-  if (!record(value.report) || typeof value.report.sourceSchemaVersion !== 'string' ||
+  const entry = value.summary as RecordValue;
+  if (value.report === null) return entry.sourceScanID === null;
+  if (entry.sourceScanID === null || !record(value.report) || typeof value.report.sourceSchemaVersion !== 'string' ||
+    value.report.sourceSchemaVersion !== entry.sourceReportSchemaVersion ||
     typeof value.report.repositoryState !== 'string' || !record(value.report.provenance)) return false;
-  return ['deprailVersion', 'scannerName', 'scannerVersion', 'scannerDatabaseVersion'].every(key => nullableString((value.report as RecordValue).provenance && ((value.report as RecordValue).provenance as RecordValue)[key]));
+  const provenance = value.report.provenance;
+  return ['deprailVersion', 'scannerName', 'scannerVersion', 'scannerDatabaseVersion'].every(key => nullableString(provenance[key]));
 }
 function validResponse(path: string, value: unknown): boolean {
   if (path === '/api/v1/scans') return record(value) && Array.isArray(value.items) && value.items.every(summary) && nullableString(value.nextCursor);

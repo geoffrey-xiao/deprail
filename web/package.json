@@ -10,7 +10,8 @@
   "packageManager": "npm@10.9.9",
   "scripts": {
     "build": "tsc --noEmit && vite build",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "test": "node --experimental-transform-types --test test/*.test.mjs"
   },
   "dependencies": {
     "react": "19.1.1",

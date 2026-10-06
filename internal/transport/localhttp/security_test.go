@@ -1,16 +1,19 @@
 package localhttp
 
 import (
+	"bufio"
 	"bytes"
 	"context"
 	"encoding/json"
 	"errors"
 	"io"
+	"net"
 	"net/http"
 	"net/http/httptest"
 	"strings"
 	"sync"
 	"testing"
+	"testing/fstest"
 	"time"
 
 	"github.com/geoffrey-xiao/deprail/internal/app"
@@ -53,8 +56,12 @@ func TestHTTPRejectsCrossOriginMalformedAndUnsupportedRequests(t *testing.T) {
 		return response
 	}
 
-	assertHTTPStatus(http.MethodGet, "/api/v1/health", "", "", "", http.StatusUnauthorized)
-	assertHTTPStatus(http.MethodGet, "/api/v1/health", "Bearer wrong-token", "", "", http.StatusUnauthorized)
+	if challenge := assertHTTPStatus(http.MethodGet, "/api/v1/health", "", "", "", http.StatusUnauthorized).Header.Get("WWW-Authenticate"); challenge != "Bearer" {
+		t.Fatalf("missing bearer challenge = %q", challenge)
+	}
+	if challenge := assertHTTPStatus(http.MethodGet, "/api/v1/health", "Bearer wrong-token", "", "", http.StatusUnauthorized).Header.Get("WWW-Authenticate"); challenge != "Bearer" {
+		t.Fatalf("invalid bearer challenge = %q", challenge)
+	}
 	assertHTTPStatus(http.MethodGet, "/api/v1/health", "Bearer "+token, "https://attacker.invalid", "same-origin", http.StatusForbidden)
 	assertHTTPStatus(http.MethodGet, "/api/v1/health", "Bearer "+token, "null", "", http.StatusForbidden)
 	assertHTTPStatus(http.MethodGet, "/api/v1/health", "Bearer "+token, "", "cross-site", http.StatusForbidden)
@@ -286,5 +293,60 @@ func TestHTTPShutdownCancelsInFlightQueryAndClosesPromptly(t *testing.T) {
 	case <-requestDone:
 	case <-time.After(2 * time.Second):
 		t.Fatal("in-flight client request remained blocked after shutdown")
+	}
+}
+
+func TestHTTPUnreadRejectedBodyConnectionIsBounded(t *testing.T) {
+	server, err := NewServer(Config{
+		AssetFS: fstest.MapFS{
+			"index.html":               &fstest.MapFile{Data: []byte("test console")},
+			"assets/console-abcdef.js": &fstest.MapFile{Data: []byte("test script")},
+		},
+		IndexPath:  "index.html",
+		AssetFiles: []AssetFile{{URLPath: "/assets/console-abcdef.js", FSPath: "assets/console-abcdef.js"}},
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if server.http.ReadTimeout != requestTimeout {
+		t.Fatalf("production read deadline=%s, want %s", server.http.ReadTimeout, requestTimeout)
+	}
+	server.http.ReadTimeout = 250 * time.Millisecond
+	serveDone := make(chan error, 1)
+	go func() { serveDone <- server.Serve() }()
+	t.Cleanup(func() {
+		_ = server.Close()
+		<-serveDone
+	})
+	connection, err := net.Dial("tcp4", server.listener.Addr().String())
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer connection.Close()
+	if err := connection.SetDeadline(time.Now().Add(2 * time.Second)); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := io.WriteString(connection, "GET /api/v1/health HTTP/1.1\r\nHost: "+server.handler.host+"\r\nContent-Length: 1\r\n\r\n"); err != nil {
+		t.Fatal(err)
+	}
+	reader := bufio.NewReader(connection)
+	response, err := http.ReadResponse(reader, nil)
+	if err != nil {
+		t.Fatalf("read rejected request: %v", err)
+	}
+	if response.StatusCode != http.StatusBadRequest {
+		t.Fatalf("rejected body status=%d", response.StatusCode)
+	}
+	if _, err := io.Copy(io.Discard, response.Body); err != nil {
+		t.Fatalf("read rejection response: %v", err)
+	}
+	_ = response.Body.Close()
+	_, err = reader.ReadByte()
+	if !errors.Is(err, io.EOF) {
+		t.Fatalf("unread body connection remained open past read deadline: %v", err)
+	}
+	status, _, _ := requestJSON(t, &http.Client{Timeout: time.Second}, server, http.MethodGet, "/api/v1/health", tokenFromBootstrap(t, server), true)
+	if status != http.StatusOK {
+		t.Fatalf("server did not serve after rejected body: %d", status)
 	}
 }

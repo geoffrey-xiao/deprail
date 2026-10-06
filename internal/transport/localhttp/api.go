@@ -130,6 +130,7 @@ func (h *handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	if !h.authenticated(r) {
+		w.Header().Set("WWW-Authenticate", "Bearer")
 		h.writeError(w, http.StatusUnauthorized, "API_AUTH_UNAUTHORIZED")
 		return
 	}

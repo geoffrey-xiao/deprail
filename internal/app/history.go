@@ -3,6 +3,7 @@ package app
 import (
 	"context"
 	"crypto/rand"
+	"crypto/sha256"
 	"encoding/hex"
 	"encoding/json"
 	"errors"
@@ -257,7 +258,12 @@ type WorkspaceView struct {
 	DiscoveryCompleteness string `json:"discoveryCompleteness"`
 }
 
-type WorkspaceCursor struct{ WorkspaceID string }
+type WorkspaceCursor struct {
+	WorkspaceID   string
+	Ordinal       uint32
+	WorkspaceHash [sha256.Size]byte
+	Encoded       bool
+}
 
 type WorkspacePageRequest struct {
 	HistoryEntryID string
@@ -394,7 +400,14 @@ func (s *HistoryService) Workspaces(ctx context.Context, request WorkspacePageRe
 	sort.Slice(workspaces, func(i, j int) bool { return workspaces[i].WorkspaceID < workspaces[j].WorkspaceID })
 	start := 0
 	if request.Before != nil {
-		start = sort.Search(len(workspaces), func(i int) bool { return workspaces[i].WorkspaceID > request.Before.WorkspaceID })
+		if request.Before.Encoded {
+			if uint64(request.Before.Ordinal) >= uint64(len(workspaces)) || sha256.Sum256([]byte(workspaces[request.Before.Ordinal].WorkspaceID)) != request.Before.WorkspaceHash {
+				return WorkspacePage{}, requestError()
+			}
+			start = int(request.Before.Ordinal) + 1
+		} else {
+			start = sort.Search(len(workspaces), func(i int) bool { return workspaces[i].WorkspaceID > request.Before.WorkspaceID })
+		}
 	}
 	end := min(start+limit, len(workspaces))
 	items := make([]WorkspaceView, 0, end-start)
@@ -413,10 +426,11 @@ func (s *HistoryService) Workspaces(ctx context.Context, request WorkspacePageRe
 	hasMore := trimmed || end < len(workspaces)
 	page := WorkspacePage{Available: true, Items: items, HasMore: hasMore}
 	if hasMore {
-		if len(items) == 0 {
-			return WorkspacePage{}, corruptError(nil)
+		lastIndex := start + len(items) - 1
+		lastWorkspaceID := items[len(items)-1].WorkspaceID
+		page.Next = &WorkspaceCursor{
+			Ordinal: uint32(lastIndex), WorkspaceHash: sha256.Sum256([]byte(lastWorkspaceID)), Encoded: true,
 		}
-		page.Next = &WorkspaceCursor{WorkspaceID: items[len(items)-1].WorkspaceID}
 	}
 	return page, nil
 }
@@ -669,6 +683,9 @@ func validHistoryID(id string) bool {
 }
 
 func validWorkspaceCursor(cursor WorkspaceCursor) bool {
+	if cursor.Encoded {
+		return cursor.WorkspaceID == ""
+	}
 	return safeCursorText(cursor.WorkspaceID, 256) && !strings.ContainsAny(cursor.WorkspaceID, "/\\:")
 }
 

@@ -322,6 +322,19 @@ func (s *HistoryService) List(ctx context.Context, request HistoryPageRequest) (
 	if s == nil || s.Reader == nil {
 		return HistoryPage{}, &HistoryError{Code: HistoryUnavailable}
 	}
+	if request.Before != nil {
+		entry, err := s.getEntry(ctx, request.Before.HistoryEntryID)
+		if err != nil {
+			var historyErr *HistoryError
+			if errors.As(err, &historyErr) && historyErr.Code == HistoryEntryNotFound {
+				return HistoryPage{}, requestError()
+			}
+			return HistoryPage{}, err
+		}
+		if entry.Projection.RecordedAtUS != request.Before.RecordedAtUS {
+			return HistoryPage{}, requestError()
+		}
+	}
 	stored, err := s.Reader.List(ctx, domain.Page{Limit: limit, Before: request.Before})
 	if err != nil {
 		return HistoryPage{}, readError(err)
@@ -446,13 +459,20 @@ func (s *HistoryService) Findings(ctx context.Context, request FindingPageReques
 		return FindingPage{}, err
 	}
 	if entry.Projection.Report == nil {
+		if request.Before != nil {
+			return FindingPage{}, requestError()
+		}
 		return FindingPage{Available: false, Reason: "source_report_unavailable"}, nil
 	}
 	findings := append([]domain.Finding(nil), entry.Projection.Report.Findings...)
 	sort.Slice(findings, func(i, j int) bool { return findings[i].StableFindingKey < findings[j].StableFindingKey })
 	start := 0
 	if request.Before != nil {
-		start = sort.Search(len(findings), func(i int) bool { return findings[i].StableFindingKey > request.Before.StableFindingKey })
+		start = sort.Search(len(findings), func(i int) bool { return findings[i].StableFindingKey >= request.Before.StableFindingKey })
+		if start == len(findings) || findings[start].StableFindingKey != request.Before.StableFindingKey {
+			return FindingPage{}, requestError()
+		}
+		start++
 	}
 	end := min(start+limit, len(findings))
 	items := make([]FindingView, 0, end-start)

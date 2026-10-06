@@ -152,6 +152,45 @@ func TestHTTPHistoryRoutesPageAndPreserveStoredMeaning(t *testing.T) {
 	}
 }
 
+func TestHTTPRejectsInventedHistoryAndFindingCursorTuples(t *testing.T) {
+	service, databasePath := openTransportHistory(t)
+	before := fileDigest(t, databasePath)
+	server := startTransportServer(t, service)
+	client := &http.Client{Timeout: 3 * time.Second}
+	token := tokenFromBootstrap(t, server)
+	checkInvalid := func(path string) {
+		t.Helper()
+		status, _, body := requestJSON(t, client, server, http.MethodGet, path, token, true)
+		var failure apiError
+		if err := json.Unmarshal(body, &failure); err != nil || status != http.StatusBadRequest || failure.Error.Code != "API_REQUEST_INVALID" {
+			t.Fatalf("invented cursor status=%d body=%s err=%v", status, body, err)
+		}
+	}
+	for _, cursor := range []domain.Cursor{
+		{RecordedAtUS: 2001, HistoryEntryID: testEntryTwo},
+		{RecordedAtUS: 2000, HistoryEntryID: "00000000-0000-4000-8000-000000000199"},
+	} {
+		encoded, err := encodeHistoryCursor(cursor)
+		if err != nil {
+			t.Fatal(err)
+		}
+		checkInvalid("/api/v1/scans?pageSize=1&cursor=" + encoded)
+	}
+	findingCursor, err := encodeFindingCursor(testEntryOne, &app.FindingCursor{StableFindingKey: strings.Repeat("f", 64)})
+	if err != nil {
+		t.Fatal(err)
+	}
+	checkInvalid("/api/v1/scans/" + testEntryOne + "/findings?pageSize=1&cursor=" + findingCursor)
+	unavailableCursor, err := encodeFindingCursor(testEntryTwo, &app.FindingCursor{StableFindingKey: strings.Repeat("f", 64)})
+	if err != nil {
+		t.Fatal(err)
+	}
+	checkInvalid("/api/v1/scans/" + testEntryTwo + "/findings?pageSize=1&cursor=" + unavailableCursor)
+	if after := fileDigest(t, databasePath); after != before {
+		t.Fatalf("rejected cursors changed history database: before=%x after=%x", before, after)
+	}
+}
+
 func TestHTTPArtifactReferencesAreMetadataOnlyAndRejectSymlinkedPaths(t *testing.T) {
 	service, databasePath := openTransportHistory(t)
 	before := fileDigest(t, databasePath)

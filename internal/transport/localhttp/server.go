@@ -70,7 +70,8 @@ func NewServer(config Config) (*Server, error) {
 	}
 	httpServer := &http.Server{
 		Handler: h, MaxHeaderBytes: headerLimit, ReadHeaderTimeout: requestTimeout,
-		WriteTimeout: requestTimeout, IdleTimeout: requestTimeout, ErrorLog: log.New(io.Discard, "", 0),
+		ReadTimeout: requestTimeout, WriteTimeout: requestTimeout, IdleTimeout: requestTimeout,
+		ErrorLog:    log.New(io.Discard, "", 0),
 		BaseContext: func(net.Listener) context.Context { return base },
 	}
 	return &Server{listener: listener, http: httpServer, handler: h, cancel: cancel}, nil

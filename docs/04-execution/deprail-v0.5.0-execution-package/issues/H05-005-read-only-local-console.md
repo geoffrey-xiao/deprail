@@ -15,7 +15,7 @@
 - Owner: `@geoffrey-xiao`
 - Reviewer: `@geoffrey-xiao` (owner); independent review is not a gate under ADR-0005.
 - Dependencies: H05-003 same-operation capture/query service; accepted API, launch and security contracts and prerequisite dispositions recorded in [EPIC-002](../epics/EPIC-002-local-history-delivery.md). H05-007 may provide reviewed production assets; H05-005 smoke may use temporary contract assets only.
-- Blocked reason: None (implementation in progress; pre-start gates satisfied); H05-007 owns production asset embedding, and H05-005 verification uses temporary test assets only.
+- Blocked reason: None (PR #440 is open in Project Review; owner acceptance remains pending); production assets remain with H05-007, and this transport has no production asset fallback.
 
 ## Definition of Ready
 

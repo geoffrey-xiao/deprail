@@ -2,6 +2,8 @@
 
 Issue: [#446](https://github.com/geoffrey-xiao/deprail/issues/446); [contract](../issues/H05-006-FU1-ui-control-styles.md). Date: 2026-10-07. Owner/reviewer: `@geoffrey-xiao`; acceptance pending. Presentation-only follow-up to H05-006; no H05-008 release gate completed.
 
+Review PR: [#447](https://github.com/geoffrey-xiao/deprail/pull/447), implementation commit `44e6fd8`. Linked with `Refs #446`; owner acceptance and CI outcome remain separate from the observed local smoke below.
+
 ## Change
 
 - `web/src/style.css`: 44px minimum controls, no `.quiet` offset margin; aligned action groups with a separate responsive Refresh row; uniform navigation targets, hover and current states; inline breadcrumb styling; history hover and inset keyboard outline; wrapping footer and narrow title/actions.

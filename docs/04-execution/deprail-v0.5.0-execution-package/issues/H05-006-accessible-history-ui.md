@@ -68,6 +68,8 @@ Owner reviews actual UI behavior and accessibility/security evidence. Planning D
 - Verification commands or scenarios: future locked source build; throwaway embed/browser run against real API; keyboard/AT, narrow/zoom, hostile-text, state-transition, Back/Forward and token-recovery scenarios.
 - Expected artifacts, logs, screenshots, or links: browser/AT matrix, actual-surface screenshots and sanitized state/API evidence; no credential or repository-sensitive content.
 
+2026-10-07: #443/#447/#449/#451 are owner-merged with successful head CI and recorded actual browser/source/packaged follow-up evidence. [UI-01–04 worksheet](../tracking/H05-008-READINESS.md#individual-prerequisite-acceptance-worksheet--2026-10-07) maps every criterion; actual AT/physical zoom, final candidate and supply-chain decisions remain distinct. Owner's bounded local-test feedback is not blanket accessibility/security acceptance. All owner criterion decisions remain pending.
+
 ## Final Acceptance
 
 - [ ] Owner reviewed every acceptance criterion during PR review.

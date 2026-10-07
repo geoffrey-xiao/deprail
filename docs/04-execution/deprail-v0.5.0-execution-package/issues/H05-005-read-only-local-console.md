@@ -72,6 +72,8 @@ Owner reviews each observable criterion, security boundary and residual fragment
 - Verification commands and runtime scenarios: see [H05-005 transport evidence](../tracking/H05-005-TRANSPORT-EVIDENCE.md), including `make verify`, `make test-integration`, cross-platform compile-only checks, actual-listener tests, and a test-only Chromium recovery smoke.
 - Expected artifacts: sanitized request/response assertions, bounded byte checks, CLI lifecycle outcomes, and browser smoke screenshot evidence are recorded in the linked evidence file. Tokens, roots, and repository data are excluded.
 
+2026-10-07: #440/#442/#456 are owner-merged with successful head CI; production assets now come from #444. [HTTP-01–05 worksheet](../tracking/H05-008-READINESS.md#individual-prerequisite-acceptance-worksheet--2026-10-07) maps runtime evidence, transport/artifact corrections and remaining security/candidate decisions. Original shell/no-assets passages remain historical phase evidence, not current main behavior. All owner criterion decisions remain pending.
+
 ## Final Acceptance
 
 - [ ] Owner reviewed every acceptance criterion during PR review.

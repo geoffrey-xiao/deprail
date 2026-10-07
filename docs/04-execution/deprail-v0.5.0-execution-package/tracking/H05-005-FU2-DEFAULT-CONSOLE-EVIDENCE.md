@@ -20,6 +20,14 @@ cmd/deprail/web.go now declares its optional resolver using the existing app.Art
 
 Original head bc4d732 failed Windows timed-apply timeout in [37569906460](https://github.com/geoffrey-xiao/deprail/actions/runs/37569906460); preserve that failure. PR #453 is rebased onto unmerged #455 head 5857187ca196ccbd1165c8493ba7916d05689e25, whose three-OS tests/builds/native CLI smoke passed in [37571076086](https://github.com/geoffrey-xiao/deprail/actions/runs/37571076086). Temporary PR base is test/v05-qa-004-timed-apply, keeping artifact-verifier changes isolated in the review diff. Combined-head verification is recorded on #453, not inferred from #455. Owner must review/merge #455 first, then retarget #453 to main and review its final diff/checks. This stack is not an owner-reviewed main or a formal release candidate; no merge or release approval is inferred.
 
+### Main cutover correction
+
+Owner merged #455 into main as 9181e769ed4e5d3faee752a5481d79e3327e7e5a, then merged #453 as 983c604dc49f9df389609233030578bdbe4dd820 into its still-temporary test/v05-qa-004-timed-apply base. The artifact correction therefore did not enter main. Combined #453 head 1644f30 passed [37578685087](https://github.com/geoffrey-xiao/deprail/actions/runs/37578685087) on Ubuntu/macOS/Windows, including native CLI smoke and Ubuntu four-target cross-build; local focused real-process/HTTP scenarios, make verify and integration passed. That evidence is retained, not main-cutover proof.
+
+Fresh branch fix/h05-005-artifact-main-cutover starts from synchronized main 9181e76 and cherry-picks only the six-file #453 squash commit as c2e5be0. No timed-apply duplicate, new behavior or commit to an already-merged branch. A new main-targeted PR under #452 requires its own exact-head verification and owner review/merge. #452 remains open until main delivery and acceptance are evidenced; no release approval is inferred.
+
+Main-based branch local verification: go test ./cmd/deprail -run '^(TestWebDetailArtifactIntegrity|TestApplyEndToEndFailureBoundaries)$' -count=1 -v passed all four artifact states and five real-process failure scenarios. Cancellation observed mutation readiness, exit3/cancelled; timeout exit3/partial; both retained valid durable evidence, succeeded cleanup, unchanged caller and removed worktree. Pinned Node22.23.3/npm10.9.9 make verify and make test-integration exited0. These are newly exercised main-based branch results, not final main delivery or a published binary.
+
 ## Actual packaged console smoke
 
 Native development binary: local_test/0.5.0-preview.1/output/default-console-452/bin/deprail; go build -trimpath; SHA256693eb8b9310f050ed26b39cd51d39dd420392c87dabb5ed198e51b848cb4605d. Darwin/arm64, Go1.27.1; Node22.23.3/npm10.9.9; Chrome150.0.7871.24 managed headless,1440x1050 CSS viewport. Development identity only, not release-candidate approval.

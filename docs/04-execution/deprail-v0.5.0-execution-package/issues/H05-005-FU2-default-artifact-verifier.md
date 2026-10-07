@@ -4,6 +4,8 @@ GitHub issue: [#452](https://github.com/geoffrey-xiao/deprail/issues/452).
 
 Review PR: [#453](https://github.com/geoffrey-xiao/deprail/pull/453); implementation commit bd79d15. Refs #452; owner acceptance and exact-head CI remain separate from local proof.
 
+Main-cutover follow-up: #453 was owner-merged into its temporary #455 branch, not main. Fresh branch fix/h05-005-artifact-main-cutover carries the same artifact correction onto reviewed main 9181e76; [cutover evidence](../tracking/H05-005-FU2-DEFAULT-CONSOLE-EVIDENCE.md#main-cutover-correction) preserves the merge history. Issue remains open pending the new main-targeted PR, exact-head CI and owner-reviewed main delivery.
+
 ## Planning metadata
 
 - Parent: H05-005 / #424; release verification #427; delivery epic #418.

@@ -11,11 +11,11 @@
 - Risk: `R3`
 - Target version: `v0.5.0`
 - Milestone: [`v0.5.0`](https://github.com/geoffrey-xiao/deprail/milestone/11)
-- Sprint: Unassigned
+- Sprint: Sprint4
 - Owner: `@geoffrey-xiao`
 - Reviewer: `@geoffrey-xiao` (owner); independent review is not a gate under ADR-0005.
-- Dependencies: H05-001–007, [release checklist](../../../RELEASE-CHECKLIST.md), [release plan §14](../../../03-planning/deprail-development-plan-v0.5.0.md#14-detailed-contract-reconciliation-for-current-owner-review), and V05-QA-001 resolution or explicit owner disposition. No implementation is inferred from evidence-plan completion.
-- Blocked reason: None (Todo, not started); all prerequisite slices and issue-specific pre-start gates must pass before execution.
+- Dependencies: H05-001–007, [release checklist](../../../RELEASE-CHECKLIST.md) and [release plan §14](../../../03-planning/deprail-development-plan-v0.5.0.md#14-detailed-contract-reconciliation-for-current-owner-review). Corrective #455/#456/#458 are owner-merged to main c68c9f9; earlier #419/#432 QA gates resolved. Component completion does not settle original release acceptance.
+- Blocked reason: original prerequisite technical/security acceptance or explicit dispositions, selected immutable candidate/version and actual integrated platform/browser-AT/recovery/supply-chain evidence remain required. No correction cutover blocker remains. Preparation #445 Draft; Project Blocked.
 
 ## Definition of Ready
 
@@ -67,6 +67,12 @@ Owner reviews every criterion and evidence artifact, records remaining risks, pe
 
 - Verification commands or scenarios: future end-to-end matrix for JS/Python/Java; packaged OS/browser/AT matrix; hostile-input and recovery rehearsal; tree comparison; binary checksum and SBOM/signature/provenance checks.
 - Expected artifacts, logs, screenshots, or links: evidence index with exact binary/source identity, sanitized scenario results, browser/AT records, recovery and before/after tree manifests, checksums, SBOM and explicit attestation status, owner security and release decisions.
+
+### Readiness preparation — 2026-10-07
+
+[Manual guide](../MANUAL-TEST-GUIDE.md) and [readiness assessment](../tracking/H05-008-READINESS.md) now use reviewed main c68c9f9, containing owner-merged #455/#456/#458. QA, artifact and authoritative Release Combined repairs are delivered. #421 and #423–#426 original acceptance/dispositions remain unrecorded; #445 Draft / #427 Blocked does not imply those decisions or release authorization. No formal H05-008 runtime or final acceptance box is completed.
+
+Owner requested [a per-gap preview proposal](../tracking/H05-008-PREVIEW-GAP-PROPOSAL.md). This adds impact/mitigation/owner/target and pending PG-01–PG-12 decisions only; it accepts no gap, reduces no capability and authorizes no workflow/tag/publication.
 
 ## Final Acceptance
 

@@ -2,6 +2,8 @@
 
 GitHub issue: [#452](https://github.com/geoffrey-xiao/deprail/issues/452).
 
+Review PR: [#453](https://github.com/geoffrey-xiao/deprail/pull/453); implementation commit bd79d15. Refs #452; owner acceptance and exact-head CI remain separate from local proof.
+
 ## Planning metadata
 
 - Parent: H05-005 / #424; release verification #427; delivery epic #418.

@@ -2,6 +2,8 @@
 
 GitHub issue: [#454](https://github.com/geoffrey-xiao/deprail/issues/454).
 
+Review PR: [#455](https://github.com/geoffrey-xiao/deprail/pull/455); implementation commit c35875f. Refs #454; exact-head CI/owner acceptance remain separate from local evidence.
+
 ## Planning metadata
 
 - Release/milestone: v0.5.0; Sprint4; owner/reviewer @geoffrey-xiao; external review optional.

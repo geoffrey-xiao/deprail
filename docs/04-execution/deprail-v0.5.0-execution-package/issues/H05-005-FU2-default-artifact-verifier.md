@@ -6,6 +6,8 @@ Review PR: [#453](https://github.com/geoffrey-xiao/deprail/pull/453); implementa
 
 Main-cutover follow-up: #453 was owner-merged into its temporary #455 branch, not main. Fresh branch fix/h05-005-artifact-main-cutover carries the same artifact correction onto reviewed main 9181e76; [cutover evidence](../tracking/H05-005-FU2-DEFAULT-CONSOLE-EVIDENCE.md#main-cutover-correction) preserves the merge history. Issue remains open pending the new main-targeted PR, exact-head CI and owner-reviewed main delivery.
 
+Main-targeted review: [#456](https://github.com/geoffrey-xiao/deprail/pull/456), Refs #452; migrated artifact commit c2e5be0 plus cutover evidence cc01b30. Final-head CI and owner review/merge remain separate.
+
 ## Planning metadata
 
 - Parent: H05-005 / #424; release verification #427; delivery epic #418.

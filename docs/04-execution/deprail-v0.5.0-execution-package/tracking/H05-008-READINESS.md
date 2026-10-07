@@ -2,7 +2,7 @@
 
 Issue: [#427](https://github.com/geoffrey-xiao/deprail/issues/427). Procedure: [manual verification guide](../MANUAL-TEST-GUIDE.md). Assessment date:2026-10-07. Current synchronized baseline: owner-merged main `a01df71368708ce8081c6051116ad436695c5c45`, including preparation #445 and corrections #455/#456/#458. Earlier baseline/failure evidence is preserved below. **Formal H05-008 runtime execution remains blocked by original prerequisite acceptance/dispositions**, not the now-delivered correction work. No release approval, owner no-go decision, tag or publication asserted.
 
-Preparation [PR #445](https://github.com/geoffrey-xiao/deprail/pull/445) was owner-merged 2026-10-07T09:14:17Z after exact-head three-platform CI success; [initial handoff](https://github.com/geoffrey-xiao/deprail/issues/427#issuecomment-6028034470) is historical. This follow-up updates investigation and individual acceptance evidence under #427. Merging preparation documents is not blanket storage/security/browser-AT/supply-chain or formal release acceptance.
+Preparation [PR #445](https://github.com/geoffrey-xiao/deprail/pull/445) was owner-merged 2026-10-07T09:14:17Z after exact-head three-platform CI success; [initial handoff](https://github.com/geoffrey-xiao/deprail/issues/427#issuecomment-6028034470) is historical. [Follow-up #459](https://github.com/geoffrey-xiao/deprail/pull/459) updates investigation and individual acceptance evidence under #427; Project Review is for this document PR, while formal H05-008 admission remains blocked. Merging documents is not blanket storage/security/browser-AT/supply-chain or formal release acceptance.
 
 ## Historical CI — preserved
 

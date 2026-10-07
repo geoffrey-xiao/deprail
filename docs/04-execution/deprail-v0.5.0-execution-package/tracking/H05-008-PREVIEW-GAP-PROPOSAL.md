@@ -51,7 +51,7 @@ Choosing to prepare this proposal, approving the correction PR or passing PR CI 
 
 ## Proposed execution sequence after decisions
 
-1. Resolve PG-01/02 and record PG-03 exact admission decisions; select PG-04 candidate/version. Keep #427 Blocked until actual admission is satisfied.
+1. Resolve PG-01/02 and record PG-03 exact admission decisions; select PG-04 candidate/version. Formal H05-008 runtime stays blocked until actual admission is satisfied. Project Review for evidence follow-up [#459](https://github.com/geoffrey-xiao/deprail/pull/459) means document review only, not admission or release approval.
 2. Execute the admitted candidate's core host matrix (PG-05); record actual native/browser/recovery/physical evidence where available and owner-approved deferrals by PG-ID, without changing the release scope.
 3. Only after explicit run authorization, use the owner-selected Release Combined and inspect its frozen SHA and privately prepared artifacts at release-approval (PG-12). Do not approve publication merely to obtain missing evidence.
 4. Owner records technical acceptance, security/risk disposition, rollback ownership and explicit preview go/go-with-approved-gaps/no-go. Only a separate publication authorization permits approving the protected publish job.

@@ -173,7 +173,7 @@ function App() {
               <div className="history-cell"><span className="cell-label">Operation outcome</span><Status value={item.operationOutcome} /></div>
               <div className="history-cell"><span className="cell-label">Report completeness</span>{item.reportStatus ? <Status value={item.reportStatus} /> : <span className="status status-neutral">Unavailable</span>}</div>
               <div className="history-cell"><span className="cell-label">Findings</span><strong className="finding-count">{item.findingCount === null ? 'Unavailable' : item.findingCount}</strong><span className="cell-note">Workspaces: {item.workspaceCount === null ? 'Unavailable' : item.workspaceCount}</span></div>
-              <div className="history-cell"><span className="cell-label">Recorded</span><time dateTime={item.recordedAt}>{formatDate(item.recordedAt)}</time><span className="item-action-label">View details</span></div>
+              <div className="history-cell"><span className="cell-label">Recorded</span><time dateTime={item.recordedAt}>{formatDate(item.recordedAt)}</time></div>
             </a></li>)}</ul>
           </section>
           <nav className="pagination" aria-label="History pages"><div className="pagination-controls"><button type="button" onClick={previousHistory} disabled={cursorIndex === 0 || historyBusy}>Previous page</button><span className="page-number" aria-live="polite">Page {cursorIndex + 1}</span><button type="button" onClick={nextHistory} disabled={!history.nextCursor || historyBusy}>Next page</button></div><span className="page-note">{history.items.length} entries on this page</span></nav>

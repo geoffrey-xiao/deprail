@@ -13,7 +13,7 @@ GitHub issue: [#450](https://github.com/geoffrey-xiao/deprail/issues/450).
 
 ## Goal and Scope
 
-Reduce duplicate underlined link cues in a single history anchor; distinguish row detail affordance from metadata. Keep navigation tab styling stable on hover. Unify breadcrumb/footer link target, hover and focus affordances. Retain native anchors, exact routes, one anchor per row and intact keyboard/modified-click semantics. Keep ordinary inline text links underlined.
+Reduce duplicate link cues in a single history anchor. Owner refinement on2026-10-07 explicitly removes the View details affordance; title/arrow and row hover/focus are the only entry cues. Keep navigation tab styling stable on hover. Unify breadcrumb/footer link target, hover and focus affordances. Retain native anchors, exact routes, one anchor per row and intact keyboard/modified-click semantics. Keep ordinary inline text links underlined.
 
 ## Exclusions and Failure Behavior
 
@@ -22,7 +22,7 @@ No external hyperlinks, new routes/actions, disclosure behavior, API/auth/data/s
 ## Acceptance and Required Evidence
 
 - [ ] Navigation hover/current states are consistent without competing underlines; brand remains a working home link.
-- [ ] History row has clear title/arrow and one details affordance; hover/keyboard focus distinguish the entire row without duplicate link targets.
+- [ ] History row has clear title/arrow, no View details label/control; hover/keyboard focus distinguish the entire row without duplicate link targets.
 - [ ] Breadcrumb/footer text links have readable hover/focus and adequate targets; ordinary body links retain conventional underlines.
 - [ ] Actual packaged desktop/320px list/detail/about, Tab/Enter/Back and native link destinations verified; sanitized screenshots, candidate identity and limitations recorded.
 

@@ -6,6 +6,8 @@ Contract: [H05-008 / #427](issues/H05-008-local-history-release-evidence.md). Re
 
 Before formal execution, record owner acceptance or explicit disposition for H05-001–007, including storage permissions/dependencies, frontend attribution/provenance and browser/AT gaps. The QA correction gate is resolved by [#432 acceptance](https://github.com/geoffrey-xiao/deprail/issues/432#issuecomment-5913275072); retain the original timeout investigation as history. A merged PR is not proof that its unchecked criteria passed.
 
+Current admission also requires reviewed #454/#455 timed-apply and #452/#453 default-console corrections on the same candidate baseline; see [readiness assessment](tracking/H05-008-READINESS.md). Fixed startup timing is not mutation-ready evidence. Retain all earlier failures; do not rerun to erase them. Preparation #445 is Draft and formal #427 is Blocked pending these and the original acceptance/evidence gates.
+
 Use an owner-reviewed immutable main commit. Record `go version`, Node/npm versions, OS/architecture, scanner/version, binary `--version`, SHA-256 and build command. Select the actual intended preview tag separately; no preview suffix is prescribed here. Do not tag or publish during verification. Use the owner's authoritative release-binded artifacts when available; locally built candidates are not published binaries or provenance-attested artifacts.
 
 Build inputs: Go `.go-version`, Node `22.23.3`, npm `10.9.9`, committed Go modules and frontend lock. From clean checkout:
@@ -52,6 +54,8 @@ deprail web --artifact-root <existing-trusted-artifact-root>
 Press Enter to open the process bootstrap session. Noninteractive runs must explicitly use `--open`. Do not copy the fragment bearer into public logs, screenshots, request traces or shell history. Check the printed URL is bare loopback with an ephemeral port. The API is authenticated, read-only GET; no CORS, repository browsing, scan trigger, deletion or remediation actions.
 
 Verify history/list/detail/about, cursor pages, Back/Forward, refresh, missing UUID, loading/read failures, empty history, complete/partial/failed/cancelled operations, absent report/workspaces/findings, missing/digest-mismatched artifacts. Compare the same saved entry through API and UI. Confirm labels/hostile markup render as inert text. Do not inject arbitrary production diagnostics into validated history; use legitimate typed records and separately identify negative-response injections.
+
+Include the default command without any artifact-root flag. A saved digest-bearing detail must remain readable and show unavailable/unverified evidence, not a panic/connection failure or false verification. Then configure the explicit trusted root and confirm the same digest becomes verified only for matching bytes, with missing/mismatch states for absent/corrupt artifacts. Never infer an artifact root from repository/history data.
 
 Verify fragment scrubbing before requests, memory-only session, no credential cookie/storage/referrer, safe reload/new-tab recovery and same-tab credential replacement. Check strict Host/Origin and forwarded-header rejection, absent/wrong bearer, unsupported methods/API version/query, hostile cursor/UUID/encoded paths, unlisted static assets and host-file canary refusal. The 1,048,576-byte API cap must fail or page whole records; never accept truncation. Missing/skewed compiled assets must fail without disk/network/stale fallback while existing CLI remains usable. Repeat repository manifests around console-only use; explain every difference.
 

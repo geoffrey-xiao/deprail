@@ -1,10 +1,23 @@
 # H05-008 Release Verification Readiness
 
-Issue: [#427](https://github.com/geoffrey-xiao/deprail/issues/427). Procedure: [manual verification guide](../MANUAL-TEST-GUIDE.md). Assessment date: 2026-10-07. Reviewed implementation baseline: merged main `96a6f09` containing [PR #444](https://github.com/geoffrey-xiao/deprail/pull/444). This record is preparatory: **formal H05-008 runtime execution is blocked by prerequisite acceptance**. No release approval, owner no-go decision, tag, publication or new runtime test result is asserted.
+Issue: [#427](https://github.com/geoffrey-xiao/deprail/issues/427). Procedure: [manual verification guide](../MANUAL-TEST-GUIDE.md). Assessment date:2026-10-07. Current synchronized implementation baseline: merged main `d6362f3`, including [PR #451](https://github.com/geoffrey-xiao/deprail/pull/451). Original assessment used `96a6f09` / #444; its evidence is retained below. This record is preparatory: **formal H05-008 runtime execution remains blocked by prerequisite acceptance and reviewed blocker cutover**. No release approval, owner no-go decision, tag or publication asserted.
 
-Preparation review: [PR #445](https://github.com/geoffrey-xiao/deprail/pull/445), linked with `Refs #427`; [issue handoff](https://github.com/geoffrey-xiao/deprail/issues/427#issuecomment-6028034470). The live issue Project is `Review` for preparation only, with a Blocked Reason naming the unmet formal execution gates. PR labels `area:test`, `risk:R3`, `priority:P0`, `type:test`, issue membership and Sprint 4 were verified after creation. This changes no acceptance decision.
+Preparation: [PR #445](https://github.com/geoffrey-xiao/deprail/pull/445), linked with `Refs #427`; [initial handoff](https://github.com/geoffrey-xiao/deprail/issues/427#issuecomment-6028034470). PR is now Draft; live #427 Project is Blocked with the actual unmet formal gates, not Review implying runtime readiness. Required labels, Sprint4 and membership were verified. Drafting preparation keeps the two active Review slots for the isolated default-console and timed-apply corrections; it discards no evidence or owner review.
+
+## Historical CI — preserved
 
 Preparation CI [37551712270](https://github.com/geoffrey-xiao/deprail/actions/runs/37551712270) on `33f7944`: Ubuntu and macOS passed; Windows failed `go test ./...`, specifically `TestApplyEndToEndFailureBoundaries/cancellation` at `cmd/deprail/apply_e2e_test.go:215` with `unexpected end of JSON input`. Windows package build/native smoke did not run after that failure. Cause is not established by this log; no flaky-test classification, passing rerun, weaker assertion or runtime fix is claimed. This adds an unresolved verification blocker, distinct from the previously resolved #432 QA correction.
+
+Preparation head `165e1ed` subsequently passed Ubuntu/macOS/Windows in [37552087392](https://github.com/geoffrey-xiao/deprail/actions/runs/37552087392), including native packaged smoke. UI head `d4abb39` passed three-OS CI/native smoke in [37568426603](https://github.com/geoffrey-xiao/deprail/actions/runs/37568426603) before owner-merged #451. Neither pass erases earlier failures or proves the final integrated candidate.
+
+## Current blocker corrections and evidence
+
+- Owner reported local testing OK after the row-only UI change. [Recorded bounded feedback](https://github.com/geoffrey-xiao/deprail/issues/427#issuecomment-6030612401): local UI smoke, not an identified release-binary/browser-AT/security/recovery matrix or publication authorization. #446/#448/#450 remain separate criterion-review records.
+- [#452 / PR #453](https://github.com/geoffrey-xiao/deprail/pull/453) corrects default `web --open` artifact resolver construction. Existing `nil *artifact.Store` assigned to an interface was nonnil and called Verify instead of unavailable. Existing contract already requires unavailable without a resolver. Four real-store/listener cases, make verify/integration and actual compiled Darwin console passed; default detail retained five real npm findings with Unavailable, explicit root retained Verified; copied DB hash unchanged. Binary693eb8b9310f050ed26b39cd51d39dd420392c87dabb5ed198e51b848cb4605d. This fix is still unmerged, not current-main behavior.
+- Default-console exact head `bc4d732` [37569906460](https://github.com/geoffrey-xiao/deprail/actions/runs/37569906460): Ubuntu/macOS passed; Windows failed existing timed-apply timeout at apply_e2e_test.go:225 with unexpected end of JSON input; later Windows build/smoke skipped. No passing Windows claim or rerun.
+- [#454 / PR #455](https://github.com/geoffrey-xiao/deprail/pull/455) isolates test-only timed-apply synchronization. Fixed500ms cancel and1s startup-inclusive deadline had no mutation-start barrier. Controlled preflight-cancellation smoke produced exit3/stdout0/PATH_OUTSIDE_ROOT and the exact decode error; original Windows stderr was absent, so original failed phase is not claimed. Both timed cases now observe a real mutation child ready marker before cancellation or an actual1s deadline. Original outcomes/exit/evidence/cleanup assertions preserved; persisted evidence validation, unchanged caller and worktree removal added. Focused actual-process/race, make verify and integration passed locally. Exact-head CI recorded on #455; no production JSON/error change.
+- Cutover order: owner reviews/merges #455, then #453 synchronizes onto that reviewed main and obtains its own passing exact-head CI. Owner reviews/merges #453 next. No dependent release verification from an isolated branch missing the other prerequisite fix. Update preparation baseline and select an immutable candidate only after both cutovers; agents do not merge autonomously.
+
 
 ## Reconciled prerequisite state
 
@@ -12,19 +25,21 @@ Preparation CI [37551712270](https://github.com/geoffrey-xiao/deprail/actions/ru
 | --- | --- | --- |
 | QA #419 | Closed / Project Done | Historical investigation is preserved. [#432 explicit acceptance](https://github.com/geoffrey-xiao/deprail/issues/432#issuecomment-5913275072), merged #433 and the backlog's accepted kickoff addendum resolve the QA correction gate. Do not continue describing the original OutputCap correction or timeout fixture as unimplemented; original failures are not erased. |
 | H05-001 #420 | Closed / Done | Prior accepted projection slice; integrated candidate behavior still requires H05-008 proof. |
-| H05-002 #421 | Open / Review | [Store evidence](H05-002-STORE-EVIDENCE.md): permission/dependency/advisory and physical-growth acceptance, plus manual restore rehearsal, are not recorded as complete. |
+| H05-002 #421 | Open / Review | [Store evidence](H05-002-STORE-EVIDENCE.md): permission/dependency/advisory review, runtime physical-growth evidence and manual restore rehearsal remain incomplete. Release-plan §15 already accepts the logical-versus-physical growth tradeoff under the private/no-delete boundaries; do not invent a missing planning decision or call it a hard disk quota. |
 | H05-003 #422 | Closed / Done | Prior accepted service slice; integrated evidence still required. |
 | H05-004 #423 | Open / Review | CLI capture acceptance has no completed issue disposition in the inspected live tracking. |
-| H05-005 #424 | Open / Review | Transport acceptance has no completed issue disposition in the inspected live tracking. |
-| H05-006 #425 | Open / Review | [Source UI evidence](H05-006-UI-EVIDENCE.md) and merged #443; actual supported browser/AT, physical zoom and supply-chain decisions remain unaccepted. |
+| H05-005 #424 / follow-ups #441, #452 | Open / Review | Transport/security criterion disposition remains outstanding; #441 has merged #442/component evidence. Default-root failure is corrected only on unmerged #453; its Windows verification depends on #455 cutover. |
+| H05-006 #425 / #446, #448, #450 | Open / Review | [UI evidence](H05-006-UI-EVIDENCE.md), merged #443/#447/#449/#451, real packaged headless desktop/320px/keyboard proof and owner local-test feedback exist. Actual supported browser/AT, physical zoom and supply-chain decisions remain incomplete; local success is not blanket release acceptance. |
 | H05-007 #426 | Open / Review | Merged #444; exact-head CI [37549943755](https://github.com/geoffrey-xiao/deprail/actions/runs/37549943755) passed all three OS jobs at `5c78da1`. Automated review reported no major issues at that commit. [Packaging evidence](H05-007-PACKAGING-EVIDENCE.md) is component evidence, not release-binded native browser/platform or supply-chain approval. |
-| H05-008 #427 | Open / Todo before readiness assessment | Requires completed H05-001–007 or explicit owner dispositions before formal execution. This guide/record does not satisfy its runtime acceptance criteria. |
+| Timed-apply QA #454 | Open / Review | #455 test-only correction; local focused/race/full/integration proof and exact-head CI separately linked on the PR. Owner-reviewed merge and dependent #453 baseline/CI still required. |
+| H05-008 #427 | Open / Blocked; preparation #445 Draft | Requires accepted H05-001–007/follow-up dispositions, reviewed blocker cutover and final candidate/runtime/security/recovery/platform/supply-chain evidence. This guide/record does not satisfy runtime acceptance criteria. |
 
 A merged PR and successful CI do not by themselves close unchecked acceptance criteria. No native APPROVED review is invented from the owner merging #444. User requests to continue authorize preparation, not automatic acceptance of missing platform or supply-chain evidence.
 
 ## Required owner dispositions and remaining evidence
 
 1. Record acceptance or explicit bounded disposition for #421 and #423–#426. Keep distinct technical and security decisions where required.
+   The current candidate must also include owner-reviewed #455 and #453 in the stated cutover order. Earlier resolved #419/#432 is not the newly diagnosed timed-apply synchronization defect.
 2. Resolve the disclosed Go dependency advisory, frontend `caniuse-lite` CC-BY-4.0 attribution/distribution implications and unverified publisher provenance. Existing registry integrity/audit results are not those decisions.
 3. Supply actual authoritative release-binded candidate binaries/identity, or explicitly select a reviewed local candidate for prepublication verification. No v0.5 tag or suffix is chosen by this record.
 4. Execute integrated JS/Python/Java scan/save/reopen/API/UI, security/read-only tree comparisons and offline recovery from disposable copies under the guide. Historical component tests do not prove this matrix.
@@ -36,9 +51,9 @@ A merged PR and successful CI do not by themselves close unchecked acceptance cr
 | General checklist section | Current disposition |
 | --- | --- |
 | Release identity | v0.5.0 preview-first plan exists; exact preview tag, release manifest and final artifact identity are not selected/verified here. |
-| Plan and scope | Implementation merged through H05-007; outstanding issue acceptance/disposition above prevents a completed release-scope claim. |
+| Plan and scope | Implementation and UI refinements merged through #451; default-console/timed-apply follow-ups await cutover and existing issue acceptance/dispositions prevent a completed release-scope claim. |
 | Contracts and security | Existing approved contracts and component evidence retained; integrated runtime/privacy/recovery and owner risk decisions pending. |
-| Automated/manual verification | #444 three-OS component CI passed; no clean integrated release-candidate or representative workflow result claimed by this readiness record. |
+| Automated/manual verification | Historical preparation/UI three-OS passes and local default-console/phase-synchronized timed-apply proof exist; #453 exact-head Windows failed, and final reviewed-main candidate/integrated release matrix remain unproven. |
 | Artifacts/supply chain | H05-007 local hashes/budgets and host SBOM available; actual release artifacts and signature/provenance/full supply-chain dispositions unverified. |
 | Publication/approval | Not authorized or executed. No protected publication gate or release workflow pass inferred from PR CI. |
 | Post-release | Not applicable before publication; no retrospective or release closure claimed. |

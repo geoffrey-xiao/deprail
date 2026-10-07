@@ -11,11 +11,11 @@
 - Risk: `R3`
 - Target version: `v0.5.0`
 - Milestone: [`v0.5.0`](https://github.com/geoffrey-xiao/deprail/milestone/11)
-- Sprint: Unassigned
+- Sprint: Sprint4
 - Owner: `@geoffrey-xiao`
 - Reviewer: `@geoffrey-xiao` (owner); independent review is not a gate under ADR-0005.
-- Dependencies: H05-001–007, [release checklist](../../../RELEASE-CHECKLIST.md), [release plan §14](../../../03-planning/deprail-development-plan-v0.5.0.md#14-detailed-contract-reconciliation-for-current-owner-review), and V05-QA-001 resolution or explicit owner disposition. No implementation is inferred from evidence-plan completion.
-- Blocked reason: None (Todo, not started); all prerequisite slices and issue-specific pre-start gates must pass before execution.
+- Dependencies: H05-001–007, [release checklist](../../../RELEASE-CHECKLIST.md), [release plan §14](../../../03-planning/deprail-development-plan-v0.5.0.md#14-detailed-contract-reconciliation-for-current-owner-review), and reviewed #454/#455 timed-apply plus #452/#453 default-console cutover. Earlier #419/#432 QA gate is resolved, not conflated with these new findings. No implementation/release acceptance is inferred from evidence-plan completion.
+- Blocked reason: formal execution awaits prerequisite technical/security acceptance or explicit dispositions, reviewed blocker fixes on one immutable main candidate, and actual candidate/platform/browser-AT/recovery/supply-chain evidence. Preparation #445 is Draft; Project Blocked.
 
 ## Definition of Ready
 
@@ -70,7 +70,7 @@ Owner reviews every criterion and evidence artifact, records remaining risks, pe
 
 ### Readiness preparation — 2026-10-07
 
-[Manual verification guide](../MANUAL-TEST-GUIDE.md) and [readiness assessment](../tracking/H05-008-READINESS.md) specify the integrated procedure and outstanding pre-start decisions. The resolved #432 QA correction gate supersedes the earlier unresolved correction description; prerequisite acceptance for #421 and #423–#426 remains unrecorded. These documents are preparation only: no H05-008 runtime or final acceptance box is completed.
+[Manual verification guide](../MANUAL-TEST-GUIDE.md) and [readiness assessment](../tracking/H05-008-READINESS.md) specify the integrated procedure and outstanding pre-start decisions. The resolved #432 QA correction gate supersedes the earlier unresolved correction description; prerequisite acceptance for #421 and #423–#426 remains unrecorded. New #454/#455 timed-apply and #452/#453 default-console corrections require reviewed cutover onto the same baseline. Preparation #445 is Draft; formal #427 is Blocked. These documents are preparation only: no H05-008 runtime or final acceptance box is completed.
 
 ## Final Acceptance
 

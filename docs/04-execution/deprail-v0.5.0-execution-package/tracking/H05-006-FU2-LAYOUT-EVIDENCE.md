@@ -2,6 +2,8 @@
 
 Issue: [#448](https://github.com/geoffrey-xiao/deprail/issues/448); [contract](../issues/H05-006-FU2-reference-layout.md). Date: 2026-10-07. Owner/reviewer `@geoffrey-xiao`; acceptance pending. Baseline synchronized main `28e832a` includes owner-merged #447. This is bounded presentation work, not H05-008 release acceptance or disposition of the previously recorded Windows cancellation/nil-verifier defects.
 
+Review PR: [#449](https://github.com/geoffrey-xiao/deprail/pull/449), implementation commit `ee89027`. Linked with `Refs #448`; local smoke is not owner acceptance or an inferred passing CI result.
+
 ## Reference reconciliation
 
 Compared the versioned history-desktop, history-mobile and scan-detail-desktop proposals linked by [UX-DESIGN](../UX-DESIGN.md). Their synthetic examples do not override the accepted API or semantic paginated-list contract.

@@ -2,6 +2,8 @@
 
 Issue: [#427](https://github.com/geoffrey-xiao/deprail/issues/427). Procedure: [manual verification guide](../MANUAL-TEST-GUIDE.md). Assessment date: 2026-10-07. Reviewed implementation baseline: merged main `96a6f09` containing [PR #444](https://github.com/geoffrey-xiao/deprail/pull/444). This record is preparatory: **formal H05-008 runtime execution is blocked by prerequisite acceptance**. No release approval, owner no-go decision, tag, publication or new runtime test result is asserted.
 
+Preparation review: [PR #445](https://github.com/geoffrey-xiao/deprail/pull/445), linked with `Refs #427`; [issue handoff](https://github.com/geoffrey-xiao/deprail/issues/427#issuecomment-6028034470). The live issue Project is `Review` for preparation only, with a Blocked Reason naming the unmet formal execution gates. PR labels `area:test`, `risk:R3`, `priority:P0`, `type:test`, issue membership and Sprint 4 were verified after creation. This changes no acceptance decision.
+
 ## Reconciled prerequisite state
 
 | Contract | Observed tracking state | Evidence and remaining gate |

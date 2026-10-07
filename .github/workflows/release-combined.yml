@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
     inputs:
       version:
-        description: "Exact release version, for example 0.3.1-preview.1"
+        description: "Exact release version, for example 0.5.0-preview.1"
         required: true
         type: string
       evidence_issue:
@@ -22,17 +22,14 @@ on:
         type: string
 
 permissions:
-  contents: write
-  id-token: write
-  attestations: write
-  actions: read
-  issues: read
+  contents: read
 
 jobs:
   prepare:
     runs-on: ubuntu-latest
     outputs:
       version: ${{ steps.validate.outputs.version }}
+      source_sha: ${{ steps.validate.outputs.source_sha }}
     steps:
       - uses: actions/checkout@v4
         with:
@@ -50,6 +47,7 @@ jobs:
           [[ "$VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+(-(preview|rc)\.[0-9]+)?$ ]] || { echo "Invalid release version" >&2; exit 2; }
           git rev-parse "refs/tags/v$VERSION" >/dev/null 2>&1 && { echo "Tag already exists" >&2; exit 2; } || true
           echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+          echo "source_sha=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
 
   verify:
     needs: prepare
@@ -57,58 +55,25 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          ref: main
+          ref: ${{ needs.prepare.outputs.source_sha }}
+      - name: Set up pinned Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22.23.3'
+          cache: npm
+          cache-dependency-path: web/package-lock.json
+      - name: Pin npm
+        run: npm install --global npm@10.9.9 --ignore-scripts --no-audit --no-fund
       - uses: actions/setup-go@v5
         with:
           go-version-file: .go-version
           check-latest: true
           cache: true
-      - name: Verify Go toolchain
-        run: make bootstrap
-      - name: Run generators
-        run: make generate
-      - name: Run formatting and vet checks
-        run: make lint
-      - name: Run unit and contract tests
-        run: make test
-      - name: Build source
-        run: make build
-
-  publish:
-    needs: [prepare, verify]
-    runs-on: ubuntu-latest
-    environment:
-      name: release-approval
-      url: https://github.com/${{ github.repository }}/issues/${{ inputs.evidence_issue }}
-    outputs:
-      tag: ${{ steps.publish.outputs.tag }}
-    permissions:
-      contents: write
-      issues: read
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          ref: main
-          fetch-depth: 0
-      - id: publish
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          VERSION: ${{ needs.prepare.outputs.version }}
-          EVIDENCE_ISSUE: ${{ inputs.evidence_issue }}
-        run: |
-          set -euo pipefail
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          tag="v$VERSION"
-          git tag -a "$tag" -m "DepRail $VERSION" "$(git rev-parse HEAD)"
-          git push origin "$tag"
-          flags=()
-          [[ "${{ inputs.prerelease }}" == true ]] && flags+=(--prerelease)
-          gh release create "$tag" --target "$(git rev-parse HEAD)" "${flags[@]}" --generate-notes --title "DepRail $VERSION" --notes "Release evidence: https://github.com/${{ github.repository }}/issues/$EVIDENCE_ISSUE"
-          echo "tag=$tag" >> "$GITHUB_OUTPUT"
+      - name: Verify source and embedded console
+        run: make verify
 
   build-artifacts:
-    needs: [prepare, publish]
+    needs: [prepare, verify]
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
@@ -117,7 +82,17 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          ref: ${{ needs.publish.outputs.tag }}
+          ref: ${{ needs.prepare.outputs.source_sha }}
+      - name: Set up pinned Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22.23.3'
+          cache: npm
+          cache-dependency-path: web/package-lock.json
+      - name: Pin npm and build embedded console
+        run: |
+          npm install --global npm@10.9.9 --ignore-scripts --no-audit --no-fund
+          make frontend
       - uses: actions/setup-go@v5
         with:
           go-version-file: .go-version
@@ -127,39 +102,34 @@ jobs:
         env:
           TARGET: ${{ matrix.target }}
           VERSION: ${{ needs.prepare.outputs.version }}
+          SOURCE_SHA: ${{ needs.prepare.outputs.source_sha }}
         run: |
           set -euo pipefail
           mkdir -p dist
           IFS=- read -r goos goarch <<< "$TARGET"
           suffix=""
           [[ "$goos" == windows ]] && suffix=.exe
-          commit="$(git rev-parse HEAD)"
-          ldflags="-s -w -X github.com/geoffrey-xiao/deprail/internal/buildinfo.Version=v$VERSION -X github.com/geoffrey-xiao/deprail/internal/buildinfo.Tag=v$VERSION -X github.com/geoffrey-xiao/deprail/internal/buildinfo.Commit=$commit"
+          test "$(git rev-parse HEAD)" = "$SOURCE_SHA"
+          ldflags="-s -w -X github.com/geoffrey-xiao/deprail/internal/buildinfo.Version=v$VERSION -X github.com/geoffrey-xiao/deprail/internal/buildinfo.Tag=v$VERSION -X github.com/geoffrey-xiao/deprail/internal/buildinfo.Commit=$SOURCE_SHA"
           GOOS="$goos" GOARCH="$goarch" go build -trimpath -ldflags="$ldflags" -o "dist/deprail-$TARGET$suffix" ./cmd/deprail
       - uses: actions/upload-artifact@v4
         with:
           name: artifact-${{ matrix.target }}
           path: dist/*
+          if-no-files-found: error
 
   finalize:
-    needs: [prepare, publish, build-artifacts]
+    needs: [prepare, build-artifacts]
     runs-on: ubuntu-latest
-    permissions:
-      contents: write
-      id-token: write
-      attestations: write
     steps:
       - uses: actions/checkout@v4
         with:
-          ref: ${{ needs.publish.outputs.tag }}
+          ref: ${{ needs.prepare.outputs.source_sha }}
       - uses: actions/download-artifact@v4
         with:
           pattern: artifact-*
           path: dist
           merge-multiple: true
-      - name: Generate checksums
-        working-directory: dist
-        run: sha256sum deprail-* > SHA256SUMS
       - name: Generate SBOM
         uses: anchore/sbom-action@v0
         with:
@@ -167,8 +137,76 @@ jobs:
           format: spdx-json
           output-file: dist/deprail-${{ needs.prepare.outputs.version }}.spdx.json
           upload-artifact: false
-      - name: Upload release assets
+          upload-release-assets: false
+      - name: Generate and verify complete asset checksums
+        env:
+          VERSION: ${{ needs.prepare.outputs.version }}
+        working-directory: dist
+        run: |
+          set -euo pipefail
+          test -s "deprail-$VERSION.spdx.json"
+          sha256sum deprail-linux-amd64 deprail-darwin-amd64 deprail-darwin-arm64 deprail-windows-amd64.exe "deprail-$VERSION.spdx.json" > SHA256SUMS
+          sha256sum -c SHA256SUMS
+      - name: Store prepared release assets
+        uses: actions/upload-artifact@v4
+        with:
+          name: release-assets
+          if-no-files-found: error
+          path: |
+            dist/deprail-linux-amd64
+            dist/deprail-darwin-amd64
+            dist/deprail-darwin-arm64
+            dist/deprail-windows-amd64.exe
+            dist/deprail-${{ needs.prepare.outputs.version }}.spdx.json
+            dist/SHA256SUMS
+
+  publish:
+    needs: [prepare, finalize]
+    runs-on: ubuntu-latest
+    environment:
+      name: release-approval
+      url: https://github.com/${{ github.repository }}/issues/${{ inputs.evidence_issue }}
+    outputs:
+      tag: ${{ steps.publish.outputs.tag }}
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ needs.prepare.outputs.source_sha }}
+          fetch-depth: 0
+      - uses: actions/download-artifact@v4
+        with:
+          name: release-assets
+          path: dist
+      - id: publish
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          TAG: ${{ needs.publish.outputs.tag }}
-        run: gh release upload "$TAG" dist/* --repo "${{ github.repository }}" --clobber
+          VERSION: ${{ needs.prepare.outputs.version }}
+          SOURCE_SHA: ${{ needs.prepare.outputs.source_sha }}
+          EVIDENCE_ISSUE: ${{ inputs.evidence_issue }}
+          PRERELEASE: ${{ inputs.prerelease }}
+          REPOSITORY: ${{ github.repository }}
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "$SOURCE_SHA"
+          (cd dist && sha256sum -c SHA256SUMS)
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          tag="v$VERSION"
+          if git rev-parse "refs/tags/$tag" >/dev/null 2>&1; then
+            echo "Tag already exists" >&2
+            exit 2
+          fi
+          git tag -a "$tag" -m "DepRail $VERSION" "$SOURCE_SHA"
+          git push origin "$tag"
+          flags=()
+          [[ "$PRERELEASE" == true ]] && flags+=(--prerelease)
+          gh release create "$tag" \
+            dist/deprail-linux-amd64 dist/deprail-darwin-amd64 dist/deprail-darwin-arm64 dist/deprail-windows-amd64.exe \
+            "dist/deprail-$VERSION.spdx.json" dist/SHA256SUMS \
+            --repo "$REPOSITORY" --target "$SOURCE_SHA" --verify-tag --draft "${flags[@]}" \
+            --generate-notes --title "DepRail $VERSION" \
+            --notes "Release evidence: https://github.com/$REPOSITORY/issues/$EVIDENCE_ISSUE"
+          gh release edit "$tag" --repo "$REPOSITORY" --draft=false
+          echo "tag=$tag" >> "$GITHUB_OUTPUT"

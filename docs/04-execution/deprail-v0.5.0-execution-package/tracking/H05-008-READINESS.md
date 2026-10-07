@@ -4,6 +4,8 @@ Issue: [#427](https://github.com/geoffrey-xiao/deprail/issues/427). Procedure: [
 
 Preparation review: [PR #445](https://github.com/geoffrey-xiao/deprail/pull/445), linked with `Refs #427`; [issue handoff](https://github.com/geoffrey-xiao/deprail/issues/427#issuecomment-6028034470). The live issue Project is `Review` for preparation only, with a Blocked Reason naming the unmet formal execution gates. PR labels `area:test`, `risk:R3`, `priority:P0`, `type:test`, issue membership and Sprint 4 were verified after creation. This changes no acceptance decision.
 
+Preparation CI [37551712270](https://github.com/geoffrey-xiao/deprail/actions/runs/37551712270) on `33f7944`: Ubuntu and macOS passed; Windows failed `go test ./...`, specifically `TestApplyEndToEndFailureBoundaries/cancellation` at `cmd/deprail/apply_e2e_test.go:215` with `unexpected end of JSON input`. Windows package build/native smoke did not run after that failure. Cause is not established by this log; no flaky-test classification, passing rerun, weaker assertion or runtime fix is claimed. This adds an unresolved verification blocker, distinct from the previously resolved #432 QA correction.
+
 ## Reconciled prerequisite state
 
 | Contract | Observed tracking state | Evidence and remaining gate |

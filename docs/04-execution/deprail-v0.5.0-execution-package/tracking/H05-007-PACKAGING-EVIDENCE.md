@@ -9,6 +9,7 @@ Issue: [#426](https://github.com/geoffrey-xiao/deprail/issues/426). Implementati
 - Darwin arm64, Go `1.27.1`, Node `22.23.3`, npm `10.9.9`: `PATH=/tmp/node-v22.23.3-darwin-arm64/bin:$PATH make verify` exited 0; `go generate`, `go vet`, `go test ./...`, and `go build ./...` completed. Focused `go test ./web ./cmd/deprail ./internal/transport/localhttp -count=1` passed. `go test ./web -run TestInventoryRejectsMissingOrMismatchedAssets -count=1 -v` passed matching, missing, version-skew and stale-reference cases. `web` with real compiled assets served `/console/` and its hashed JS as HTTP 200; unlisted asset and hostile `../go.mod` request returned 404. Headless Chromium displayed the packaged console's expected unauthenticated reopen state (not an authenticated UI/AT pass).
 - Throwaway packaged-binary injections: changed only the ignored generated `web/dist/index.html` to advertise `v2`, built `/tmp/deprail-h05-007-skew`, and observed `web --open` exit 3 with `API_LISTENER_UNAVAILABLE`; `--version` still exited 0. Repeated with `v1` but a missing hashed JS reference in `/tmp/deprail-h05-007-missing`: the same explicit web failure and independent version command. Rebuilt the pinned frontend afterward; restored HTML/JS/CSS SHA-256 matched the reviewed build above. No alternate disk asset was consulted.
 - Native `deprail --version`, `deprail discover testdata/fixtures/mixed-repository --format json` and `deprail doctor --format json` exited 0 on Darwin arm64; Darwin amd64 `--version` ran under Rosetta. An `expect` PTY timing run of the actual Darwin arm64 binary reported 18 ms from spawn to the first `/console/` URL on this machine; this is one local observation, not cross-platform startup evidence.
+- [Failed PR CI run 37470206751](https://github.com/geoffrey-xiao/deprail/actions/runs/37470206751) failed in the new Linux cross-build shell loop because it lacked `done`, after its frontend, Go verification and native CLI smoke steps succeeded. The missing terminator was fixed in `9d09631`. [Corrected run 37470628086](https://github.com/geoffrey-xiao/deprail/actions/runs/37470628086) completed successfully on Ubuntu, macOS and Windows at head `9d0963158af9e960cfd03836c74581ba0b8798d5`; the Linux job completed the four cross-build steps, and each OS completed its native CLI `--version`/`discover` smoke. CI does not establish packaged browser/AT or authoritative release-binded binary acceptance.
 
 ## Reproducibility and budgets
 
@@ -18,10 +19,10 @@ Issue: [#426](https://github.com/geoffrey-xiao/deprail/issues/426). Implementati
 
 | Cross-built binary (local, not release) | SHA-256 | Native launch |
 | --- | --- | --- |
-| linux/amd64 | `bb14f6e4bcc38d5e2ff5bfb04dab7397fd1faf2645516cf3860685c2a852117a` | Not on this Darwin host; CI pending |
+| linux/amd64 | `bb14f6e4bcc38d5e2ff5bfb04dab7397fd1faf2645516cf3860685c2a852117a` | Local binary not launched; separate same-source CI native CLI smoke passed |
 | darwin/amd64 | `7c84a0db1002072fc7f3540e6b46fbcf61dd3a4376c255492d7b03d003f47299` | `--version` under Rosetta |
 | darwin/arm64 | `6cdc5c85e24f6a0551142dae9c3428305b60487600da4a95e30f217f1c504c8a` | Console + CLI smoke above |
-| windows/amd64 | `4c9096b5b3f154cd97ef4043e1f3ef4118d7989a6b193ae3eb9313759dab436a` | Not on this Darwin host; CI pending |
+| windows/amd64 | `4c9096b5b3f154cd97ef4043e1f3ef4118d7989a6b193ae3eb9313759dab436a` | Local binary not launched; separate same-source CI native CLI smoke passed |
 
 ## Supply-chain and release gates
 

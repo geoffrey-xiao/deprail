@@ -4,6 +4,8 @@ GitHub issue: [#460](https://github.com/geoffrey-xiao/deprail/issues/460).
 
 Observed technical evidence: [before/after, SDK applicability and actual consumer smoke](../tracking/H05-008-FU1-XTEXT-EVIDENCE.md). Owner acceptance boxes below remain unchecked.
 
+Review PR: [#461](https://github.com/geoffrey-xiao/deprail/pull/461), Refs #460, implementation `7b1a8a5`; required labels/milestone/Project Sprint4/Review/owner reviewer verified live. Final-head CI is tracked in PR checks and its completion record; owner dependency/security acceptance and merge remain separate.
+
 ## Planning metadata
 
 - Parent: H05-008 / #427; private-store dependency evidence #421; delivery epic #418.

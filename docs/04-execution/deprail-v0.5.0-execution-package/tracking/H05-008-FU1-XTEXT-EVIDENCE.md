@@ -2,6 +2,8 @@
 
 Issue [#460](https://github.com/geoffrey-xiao/deprail/issues/460); contract [H05-008-FU1](../issues/H05-008-FU1-xtext-remediation.md). Date 2026-10-07. Base: owner-merged #459 / main `96f1078`. This is dependency-repair evidence, not integrated #427 acceptance or release authorization. Owner dependency/security review remains separate.
 
+Review [PR #461](https://github.com/geoffrey-xiao/deprail/pull/461), Refs #460, implementation `7b1a8a5`. After creation, live gh verification confirmed area:foundation/risk:R3/priority:P0/type:bug on issue and PR, milestone v0.5.0, DepRail Project Sprint4/Review and owner reviewer @geoffrey-xiao. Track final-head existing three-OS CI in the PR checks/completion record rather than substituting prior-head checks; no owner approval/merge/Project Done/closure asserted.
+
 ## Decision and authoritative sources
 
 Choose minimum fixed `golang.org/x/text v0.39.0`; retain Go `1.27.1` and all other production module pins. [GO-2026-5970 machine record](https://vuln.go.dev/ID/GO-2026-5970.json), alias CVE-2026-56852, describes infinite iteration on invalid UTF-8 in `norm.Iter`; fixed floor is 0.39.0. The current [Go module advisory index](https://vuln.go.dev/index/modules.json) returned four x/text records (GO-2020-0015, GO-2021-0113, GO-2022-1059, GO-2026-5970), with respective floors 0.3.3/0.3.7/0.3.8/0.39.0. This is dated authoritative-index review, not a scanner callgraph or universal zero-vulnerability guarantee.

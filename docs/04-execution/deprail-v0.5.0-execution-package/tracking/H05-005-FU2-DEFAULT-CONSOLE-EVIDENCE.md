@@ -16,6 +16,10 @@ cmd/deprail/web.go now declares its optional resolver using the existing app.Art
 - Same pinned environment make test-integration: exit0; full integration-tagged suite passed.
 - Existing reported failure is prior evidence; no check was rerun merely to confirm the owner's observation.
 
+### Stacked CI correction
+
+Original head bc4d732 failed Windows timed-apply timeout in [37569906460](https://github.com/geoffrey-xiao/deprail/actions/runs/37569906460); preserve that failure. PR #453 is rebased onto unmerged #455 head 5857187ca196ccbd1165c8493ba7916d05689e25, whose three-OS tests/builds/native CLI smoke passed in [37571076086](https://github.com/geoffrey-xiao/deprail/actions/runs/37571076086). Temporary PR base is test/v05-qa-004-timed-apply, keeping artifact-verifier changes isolated in the review diff. Combined-head verification is recorded on #453, not inferred from #455. Owner must review/merge #455 first, then retarget #453 to main and review its final diff/checks. This stack is not an owner-reviewed main or a formal release candidate; no merge or release approval is inferred.
+
 ## Actual packaged console smoke
 
 Native development binary: local_test/0.5.0-preview.1/output/default-console-452/bin/deprail; go build -trimpath; SHA256693eb8b9310f050ed26b39cd51d39dd420392c87dabb5ed198e51b848cb4605d. Darwin/arm64, Go1.27.1; Node22.23.3/npm10.9.9; Chrome150.0.7871.24 managed headless,1440x1050 CSS viewport. Development identity only, not release-candidate approval.

@@ -163,20 +163,28 @@ func TestApplyEndToEndDryRunPreservesApproval(t *testing.T) {
 	}
 }
 
+// The actual deadline begins after mutation readiness. Carry its cause through
+// the context already supplied to apply, rather than timing repository preflight.
+type applyE2EOperationContext struct{ context.Context }
+
+func (ctx applyE2EOperationContext) Err() error { return context.Cause(ctx.Context) }
+
+// This bridge starts from Background and has no values. Do not expose its
+// underlying cancel context: derived contexts must observe this bridge's Err.
+func (ctx applyE2EOperationContext) Value(any) any { return nil }
+
 func TestApplyEndToEndFailureBoundaries(t *testing.T) {
 	tests := []struct {
 		name        string
 		args        []string
 		marker      bool
-		context     func() (context.Context, context.CancelFunc)
+		interrupt   error
 		wantOutcome string
 	}{
 		{name: "hostile argument is direct argv", args: []string{"install", "$(touch deprail-pwned)"}, wantOutcome: "applied"},
 		{name: "malformed rescan", args: []string{"install"}, marker: true, wantOutcome: "partial"},
-		{name: "cancellation", args: []string{"install", "--deprail-e2e-sleep"}, context: func() (context.Context, context.CancelFunc) { return context.WithCancel(context.Background()) }, wantOutcome: "cancelled"},
-		{name: "timeout", args: []string{"install", "--deprail-e2e-sleep"}, context: func() (context.Context, context.CancelFunc) {
-			return context.WithTimeout(context.Background(), time.Second)
-		}, wantOutcome: "partial"},
+		{name: "cancellation", args: []string{"install", "--deprail-e2e-sleep"}, interrupt: context.Canceled, wantOutcome: "cancelled"},
+		{name: "timeout", args: []string{"install", "--deprail-e2e-sleep"}, interrupt: context.DeadlineExceeded, wantOutcome: "partial"},
 		{name: "mutation failure", args: []string{"install", "--deprail-e2e-fail"}, wantOutcome: "partial"},
 	}
 	for _, test := range tests {
@@ -185,14 +193,21 @@ func TestApplyEndToEndFailureBoundaries(t *testing.T) {
 			repo, commit := prepareApplyE2ERepository(t, caseData)
 			tools := prepareApplyE2ETools(t, caseData.executable)
 			t.Setenv("PATH", tools+string(os.PathListSeparator)+os.Getenv("PATH"))
+			var readyPath string
+			if test.interrupt != nil {
+				readyPath = filepath.Join(t.TempDir(), "mutation.ready")
+				caseData.mutationArgs = append(caseData.mutationArgs, "--deprail-e2e-ready="+readyPath)
+			}
 			planPath, approvalPath := writeApplyE2EInputs(t, repo, commit, caseData)
 			ctx := context.Background()
-			var cancel context.CancelFunc
-			if test.context != nil {
-				ctx, cancel = test.context()
-				defer cancel()
-			}
-			if test.name == "cancellation" {
+			if test.interrupt != nil {
+				interruptCtx, cancel := context.WithCancelCause(ctx)
+				ctx = applyE2EOperationContext{interruptCtx}
+				defer cancel(context.Canceled)
+				beforeState, err := app.CurrentRepositoryState(repo)
+				if err != nil {
+					t.Fatal(err)
+				}
 				resultCh := make(chan struct {
 					result applyResult
 					code   int
@@ -208,8 +223,37 @@ func TestApplyEndToEndFailureBoundaries(t *testing.T) {
 						err    error
 					}{result, code, stderr, err}
 				}()
-				time.Sleep(500 * time.Millisecond)
-				cancel()
+				startup := time.NewTimer(30 * time.Second)
+				defer startup.Stop()
+				poll := time.NewTicker(10 * time.Millisecond)
+				defer poll.Stop()
+			waitForMutation:
+				for {
+					select {
+					case early := <-resultCh:
+						t.Fatalf("apply ended before mutation readiness: code=%d outcome=%q stderr=%q err=%v", early.code, early.result.Outcome, early.stderr, early.err)
+					case <-startup.C:
+						cancel(context.Canceled)
+						stopped := <-resultCh
+						t.Fatalf("mutation readiness timed out: code=%d stderr=%q err=%v", stopped.code, stopped.stderr, stopped.err)
+					case <-poll.C:
+						if _, err := os.Stat(readyPath); err == nil {
+							break waitForMutation
+						} else if !os.IsNotExist(err) {
+							cancel(context.Canceled)
+							stopped := <-resultCh
+							t.Fatalf("read mutation readiness: %v; code=%d stderr=%q", err, stopped.code, stopped.stderr)
+						}
+					}
+				}
+				if test.interrupt == context.DeadlineExceeded {
+					deadline, stop := context.WithTimeout(context.Background(), time.Second)
+					defer stop()
+					stopForwarding := context.AfterFunc(deadline, func() { cancel(context.Cause(deadline)) })
+					defer stopForwarding()
+				} else {
+					cancel(context.Canceled)
+				}
 				outcome := <-resultCh
 				if outcome.err != nil {
 					t.Fatal(outcome.err)
@@ -220,6 +264,28 @@ func TestApplyEndToEndFailureBoundaries(t *testing.T) {
 				if outcome.result.EvidencePath == "" || outcome.result.CleanupStatus != "succeeded" {
 					t.Fatalf("failure evidence/cleanup = %#v", outcome.result)
 				}
+				data, err := os.ReadFile(outcome.result.EvidencePath)
+				if err != nil {
+					t.Fatal(err)
+				}
+				var record evidence.Record
+				if err := json.Unmarshal(data, &record); err != nil {
+					t.Fatal(err)
+				}
+				if err := record.Validate(); err != nil {
+					t.Fatal(err)
+				}
+				if string(record.Outcome) != test.wantOutcome {
+					t.Fatalf("durable evidence outcome=%q, want %q", record.Outcome, test.wantOutcome)
+				}
+				afterState, err := app.CurrentRepositoryState(repo)
+				if err != nil || afterState != beforeState {
+					t.Fatalf("interrupted apply changed caller state: before=%s after=%s err=%v", beforeState, afterState, err)
+				}
+				if _, err := os.Stat(outcome.result.Workspace); !os.IsNotExist(err) {
+					t.Fatalf("interrupted apply retained worktree: %v", err)
+				}
+				t.Logf("mutation readiness observed; exit=%d outcome=%s evidence=retained cleanup=%s caller=unchanged worktree=removed", outcome.code, outcome.result.Outcome, outcome.result.CleanupStatus)
 				return
 			}
 			result, code, stderr := runApplyE2E(t, ctx, repo, planPath, approvalPath)
@@ -335,7 +401,7 @@ func invokeApplyE2E(ctx context.Context, repo string, args []string) (applyResul
 	code := runFixApplyContext(ctx, args, &stdout, &stderr)
 	var result applyResult
 	if err := json.Unmarshal(stdout.Bytes(), &result); err != nil {
-		return applyResult{}, code, stderr.String(), err
+		return applyResult{}, code, stderr.String(), fmt.Errorf("decode apply result (exit=%d stderr=%q): %w", code, stderr.String(), err)
 	}
 	return result, code, stderr.String(), nil
 }

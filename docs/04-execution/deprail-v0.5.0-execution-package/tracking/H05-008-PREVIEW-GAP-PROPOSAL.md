@@ -1,5 +1,7 @@
 # H05-008: Proposed v0.5 Preview Gap Dispositions
 
+**Post-publication observation — 2026-10-07:** the owner actually approved/published v0.5.0-preview.1 from48ada15 via [successful37610017998](https://github.com/geoffrey-xiao/deprail/actions/runs/37610017998). [Actual publication evidence](../../../release-evidence/RELEASE-v0.5.0-preview.1-EVIDENCE.md) and [retrospective follow-ups](../../../retrospectives/RETROSPECTIVE-v0.5.0-preview.1.md#follow-up-actions) supersede the unexecuted-identity/workflow observations **as current facts**. The proposal below preserves the earlier pending-decision snapshot; actual publishing approval is not per-PG blanket acceptance, signature/provenance verification or stable readiness. No original decision box is checked here.
+
 Issue [#427](https://github.com/geoffrey-xiao/deprail/issues/427); preparation [#445](https://github.com/geoffrey-xiao/deprail/pull/445) owner-merged 2026-10-07T09:14:17Z. Date 2026-10-07. Owner requested investigation and individual acceptance-record updates after that merge; this is not blanket risk acceptance. **Every row below is pending owner decision; none authorizes release execution, tagging or publication.** No scope reduction, stable-ready claim or historical preview approval is inherited.
 
 ## Candidate proposal and decision boundary

@@ -76,6 +76,12 @@ Owner requested [a per-gap preview proposal](../tracking/H05-008-PREVIEW-GAP-PRO
 
 Subsequent owner request authorizes the bounded technical [#460 x/text repair](H05-008-FU1-xtext-remediation.md), not risk acceptance or release execution. [Before/after/SDK/consumer proof](../tracking/H05-008-FU1-XTEXT-EVIDENCE.md) records fixed selected module, specific SDK applicability and unchanged Go baseline; merge/security acceptance remain owner decisions. Offline missing-scanner capture emitted HISTORY_WRITE_FAILED with both old and fixed modules, so successful failure-history workflow is not claimed; retain that original PG-05 runtime observation.
 
+### Actual publication and retrospective — 2026-10-07
+
+Owner merged dependency correction #461 to48ada15, approved protected publication, and released v0.5.0-preview.1 at10:54:16Z through [successful37610017998](https://github.com/geoffrey-xiao/deprail/actions/runs/37610017998). [Version publication evidence](../../../release-evidence/RELEASE-v0.5.0-preview.1-EVIDENCE.md) records all six independent asset digests, manifest verification, actual clean native binary identity/discovery and inspected SPDX. Failed37609702708/leading-space input remains historical.
+
+[Retrospective / #462](../../../retrospectives/RETROSPECTIVE-v0.5.0-preview.1.md) records delivery, mistakes/corrections, security/process lessons and existing issue/PG follow-ups. Actual publication is not completion of all original criterion/platform/browser/recovery/supply-chain gates or owner retrospective/security acceptance. Keep this issue and its original boxes open pending exact evidence/dispositions; preserve historical preparation rather than rewriting it as prior approval.
+
 ## Final Acceptance
 
 - [ ] Owner reviewed every acceptance criterion during PR review.

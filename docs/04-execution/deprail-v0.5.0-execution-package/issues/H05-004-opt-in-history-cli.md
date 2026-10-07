@@ -71,6 +71,8 @@ Input is existing scan args plus boolean opt-in. Output is unchanged scan stdout
 - Verification commands or scenarios: CLI argument and exit-precedence tests; isolated HOME smoke for default absence, opt-in persistence, injected failure; stdout hash/byte comparison.
 - Expected artifacts, logs, screenshots, or links: captured exit/stdout/stderr, database row count and permission evidence, privacy scan, CI results, owner decisions.
 
+2026-10-07: owner-merged [PR #439](https://github.com/geoffrey-xiao/deprail/pull/439), latest head `510409c` / CI SUCCESS, supplies isolated-config CLI/exit/stdout smoke. [CLI-01–06 worksheet](../tracking/H05-008-READINESS.md#individual-prerequisite-acceptance-worksheet--2026-10-07) maps each original criterion and identifies skipped Windows cancellation/final-candidate limits. All owner criterion decisions remain pending; no checkbox is marked from merge alone.
+
 ## Final Acceptance
 
 - [ ] Owner reviewed every acceptance criterion during PR review.

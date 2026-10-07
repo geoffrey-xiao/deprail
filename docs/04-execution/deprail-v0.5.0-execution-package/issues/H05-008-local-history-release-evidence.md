@@ -14,8 +14,8 @@
 - Sprint: Sprint4
 - Owner: `@geoffrey-xiao`
 - Reviewer: `@geoffrey-xiao` (owner); independent review is not a gate under ADR-0005.
-- Dependencies: H05-001–007, [release checklist](../../../RELEASE-CHECKLIST.md) and [release plan §14](../../../03-planning/deprail-development-plan-v0.5.0.md#14-detailed-contract-reconciliation-for-current-owner-review). Corrective #455/#456/#458 are owner-merged to main c68c9f9; earlier #419/#432 QA gates resolved. Component completion does not settle original release acceptance.
-- Blocked reason: original prerequisite technical/security acceptance or explicit dispositions, selected immutable candidate/version and actual integrated platform/browser-AT/recovery/supply-chain evidence remain required. No correction cutover blocker remains. Preparation #445 Draft; Project Blocked.
+- Dependencies: H05-001–007, [release checklist](../../../RELEASE-CHECKLIST.md) and [release plan §14](../../../03-planning/deprail-development-plan-v0.5.0.md#14-detailed-contract-reconciliation-for-current-owner-review). Main a01df71 contains owner-merged preparation #445 and corrections #455/#456/#458; earlier #419/#432 QA gates resolved. Component/document completion does not settle original release acceptance.
+- Blocked reason: original prerequisite technical/security acceptance or explicit dispositions, selected immutable candidate/version and actual integrated platform/browser-AT/recovery/supply-chain evidence remain required. No correction cutover blocker remains. Preparation #445 is owner-merged; follow-up evidence is for owner review, not formal runtime admission.
 
 ## Definition of Ready
 
@@ -70,9 +70,9 @@ Owner reviews every criterion and evidence artifact, records remaining risks, pe
 
 ### Readiness preparation — 2026-10-07
 
-[Manual guide](../MANUAL-TEST-GUIDE.md) and [readiness assessment](../tracking/H05-008-READINESS.md) now use reviewed main c68c9f9, containing owner-merged #455/#456/#458. QA, artifact and authoritative Release Combined repairs are delivered. #421 and #423–#426 original acceptance/dispositions remain unrecorded; #445 Draft / #427 Blocked does not imply those decisions or release authorization. No formal H05-008 runtime or final acceptance box is completed.
+[Manual guide](../MANUAL-TEST-GUIDE.md) and [readiness assessment](../tracking/H05-008-READINESS.md) now use synchronized main a01df71, containing owner-merged preparation #445 and all QA/artifact/Release Combined repairs. #421 and #423–#426 original acceptance/dispositions remain unrecorded; the preparation merge does not grant them or release authorization. The readiness worksheet maps all 27 original criteria to actual evidence, limits and proposed owner deadlines. No formal H05-008 runtime or final acceptance box is completed.
 
-Owner requested [a per-gap preview proposal](../tracking/H05-008-PREVIEW-GAP-PROPOSAL.md). This adds impact/mitigation/owner/target and pending PG-01–PG-12 decisions only; it accepts no gap, reduces no capability and authorizes no workflow/tag/publication.
+Owner requested [a per-gap preview proposal](../tracking/H05-008-PREVIEW-GAP-PROPOSAL.md), then advisory/distribution investigation and individual acceptance updates. Dated [x/text evidence](../tracking/H05-002-STORE-EVIDENCE.md#additive-xtext-advisory-applicability-evidence--2026-10-07) and [caniuse-lite evidence](../tracking/H05-006-DEPENDENCY-EVIDENCE.md#2026-10-07-caniuse-lite-distributionattribution-follow-up) inform PG-01/02; the [27-criterion worksheet](../tracking/H05-008-READINESS.md#individual-prerequisite-acceptance-worksheet--2026-10-07) informs PG-03. All proposed decisions remain pending; no dependency upgrade, capability reduction, workflow dispatch, tag or publication is authorized.
 
 ## Final Acceptance
 

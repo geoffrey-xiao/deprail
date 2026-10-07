@@ -68,7 +68,7 @@ Owner reviews reproducibility, supply-chain dispositions, target outputs and com
 - Verification commands or scenarios: future clean locked build/rebuild comparison, four-target binary launch, missing/skew injection using throwaway harness, existing CLI regression, asset/API size measurement, dependency/license/SBOM review.
 - Expected artifacts, logs, screenshots, or links: binary hashes, toolchain and lock identity, asset-attributable size table, SBOM and explicit vulnerability/license disposition, sanitized startup/error results.
 
-Implementation evidence: [H05-007 packaging evidence](../tracking/H05-007-PACKAGING-EVIDENCE.md) and [PR #444](https://github.com/geoffrey-xiao/deprail/pull/444) record the pinned Darwin build, offline repeat, actual console browser/static smoke, throwaway failure binaries, size/hash table, four target cross-builds, and unresolved platform/supply-chain owner gates. Acceptance boxes remain unchecked until CI/native platform evidence and owner review are recorded.
+Implementation evidence: [packaging record](../tracking/H05-007-PACKAGING-EVIDENCE.md), owner-merged [#444](https://github.com/geoffrey-xiao/deprail/pull/444) and [#458](https://github.com/geoffrey-xiao/deprail/pull/458). All three OS CI and cross-build evidence exist; [PKG-01–05 worksheet](../tracking/H05-008-READINESS.md#individual-prerequisite-acceptance-worksheet--2026-10-07) maps each criterion, fresh caniuse distribution evidence and remaining original/dependency/platform/final-workflow decisions. Acceptance boxes remain unchecked; source/component CI is not final artifact/browser/AT/supply-chain approval.
 
 ## Final Acceptance
 

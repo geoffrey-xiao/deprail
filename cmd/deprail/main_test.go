@@ -617,6 +617,13 @@ func runScannerHelper() {
 
 func runMutationHelper(tool string) {
 	for _, arg := range os.Args[1:] {
+		if path, ok := strings.CutPrefix(arg, "--deprail-e2e-ready="); ok {
+			if err := os.WriteFile(path, []byte("ready"), 0o600); err != nil {
+				os.Exit(9)
+			}
+		}
+	}
+	for _, arg := range os.Args[1:] {
 		switch arg {
 		case "--deprail-e2e-fail":
 			os.Exit(7)

@@ -61,7 +61,7 @@ func runWebWithContext(
 		return 2
 	}
 
-	var verifier *artifact.Store
+	var verifier app.ArtifactVerifier
 	if *artifactRoot != "" {
 		canonical, err := canonicalArtifactRoot(*artifactRoot)
 		if err != nil {

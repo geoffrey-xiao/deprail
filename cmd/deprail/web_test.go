@@ -16,6 +16,7 @@ import (
 	"time"
 
 	"github.com/geoffrey-xiao/deprail/internal/transport/localhttp"
+	"github.com/geoffrey-xiao/deprail/web"
 )
 
 func TestWebHelpAndNoninteractiveRequirements(t *testing.T) {
@@ -102,10 +103,27 @@ func TestWebStartsReadOnlyLoopbackAndPrintsOnlyBareConsoleURL(t *testing.T) {
 		if listErr != nil || listResponse.StatusCode != http.StatusOK || json.Unmarshal(listBody, &emptyPage) != nil || emptyPage.Items == nil || len(emptyPage.Items) != 0 || emptyPage.NextCursor != nil {
 			t.Fatalf("missing-store history response status=%d body=%q err=%v", listResponse.StatusCode, listBody, listErr)
 		}
+		document, err := (&http.Client{Timeout: 2 * time.Second}).Get(parsed.Scheme + "://" + parsed.Host + "/console/")
+		if err != nil {
+			t.Fatalf("request packaged console: %v", err)
+		}
+		html, readErr := io.ReadAll(document.Body)
+		_ = document.Body.Close()
+		if readErr != nil || document.StatusCode != http.StatusOK || !bytes.Contains(html, []byte(`<meta name="deprail-api-version" content="v1"`)) {
+			t.Fatalf("packaged console status=%d err=%v", document.StatusCode, readErr)
+		}
 		cancel()
 		return nil
 	}
-	code := runWebWithContext(ctx, []string{"--open"}, &stdout, &stderr, nil, false, webTestAssets(), launch)
+	files, paths, err := web.Assets(localhttp.APIVersion)
+	if err != nil {
+		t.Fatalf("compiled console assets: %v", err)
+	}
+	assets := localhttp.Config{AssetFS: files, IndexPath: "index.html"}
+	for _, path := range paths {
+		assets.AssetFiles = append(assets.AssetFiles, localhttp.AssetFile{URLPath: path, FSPath: path[1:]})
+	}
+	code := runWebWithContext(ctx, []string{"--open"}, &stdout, &stderr, nil, false, assets, launch)
 	if code != 0 || !opened {
 		t.Fatalf("web exit=%d opened=%t stdout=%q stderr=%q", code, opened, stdout.String(), stderr.String())
 	}
@@ -137,10 +155,10 @@ func TestWebFailsClosedWithoutAssetsOrWithInvalidArtifactRoot(t *testing.T) {
 	stdout.Reset()
 	stderr.Reset()
 	if code := runWithConsoleAssets([]string{"web", "--open"}, &stdout, &stderr, localhttp.Config{}); code != 3 {
-		t.Fatalf("production command without H05-007 assets exit=%d", code)
+		t.Fatalf("injected missing assets exit=%d", code)
 	}
 	if stdout.Len() != 0 || !strings.Contains(stderr.String(), "API_LISTENER_UNAVAILABLE") {
-		t.Fatalf("production command asset failure stdout=%q stderr=%q", stdout.String(), stderr.String())
+		t.Fatalf("injected asset failure stdout=%q stderr=%q", stdout.String(), stderr.String())
 	}
 
 	stdout.Reset()

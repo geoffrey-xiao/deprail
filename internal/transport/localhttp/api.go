@@ -17,6 +17,9 @@ import (
 	domain "github.com/geoffrey-xiao/deprail/internal/domain/history"
 )
 
+// APIVersion binds the embedded console to the local read API.
+const APIVersion = "v1"
+
 type handler struct {
 	host    string
 	origin  string
@@ -324,7 +327,7 @@ func (h *handler) authenticated(r *http.Request) bool {
 
 func (h *handler) execute(ctx context.Context, request apiRequest) (any, error) {
 	if request.route.kind == "health" {
-		return healthResponse{APIVersion: "v1", Status: "ready"}, nil
+		return healthResponse{APIVersion: APIVersion, Status: "ready"}, nil
 	}
 	if h.history == nil {
 		return nil, &app.HistoryError{Code: app.HistoryUnavailable}

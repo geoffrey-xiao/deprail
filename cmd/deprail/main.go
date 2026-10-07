@@ -22,6 +22,7 @@ import (
 	"github.com/geoffrey-xiao/deprail/internal/remediation"
 	"github.com/geoffrey-xiao/deprail/internal/store/history"
 	"github.com/geoffrey-xiao/deprail/internal/transport/localhttp"
+	"github.com/geoffrey-xiao/deprail/web"
 )
 
 func main() {
@@ -29,6 +30,16 @@ func main() {
 }
 
 func run(args []string, stdout, stderr io.Writer) int {
+	if len(args) > 0 && args[0] == "web" {
+		files, paths, err := web.Assets(localhttp.APIVersion)
+		if err == nil {
+			assets := localhttp.Config{AssetFS: files, IndexPath: "index.html"}
+			for _, path := range paths {
+				assets.AssetFiles = append(assets.AssetFiles, localhttp.AssetFile{URLPath: path, FSPath: path[1:]})
+			}
+			return runWithConsoleAssets(args, stdout, stderr, assets)
+		}
+	}
 	return runWithConsoleAssets(args, stdout, stderr, localhttp.Config{})
 }
 

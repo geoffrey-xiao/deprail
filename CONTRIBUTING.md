@@ -60,6 +60,10 @@ Before starting a new issue, check the previous issue and pull request. If the p
 
 When an issue is finished, prepare a completion report for the owner covering every acceptance item, required command, CI result, human review result, evidence link, and remaining risk. The owner must inspect and check every acceptance item and explicitly confirm completion before closure. An agent may explain evidence and draft the closure comment, but may close the issue only after the owner authorizes it. A merged pull request alone does not prove completion, and local checklists require linked evidence and owner confirmation.
 
+## Building the embedded console
+
+Install Go at the version in `.go-version`, Node `22.23.3`, and npm `10.9.9`. Run `make verify` from the repository root: it checks the pinned frontend tools, installs the committed `web/package-lock.json` with lifecycle scripts disabled, builds the ignored `web/dist` output, then runs Go generation, vet, tests, and build. For direct `go test` or `go build` from a clean checkout, first run `make frontend`; Go's `//go:embed dist` requires the generated assets at compile time. No runtime asset directory or CDN is consulted by the binary.
+
 ## Change workflow
 
 1. State the goal, linked contract or issue, intended files and symbols, out-of-scope changes, risk level, and verification commands or scenarios.

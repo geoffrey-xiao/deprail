@@ -72,6 +72,8 @@ Owner reviews every criterion and evidence artifact, records remaining risks, pe
 
 [Manual guide](../MANUAL-TEST-GUIDE.md) and [readiness assessment](../tracking/H05-008-READINESS.md) now use reviewed main c68c9f9, containing owner-merged #455/#456/#458. QA, artifact and authoritative Release Combined repairs are delivered. #421 and #423–#426 original acceptance/dispositions remain unrecorded; #445 Draft / #427 Blocked does not imply those decisions or release authorization. No formal H05-008 runtime or final acceptance box is completed.
 
+Owner requested [a per-gap preview proposal](../tracking/H05-008-PREVIEW-GAP-PROPOSAL.md). This adds impact/mitigation/owner/target and pending PG-01–PG-12 decisions only; it accepts no gap, reduces no capability and authorizes no workflow/tag/publication.
+
 ## Final Acceptance
 
 - [ ] Owner reviewed every acceptance criterion during PR review.

@@ -49,6 +49,11 @@ A merged PR and successful CI do not by themselves close unchecked acceptance cr
 5. Execute or explicitly disposition current stable Chrome/NVDA, Safari/VoiceOver and Firefox/Orca, and all four native binary targets. Cross-builds, Rosetta identity-only smoke and headless Chromium are not interchangeable with full native/browser/AT verification.
 6. Record full artifact SBOM/signature/provenance status and separate owner technical, security/architecture and release decisions. Missing evidence remains a gate, not an implicitly approved preview gap.
 
+### Requested preview gap proposal — not accepted dispositions
+
+Owner selected preparation of a preview-with-gaps proposal, not blanket acceptance or publication. [PG-01–PG-12 proposal](H05-008-PREVIEW-GAP-PROPOSAL.md) names exact evidence, impact, mitigation, accountable owner and target gate for every gap. Native/browser-AT/recovery/physical-growth and provenance gaps are candidates for specific owner deferral; disclosed advisory, required attribution, original admission, core runtime and actual workflow/SBOM success are not automatically waivable. Proposed v0.5.0-preview.1 remains unselected/uncreated. All decision rows are pending; #427 stays Blocked.
+
+
 ## Release-checklist coverage
 
 | General checklist section | Current disposition |

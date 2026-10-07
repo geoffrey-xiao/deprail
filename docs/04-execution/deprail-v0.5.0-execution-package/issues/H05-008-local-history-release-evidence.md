@@ -68,6 +68,10 @@ Owner reviews every criterion and evidence artifact, records remaining risks, pe
 - Verification commands or scenarios: future end-to-end matrix for JS/Python/Java; packaged OS/browser/AT matrix; hostile-input and recovery rehearsal; tree comparison; binary checksum and SBOM/signature/provenance checks.
 - Expected artifacts, logs, screenshots, or links: evidence index with exact binary/source identity, sanitized scenario results, browser/AT records, recovery and before/after tree manifests, checksums, SBOM and explicit attestation status, owner security and release decisions.
 
+### Readiness preparation — 2026-10-07
+
+[Manual verification guide](../MANUAL-TEST-GUIDE.md) and [readiness assessment](../tracking/H05-008-READINESS.md) specify the integrated procedure and outstanding pre-start decisions. The resolved #432 QA correction gate supersedes the earlier unresolved correction description; prerequisite acceptance for #421 and #423–#426 remains unrecorded. These documents are preparation only: no H05-008 runtime or final acceptance box is completed.
+
 ## Final Acceptance
 
 - [ ] Owner reviewed every acceptance criterion during PR review.

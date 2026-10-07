@@ -2,6 +2,8 @@
 
 Issue [#450](https://github.com/geoffrey-xiao/deprail/issues/450); [contract](../issues/H05-006-FU3-link-hierarchy.md). Date2026-10-07; baseline synchronized main256cd54 after owner-merged #449. Owner/reviewer @geoffrey-xiao; acceptance pending.
 
+Review PR: [#451](https://github.com/geoffrey-xiao/deprail/pull/451), implementation commit `34b3ff9`, linked with `Refs #450`. Exact-head CI and owner acceptance are recorded separately; local screenshot proof does not imply either.
+
 ## Presentation change
 
 Only `web/src/style.css` changed runtime behavior. Navigation retains tab/current styling without hover underlines. History titles are neutral by default with blue arrows; hovered/focused titles become blue/underlined. View details is a44px bordered visual affordance inside the same existing native anchor, not another button/link/tab stop. Breadcrumb/footer use44px padded link targets and hover/focus backgrounds/underlines. Ordinary inline anchor defaults and global3px focus remain. API, routes, markup, authentication, data, disclosure, scanner, dependencies and existing handlers unchanged; no external links introduced.

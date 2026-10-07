@@ -2,6 +2,8 @@
 
 GitHub issue: [#457](https://github.com/geoffrey-xiao/deprail/issues/457).
 
+Review PR: [#458](https://github.com/geoffrey-xiao/deprail/pull/458), Refs #457; implementation dea8f1c. Exact-head CI and owner publishing/security review remain separate from local/offline evidence.
+
 ## Planning metadata
 
 - Parent: H05-007 / #426; release evidence #427; delivery epic #418.

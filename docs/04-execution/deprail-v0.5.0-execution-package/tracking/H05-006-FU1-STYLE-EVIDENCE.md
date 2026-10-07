@@ -4,6 +4,8 @@ Issue: [#446](https://github.com/geoffrey-xiao/deprail/issues/446); [contract](.
 
 Review PR: [#447](https://github.com/geoffrey-xiao/deprail/pull/447), implementation commit `44e6fd8`. Linked with `Refs #446`; owner acceptance and CI outcome remain separate from the observed local smoke below.
 
+Exact-head CI [37564839801](https://github.com/geoffrey-xiao/deprail/actions/runs/37564839801) at `7667fa3`: macOS and Ubuntu passed, including native packaged CLI smoke; Ubuntu's four-target cross-build passed. Windows failed `TestApplyEndToEndFailureBoundaries/cancellation`, `cmd/deprail/apply_e2e_test.go:215`, `unexpected end of JSON input`; its later build/native smoke steps were skipped. This matches the failure already recorded under #427 on the documentation-only preparation branch. Cause remains unestablished; no rerun, weaker assertion or remediation change is included here. PR #447 is not CI-approved or merge-ready until that blocker is resolved or explicitly dispositioned through the required process.
+
 ## Change
 
 - `web/src/style.css`: 44px minimum controls, no `.quiet` offset margin; aligned action groups with a separate responsive Refresh row; uniform navigation targets, hover and current states; inline breadcrumb styling; history hover and inset keyboard outline; wrapping footer and narrow title/actions.

@@ -14,8 +14,8 @@
 - Sprint: Sprint4
 - Owner: `@geoffrey-xiao`
 - Reviewer: `@geoffrey-xiao` (owner); independent review is not a gate under ADR-0005.
-- Dependencies: H05-001–007, [release checklist](../../../RELEASE-CHECKLIST.md), [release plan §14](../../../03-planning/deprail-development-plan-v0.5.0.md#14-detailed-contract-reconciliation-for-current-owner-review), and #452 artifact-fix main cutover through #456. #454/#455 timed-apply is owner-merged to main 9181e76; #453 merged only to its temporary base. Earlier #419/#432 QA gate remains resolved. No release acceptance is inferred from component completion.
-- Blocked reason: formal execution awaits prerequisite technical/security acceptance or explicit dispositions, reviewed blocker fixes on one immutable main candidate, and actual candidate/platform/browser-AT/recovery/supply-chain evidence. Preparation #445 is Draft; Project Blocked.
+- Dependencies: H05-001–007, [release checklist](../../../RELEASE-CHECKLIST.md) and [release plan §14](../../../03-planning/deprail-development-plan-v0.5.0.md#14-detailed-contract-reconciliation-for-current-owner-review). Corrective #455/#456/#458 are owner-merged to main c68c9f9; earlier #419/#432 QA gates resolved. Component completion does not settle original release acceptance.
+- Blocked reason: original prerequisite technical/security acceptance or explicit dispositions, selected immutable candidate/version and actual integrated platform/browser-AT/recovery/supply-chain evidence remain required. No correction cutover blocker remains. Preparation #445 Draft; Project Blocked.
 
 ## Definition of Ready
 
@@ -70,7 +70,7 @@ Owner reviews every criterion and evidence artifact, records remaining risks, pe
 
 ### Readiness preparation — 2026-10-07
 
-[Manual verification guide](../MANUAL-TEST-GUIDE.md) and [readiness assessment](../tracking/H05-008-READINESS.md) specify integrated procedure and outstanding decisions. Earlier #432 QA and owner-merged #455 are resolved; #453's temporary-base merge did not deliver the artifact fix to main, now tracked by #456 under #452. Prerequisite acceptance for #421 and #423–#426 remains unrecorded. Preparation #445 remains Draft; formal #427 remains Blocked. No H05-008 runtime or final acceptance box is completed.
+[Manual guide](../MANUAL-TEST-GUIDE.md) and [readiness assessment](../tracking/H05-008-READINESS.md) now use reviewed main c68c9f9, containing owner-merged #455/#456/#458. QA, artifact and authoritative Release Combined repairs are delivered. #421 and #423–#426 original acceptance/dispositions remain unrecorded; #445 Draft / #427 Blocked does not imply those decisions or release authorization. No formal H05-008 runtime or final acceptance box is completed.
 
 ## Final Acceptance
 
